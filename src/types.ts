@@ -11,34 +11,17 @@ export interface Card {
   isFlipped?: boolean;
 }
 
-export interface MatrixTheme {
-  element: RPS;
-  power: number;
-}
-
 export interface Matrix {
   grid: RPS[][];
-  theme: MatrixTheme;
 }
 
 export type InsertEdge = 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT';
 
-export interface ShiftResult {
+export interface ClashResult {
   newGrid: RPS[][];
-  pushedOutSymbols: [RPS, RPS, RPS];
-}
-
-export type CompareResult = 'WIN' | 'LOSE' | 'DUAL';
-
-export interface ResolutionResult {
-  won: boolean;
-  result: CompareResult;
-  oldTheme: MatrixTheme;
-  newTheme: MatrixTheme;
-  pushedOutCard: Card | null;
-  insertedCardId: string;
   scoreDelta: number;
-  newGrid?: RPS[][];
+  replacedCells: { r: number; c: number }[];
+  insertedCardId: string;
 }
 
 export interface GameConfig {
@@ -53,6 +36,6 @@ export interface GameState {
   dealsLeft: number;
   selectedCardId: string | null;
   status: 'PLAYING' | 'GAME_OVER';
-  lastResolution: ResolutionResult | null;
-  preview: ResolutionResult | null;
+  lastClash: ClashResult | null;
+  preview: ClashResult | null;
 }

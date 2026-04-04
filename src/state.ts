@@ -1,9 +1,5 @@
-import { calculateScore, calculateTheme, compareMatrix, createEmptyGrid, shiftMatrix } from './logic';
-import { Card, GameConfig, GameState, InsertEdge, Matrix, RPS } from './types';
-
-const DEFAULT_CONFIG: GameConfig = {
-  initialTargetScore: 150
-};
+import { executeLaneClash, createEmptyGrid } from './logic';
+import { Card, GameConfig, GameState, InsertEdge, RPS, ClashResult } from './types';
 
 const SYMBOL_POOL: readonly RPS[] = [RPS.ROCK, RPS.SCISSORS, RPS.PAPER, RPS.BLANK];
 
@@ -16,8 +12,10 @@ function randomSymbol(): RPS {
 }
 
 export const KNOWN_ASSETS = [
-  '000', '110', '111', '131', '141', '301', '310', '311', '313', '330', '331', '333', '343',
-  '401', '403', '410', '411', '414', '430', '431', '433', '434', '440', '441', '443', '444'
+  '000', '010', '030', '040', '100', '101', '110', '111', '130', '131', '140', '141',
+  '300', '301', '303', '310', '311', '313', '330', '331', '333', '340', '341', '343',
+  '400', '401', '403', '404', '410', '411', '413', '414', '430', '431', '433', '434',
+  '440', '441', '443', '444'
 ];
 
 const MAP_TO_RPS: Record<string, RPS> = {
@@ -45,13 +43,6 @@ function randomGrid(): RPS[][] {
   return grid;
 }
 
-function createMatrix(grid: RPS[][]): Matrix {
-  return {
-    grid,
-    theme: calculateTheme(grid)
-  };
-}
-
 function createInitialHand(): Card[] {
   return Array.from({ length: 6 }, () => randomCard());
 }
@@ -64,85 +55,69 @@ export class GameStore {
   private state: GameState;
 
   constructor(_config: Partial<GameConfig> = {}) {
-    const initialGrid = randomGrid();
     this.state = {
-      matrix: createMatrix(initialGrid),
+      matrix: { grid: randomGrid() },
       hand: createInitialHand(),
       currentScore: 0,
       shufflesLeft: 4,
       dealsLeft: 4,
       selectedCardId: null,
       status: 'PLAYING',
-      lastResolution: null,
+      lastClash: null,
       preview: null
     };
   }
 
   getState(): GameState {
-    const preview = this.state.preview;
     return {
       ...this.state,
       matrix: {
-        ...this.state.matrix,
         grid: this.state.matrix.grid.map((row) => [...row])
       },
       hand: this.state.hand.map((card) => ({ 
         ...card, 
         symbols: [...card.symbols] as [RPS, RPS, RPS] 
       })),
-      preview: preview ? { 
-        ...preview,
-        newTheme: { ...preview.newTheme },
-        oldTheme: { ...preview.oldTheme },
-        newGrid: preview.newGrid ? preview.newGrid.map((row) => [...row]) : undefined
-      } : null
+      preview: this.state.preview ? { ...this.state.preview } : null,
+      lastClash: this.state.lastClash ? { ...this.state.lastClash } : null
     };
   }
 
-  selectCard(cardId: string): void {
-    if (this.state.status !== 'PLAYING') {
-      return;
-    }
+  selectCard(cardId: string | null): void {
+    if (this.state.status !== 'PLAYING') return;
 
-    if (this.state.selectedCardId === cardId) {
+    if (this.state.selectedCardId === cardId || cardId === null || cardId === '') {
       this.state.selectedCardId = null;
     } else {
       this.state.selectedCardId = cardId;
     }
     this.state.preview = null;
+    this.storeInternal.lastPreviewEdge = null;
   }
 
   flipSelectedCard(): void {
     const selected = this.state.selectedCardId;
-    if (!selected || this.state.status !== 'PLAYING') {
-      return;
-    }
+    if (!selected || this.state.status !== 'PLAYING') return;
 
     this.state.hand = this.state.hand.map((card) => {
-      if (card.id !== selected) {
-        return card;
-      }
+      if (card.id !== selected) return card;
       const newSymbols: [RPS, RPS, RPS] = [card.symbols[2], card.symbols[1], card.symbols[0]];
-      return {
-        ...card,
-        symbols: newSymbols,
-        isFlipped: !card.isFlipped
-      };
+      return { ...card, symbols: newSymbols, isFlipped: !card.isFlipped };
     });
     
-    // 如果正在预览，翻转后更新预览
     if (this.state.preview) {
-      const edge = (this.storeInternal as any).lastPreviewEdge;
+      const edge = this.storeInternal.lastPreviewEdge;
       if (edge) {
+        this.storeInternal.lastPreviewEdge = null; 
         this.updatePreview(edge);
       }
     }
   }
 
-  private storeInternal: any = {};
+  private storeInternal: any = { lastPreviewEdge: null };
 
   updatePreview(edge: InsertEdge | null): void {
-    if (this.storeInternal.lastPreviewEdge === edge && (this.state.preview || edge === null)) {
+    if (this.storeInternal.lastPreviewEdge === edge && (this.state.preview !== null || edge === null)) {
       return;
     }
     
@@ -158,82 +133,44 @@ export class GameStore {
       return;
     }
 
-    const oldMatrix = this.state.matrix;
-    // 确保 shiftMatrix 逻辑正确，不产生非法 grid
-    const shifted = shiftMatrix(oldMatrix.grid, edge, selectedCard);
-    if (!shifted || !shifted.newGrid) {
-      this.state.preview = null;
-      return;
-    }
-
-    const newTheme = calculateTheme(shifted.newGrid);
-    const result = compareMatrix(newTheme, oldMatrix.theme);
-    const scoreDelta = calculateScore(result, oldMatrix.theme);
+    const { newGrid, totalScore, replacedCells } = executeLaneClash(this.state.matrix.grid, edge, selectedCard);
 
     this.state.preview = {
-      won: result === 'WIN' || result === 'DUAL', // Just a fallback for legacy code
-      result,
-      oldTheme: { ...oldMatrix.theme },
-      newTheme: { ...newTheme },
-      pushedOutCard: result !== 'LOSE' ? { id: 'preview', symbols: [...shifted.pushedOutSymbols] as [RPS, RPS, RPS] } : null,
-      insertedCardId: selectedCard.id,
-      scoreDelta,
-      newGrid: shifted.newGrid.map(row => row.map(cell => cell || RPS.BLANK))
-    } as any;
+      newGrid,
+      scoreDelta: totalScore,
+      replacedCells,
+      insertedCardId: selectedCard.id
+    };
   }
 
-  playSelectedToEdge(edge: InsertEdge): void {
-    if (this.state.status !== 'PLAYING' || !this.state.selectedCardId) {
-      return;
-    }
+  playSelectedToEdge(edge: InsertEdge): ClashResult | null {
+    if (this.state.status !== 'PLAYING' || !this.state.selectedCardId) return null;
 
     const selectedCard = findCard(this.state.hand, this.state.selectedCardId);
     if (!selectedCard) {
       this.state.selectedCardId = null;
-      return;
+      return null;
     }
 
-    const oldMatrix = this.state.matrix;
-    const shifted = shiftMatrix(oldMatrix.grid, edge, selectedCard);
-    const newTheme = calculateTheme(shifted.newGrid);
-    const result = compareMatrix(newTheme, oldMatrix.theme);
-    const scoreDelta = calculateScore(result, oldMatrix.theme);
+    const { newGrid, totalScore, replacedCells } = executeLaneClash(this.state.matrix.grid, edge, selectedCard);
 
-    if (result !== 'LOSE') {
-      const pushedOutCard: Card = {
-        id: randomId(),
-        symbols: shifted.pushedOutSymbols
-      };
-      this.state.matrix = {
-        grid: shifted.newGrid,
-        theme: newTheme
-      };
-      this.state.hand = this.state.hand.filter((card) => card.id !== selectedCard.id);
-      this.state.hand.push(pushedOutCard);
+    const result: ClashResult = {
+      newGrid,
+      scoreDelta: totalScore,
+      replacedCells,
+      insertedCardId: selectedCard.id
+    };
 
-      this.state.currentScore += scoreDelta;
-      this.state.lastResolution = {
-        won: true,
-        result,
-        oldTheme: oldMatrix.theme,
-        newTheme,
-        pushedOutCard,
-        insertedCardId: selectedCard.id,
-        scoreDelta
-      };
-    } else {
-      this.state.hand = this.state.hand.filter((card) => card.id !== selectedCard.id);
-      this.state.lastResolution = {
-        won: false,
-        result,
-        oldTheme: oldMatrix.theme,
-        newTheme,
-        pushedOutCard: null,
-        insertedCardId: selectedCard.id,
-        scoreDelta: 0
-      };
-    }
+    return result;
+  }
 
+  applyClashResult(result: ClashResult): void {
+    this.state.matrix.grid = result.newGrid;
+    this.state.currentScore += result.scoreDelta;
+    this.state.lastClash = result;
+
+    // Remove card from hand
+    this.state.hand = this.state.hand.filter((card) => card.id !== result.insertedCardId);
     this.state.selectedCardId = null;
     this.state.preview = null;
     this.resolveRoundEnd();
@@ -241,8 +178,7 @@ export class GameStore {
 
   shuffleMatrix(): void {
     if (this.state.status !== 'PLAYING' || this.state.shufflesLeft <= 0) return;
-    
-    this.state.matrix = createMatrix(randomGrid());
+    this.state.matrix.grid = randomGrid();
     this.state.shufflesLeft -= 1;
     this.state.preview = null;
     this.state.selectedCardId = null;
@@ -250,7 +186,6 @@ export class GameStore {
 
   dealHand(): void {
     if (this.state.status !== 'PLAYING' || this.state.dealsLeft <= 0) return;
-    
     const count = this.state.hand.length;
     if (count > 0) {
       this.state.hand = Array.from({ length: count }, () => randomCard());
@@ -268,7 +203,7 @@ export class GameStore {
   }
 
   resetGame(): void {
-    const newStore = new GameStore({ initialTargetScore: DEFAULT_CONFIG.initialTargetScore });
+    const newStore = new GameStore();
     this.state = newStore.getState();
   }
 }

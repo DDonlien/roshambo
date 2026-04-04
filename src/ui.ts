@@ -1,5 +1,6 @@
 import { GameStore, KNOWN_ASSETS } from './state';
 import { Card, InsertEdge, RPS } from './types';
+import { gsap } from 'gsap';
 
 const EDGE_ORDER: readonly InsertEdge[] = ['TOP', 'BOTTOM', 'LEFT', 'RIGHT'];
 
@@ -12,7 +13,6 @@ function blockAsset(symbol: RPS): string {
   };
   return `Sketch/BlockType=${nameMap[symbol]}.png`;
 }
-
 
 function cardAsset(card: Card): { src: string; rotate: boolean } {
   const map: Record<RPS, string> = {
@@ -37,19 +37,15 @@ function cardAsset(card: Card): { src: string; rotate: boolean } {
   return { src: `Sketch/CardType=000.png`, rotate: false };
 }
 
-function iconAsset(symbol: RPS): string {
-  if (symbol === RPS.ROCK) return 'Sketch/IconType=Rock.png';
-  if (symbol === RPS.SCISSORS) return 'Sketch/IconType=Scissors.png';
-  if (symbol === RPS.PAPER) return 'Sketch/IconType=Paper.png';
-  return '';
-}
-
 export class GameUI {
   private matrixWrapperElement: HTMLElement | null = null;
   private matrixElement: HTMLElement | null = null;
   private previewBoxElement: HTMLElement | null = null;
   private handElement: HTMLElement | null = null;
-  private heldCardElement: HTMLImageElement | null = null;
+  private lastHandIdStr: string = '';
+  private mouseX: number = 0;
+  private mouseY: number = 0;
+  private isAnimating: boolean = false;
 
   constructor(private readonly store: GameStore, private readonly root: HTMLElement) {}
 
@@ -57,114 +53,24 @@ export class GameUI {
     this.initialRender();
   }
 
-  private setupMouseFollow(): void {
-    let isDragging = false;
-    let dragStartTime = 0;
-
-    window.addEventListener('mousemove', (e) => {
-      if (this.heldCardElement) {
-        this.heldCardElement.style.left = `${e.clientX}px`;
-        this.heldCardElement.style.top = `${e.clientY}px`;
-      }
-      
-      // Update preview based on element under cursor
-      if (this.store.getState().selectedCardId) {
-        const elements = document.elementsFromPoint(e.clientX, e.clientY);
-        const dropZone = elements.find(el => el.classList.contains('drop-zone'));
-        const previewBox = elements.find(el => el.classList.contains('preview-box'));
-        const currentEdge = (this.store as any).storeInternal?.lastPreviewEdge;
-        
-        if (dropZone) {
-          const edge = dropZone.getAttribute('data-edge') as InsertEdge;
-          if (currentEdge !== edge || !this.store.getState().preview) {
-            this.store.updatePreview(edge);
-            this.render();
-          }
-        } else if (previewBox && currentEdge) {
-          // If we are inside the preview box, keep the current preview active
-        } else {
-          if (this.store.getState().preview) {
-            this.store.updatePreview(null);
-            this.render();
-          }
-        }
-      }
-    });
-
-    window.addEventListener('mousedown', (e) => {
-      const cardEl = (e.target as HTMLElement).closest('.card-asset:not(.held)');
-      if (cardEl && cardEl.parentElement === this.handElement) {
-        isDragging = true;
-        dragStartTime = Date.now();
-        // Set immediate position so it doesn't blink in a corner
-        if (this.heldCardElement) {
-          this.heldCardElement.style.left = `${e.clientX}px`;
-          this.heldCardElement.style.top = `${e.clientY}px`;
-        }
-      }
-    });
-
-    window.addEventListener('mouseup', (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      const dragDuration = Date.now() - dragStartTime;
-
-      const elements = document.elementsFromPoint(e.clientX, e.clientY);
-      const dropZone = elements.find(el => el.classList.contains('drop-zone'));
-      const previewBox = elements.find(el => el.classList.contains('preview-box'));
-      
-      if (dropZone) {
-        const edge = dropZone.getAttribute('data-edge') as InsertEdge;
-        this.store.playSelectedToEdge(edge);
-        this.render();
-      } else if (previewBox) {
-        const edge = (this.store as any).storeInternal?.lastPreviewEdge;
-        if (edge) {
-          this.store.playSelectedToEdge(edge);
-          this.render();
-        }
-      } else if (dragDuration > 200) {
-        // If it was a real drag (not a quick click) and we didn't drop on a valid zone, cancel the pick
-        this.store.selectCard('');
-        this.render();
-      }
-    });
-  }
-
   private initialRender(): void {
     this.root.innerHTML = '';
-    this.root.id = 'app'; // Ensure root has the right id for styling
+    this.root.id = 'app';
 
-    const app = this.root;
-
-    // Left Sidebar
     const sidebar = document.createElement('div');
     sidebar.className = 'sidebar';
     sidebar.innerHTML = `
       <div class="sidebar-title">Roshambo!</div>
-      
       <div style="flex: 1"></div>
-
       <div class="score-box">
         <span class="label">SCORE</span>
         <span class="value" id="ui-score">0</span>
       </div>
-
-      <div class="vs-panel">
-        <div class="vs-result" id="ui-vs-result">?</div>
-        <div class="vs-row">
-          <div class="vs-block vs-blue">
-            <span class="val" id="ui-vs-new-power">0</span>
-            <img id="ui-vs-new-icon" src="" style="display:none;" />
-          </div>
-          <div class="vs-text">VS</div>
-          <div class="vs-block vs-red">
-            <img id="ui-vs-old-icon" src="" style="display:none;" />
-            <span class="val" id="ui-vs-old-power">0</span>
-          </div>
+      <div class="vs-panel" style="padding: 10px;">
+        <div class="vs-result" id="ui-clash-score" style="font-size: 1.2rem; color: var(--orange-accent); text-align: center;">
+          CLASH!
         </div>
       </div>
-
       <div class="deck-actions">
         <div class="deck-btn" id="ui-btn-shuffle">
           <span class="label">SHUFFLE</span>
@@ -175,27 +81,22 @@ export class GameUI {
           <div class="val-box"><span class="val red" id="ui-deal-count">4</span></div>
         </div>
       </div>
-
       <div style="flex: 1"></div>
-
       <div class="action-row">
         <button class="btn-end" id="ui-btn-end">END</button>
         <button class="btn-rotate" id="ui-btn-rotate" disabled>Rotate</button>
       </div>
     `;
-    app.appendChild(sidebar);
+    this.root.appendChild(sidebar);
 
-    // Right Play Area
     const playArea = document.createElement('div');
     playArea.className = 'play-area';
     
-    // Relics
     const relics = document.createElement('div');
     relics.className = 'relics-row';
     relics.innerHTML = '<div class="relic-slot"></div><div class="relic-slot"></div>';
     playArea.appendChild(relics);
 
-    // Matrix Wrapper
     const matrixWrapper = document.createElement('div');
     matrixWrapper.className = 'matrix-wrapper';
     this.matrixWrapperElement = matrixWrapper;
@@ -205,309 +106,318 @@ export class GameUI {
     this.matrixElement = matrix;
     matrixWrapper.appendChild(matrix);
 
-    // Drop Zones
     EDGE_ORDER.forEach(edge => {
       const dz = document.createElement('div');
       dz.className = `drop-zone drop-zone-${edge.toLowerCase()}`;
       dz.setAttribute('data-edge', edge);
       
+      // Hover to preview
       dz.addEventListener('mouseenter', () => {
-        this.store.updatePreview(edge);
-        this.render();
+        if (this.isAnimating) return;
+        if (this.store.getState().selectedCardId) {
+          this.store.updatePreview(edge);
+          this.render();
+        }
       });
-      dz.addEventListener('mouseleave', () => {
-        this.store.updatePreview(null);
-        this.render();
-      });
-      dz.addEventListener('click', () => {
-        this.store.playSelectedToEdge(edge);
-        this.render();
-      });
-      
-      matrixWrapper.appendChild(dz);
-    });
 
-    // Preview Bounding Box
+      // Click to confirm
+      dz.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isAnimating) return;
+        if (this.store.getState().selectedCardId) {
+          this.handleClash(edge);
+        }
+      });
+
+      matrixWrapper.appendChild(dz);
+      });
     const previewBox = document.createElement('div');
     previewBox.className = 'preview-box';
-    previewBox.addEventListener('click', () => {
-      const edge = (this.store as any).storeInternal?.lastPreviewEdge;
-      if (edge) {
-        this.store.playSelectedToEdge(edge);
-        this.render();
+    this.previewBoxElement = previewBox;
+    
+    // Click preview box to confirm
+    previewBox.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isAnimating) return;
+      const lastEdge = (this.store as any).storeInternal?.lastPreviewEdge as InsertEdge | null;
+      if (lastEdge) {
+        this.handleClash(lastEdge);
       }
     });
-    this.previewBoxElement = previewBox;
+
     matrixWrapper.appendChild(previewBox);
+
+    matrixWrapper.addEventListener('mouseleave', () => {
+      if (this.isAnimating) return;
+      this.store.updatePreview(null);
+      this.render();
+    });
 
     playArea.appendChild(matrixWrapper);
 
-    // Hand Row
     const handRow = document.createElement('div');
     handRow.className = 'hand-row';
     this.handElement = handRow;
     playArea.appendChild(handRow);
 
-    app.appendChild(playArea);
+    this.root.appendChild(playArea);
 
-    // Held Card
-    const heldCard = document.createElement('img');
-    heldCard.className = 'card-asset held hidden';
-    this.heldCardElement = heldCard;
-    app.appendChild(heldCard);
-
-    // Removed this.root.appendChild(app) since app IS this.root
-
-    // Event Listeners
-    app.querySelector('#ui-btn-rotate')?.addEventListener('click', () => {
-      this.store.flipSelectedCard();
-      this.render();
-    });
-
-    app.querySelector('#ui-btn-end')?.addEventListener('click', () => {
-      this.store.resetGame();
-      this.render();
-    });
-
-    app.querySelector('#ui-btn-shuffle')?.addEventListener('click', () => {
-      const state = this.store.getState();
-      if (state.shufflesLeft > 0 && state.status === 'PLAYING') {
-        this.store.shuffleMatrix();
+    this.root.addEventListener('click', (e) => {
+      if (this.isAnimating) return;
+      const target = e.target as HTMLElement;
+      if (!target.closest('.card-asset') && !target.closest('.drop-zone') && !target.closest('.preview-box') && !target.closest('.sidebar')) {
+        this.store.selectCard(null);
         this.render();
       }
     });
 
-    app.querySelector('#ui-btn-deal')?.addEventListener('click', () => {
-      const state = this.store.getState();
-      if (state.dealsLeft > 0 && state.status === 'PLAYING') {
+    this.root.querySelector('#ui-btn-rotate')?.addEventListener('click', () => {
+      this.store.flipSelectedCard();
+      this.render();
+    });
+    this.root.querySelector('#ui-btn-end')?.addEventListener('click', () => {
+      this.store.resetGame();
+      this.render();
+    });
+    this.root.querySelector('#ui-btn-shuffle')?.addEventListener('click', () => {
+      if (this.store.getState().shufflesLeft > 0) {
+        this.store.shuffleMatrix();
+        this.render();
+      }
+    });
+    this.root.querySelector('#ui-btn-deal')?.addEventListener('click', () => {
+      if (this.store.getState().dealsLeft > 0) {
         this.store.dealHand();
         this.render();
       }
     });
 
-    playArea.addEventListener('click', (e) => {
-      if (e.target === playArea || e.target === handRow) {
-        if (this.store.getState().selectedCardId) {
-          this.store.selectCard('');
-          this.render();
-        }
-      }
+    window.addEventListener('resize', () => this.render());
+    
+    window.addEventListener('mousemove', (e) => {
+      this.mouseX = e.clientX;
+      this.mouseY = e.clientY;
+      this.updateHeldPosition();
     });
 
-    this.setupMouseFollow();
-    window.addEventListener('resize', () => this.render());
     this.render();
   }
 
-  private isPushedOut(r: number, c: number, edge: InsertEdge | null): boolean {
-    if (!edge) return false;
-    if (edge === 'TOP') return r === 2;
-    if (edge === 'BOTTOM') return r === 0;
-    if (edge === 'LEFT') return c === 2;
-    if (edge === 'RIGHT') return c === 0;
-    return false;
+  private async handleClash(edge: InsertEdge): Promise<void> {
+    if (this.isAnimating) return;
+    
+    const result = this.store.playSelectedToEdge(edge);
+    if (!result) return;
+
+    this.isAnimating = true;
+    
+    // Step-by-step animation
+    for (let step = 0; step < 3; step++) {
+      const cellsToUpdate = result.replacedCells.filter(cell => {
+        if (edge === 'TOP') return cell.r === step;
+        if (edge === 'BOTTOM') return cell.r === 2 - step;
+        if (edge === 'LEFT') return cell.c === step;
+        if (edge === 'RIGHT') return cell.c === 2 - step;
+        return false;
+      });
+
+      if (cellsToUpdate.length > 0) {
+        // Calculate punch direction (attacker pushing in)
+        const pushOffset = 40;
+        let startX = 0, startY = 0;
+        if (edge === 'TOP') startY = -pushOffset;
+        if (edge === 'BOTTOM') startY = pushOffset;
+        if (edge === 'LEFT') startX = -pushOffset;
+        if (edge === 'RIGHT') startX = pushOffset;
+
+        cellsToUpdate.forEach(cell => {
+          const index = cell.r * 3 + cell.c;
+          const img = this.matrixElement?.children[index] as HTMLImageElement;
+          if (img) {
+            img.src = blockAsset(result.newGrid[cell.r][cell.c]);
+            gsap.fromTo(img, 
+              { x: startX, y: startY, scale: 1.6, zIndex: 10, filter: 'brightness(2) drop-shadow(0 0 15px rgba(255,152,0,1))' },
+              { x: 0, y: 0, scale: 1, zIndex: 1, filter: 'brightness(1) drop-shadow(0 0 0px rgba(0,0,0,0))', duration: 0.5, ease: "back.out(1.7)" }
+            );
+          }
+        });
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+    this.store.applyClashResult(result);
+    this.isAnimating = false;
+    this.render();
+  }
+
+  private updateHeldPosition(): void {
+    const held = document.querySelector('.card-asset.held') as HTMLElement;
+    if (held) {
+      held.style.left = `${this.mouseX}px`;
+      held.style.top = `${this.mouseY}px`;
+    }
   }
 
   private render(): void {
     const state = this.store.getState();
     const lastPreviewEdge = (this.store as any).storeInternal?.lastPreviewEdge as InsertEdge | null;
-    const selectedCard = state.selectedCardId ? state.hand.find(c => c.id === state.selectedCardId) : null;
 
-    // Sidebar Update
     const scoreEl = document.getElementById('ui-score');
-    if (scoreEl) {
-      const currentScoreStr = scoreEl.textContent;
-      const newScoreStr = state.currentScore.toString();
-      if (currentScoreStr !== newScoreStr && currentScoreStr !== '0') {
-        scoreEl.classList.remove('score-animate');
-        // trigger reflow
-        void scoreEl.offsetWidth;
-        scoreEl.classList.add('score-animate');
-      }
-      scoreEl.textContent = newScoreStr;
-    }
+    if (scoreEl) scoreEl.textContent = state.currentScore.toString();
 
     const shuffleBtn = document.getElementById('ui-btn-shuffle');
     if (shuffleBtn) {
-      const val = shuffleBtn.querySelector('.val');
-      if (val) val.textContent = state.shufflesLeft.toString();
-      if (state.shufflesLeft <= 0 || state.status !== 'PLAYING') {
-        shuffleBtn.classList.add('disabled');
-      } else {
-        shuffleBtn.classList.remove('disabled');
-      }
+      shuffleBtn.querySelector('.val')!.textContent = state.shufflesLeft.toString();
+      state.shufflesLeft <= 0 || state.status !== 'PLAYING' ? shuffleBtn.classList.add('disabled') : shuffleBtn.classList.remove('disabled');
     }
 
     const dealBtn = document.getElementById('ui-btn-deal');
     if (dealBtn) {
-      const val = dealBtn.querySelector('.val');
-      if (val) val.textContent = state.dealsLeft.toString();
-      if (state.dealsLeft <= 0 || state.status !== 'PLAYING') {
-        dealBtn.classList.add('disabled');
+      dealBtn.querySelector('.val')!.textContent = state.dealsLeft.toString();
+      state.dealsLeft <= 0 || state.status !== 'PLAYING' ? dealBtn.classList.add('disabled') : dealBtn.classList.remove('disabled');
+    }
+
+    (document.getElementById('ui-btn-rotate') as HTMLButtonElement).disabled = !state.selectedCardId;
+
+    const clashScoreEl = document.getElementById('ui-clash-score');
+    if (clashScoreEl) {
+      if (state.preview) {
+        clashScoreEl.innerHTML = `GAIN: <span style="color: var(--orange-accent)">+${state.preview.scoreDelta}</span>`;
       } else {
-        dealBtn.classList.remove('disabled');
-      }
-    }
-
-    const rotateBtn = document.getElementById('ui-btn-rotate') as HTMLButtonElement;
-    if (rotateBtn) rotateBtn.disabled = !state.selectedCardId;
-
-    const vsResult = document.getElementById('ui-vs-result');
-    const newPower = document.getElementById('ui-vs-new-power');
-    const newIcon = document.getElementById('ui-vs-new-icon') as HTMLImageElement;
-    const oldPower = document.getElementById('ui-vs-old-power');
-    const oldIcon = document.getElementById('ui-vs-old-icon') as HTMLImageElement;
-
-    if (oldPower && oldIcon) {
-      oldPower.textContent = state.matrix.theme.power.toString();
-      if (state.matrix.theme.element !== RPS.BLANK) {
-        oldIcon.src = iconAsset(state.matrix.theme.element);
-        oldIcon.style.display = 'block';
-      } else {
-        oldIcon.style.display = 'none';
-      }
-    }
-
-    if (state.preview) {
-      if (vsResult) {
-        const result = state.preview.result;
-        if (result === 'WIN') {
-          vsResult.innerHTML = `WIN = <span style="color: var(--orange-accent)">${state.preview.scoreDelta} Points</span>`;
-          vsResult.className = `vs-result win`;
-        } else if (result === 'LOSE') {
-          vsResult.innerHTML = `LOSE = <span style="color: var(--red-accent)">Lose Card</span>`;
-          vsResult.className = `vs-result lose`;
-        } else {
-          vsResult.innerHTML = `DUAL = Get Card`;
-          vsResult.className = `vs-result dual`;
-        }
-      }
-      if (newPower && newIcon) {
-        newPower.textContent = state.preview.newTheme.power.toString();
-        if (state.preview.newTheme.element !== RPS.BLANK) {
-          newIcon.src = iconAsset(state.preview.newTheme.element);
-          newIcon.style.display = 'block';
-        } else {
-          newIcon.style.display = 'none';
-        }
-      }
-    } else {
-      if (vsResult) {
-        vsResult.textContent = '?';
-        vsResult.className = 'vs-result';
-      }
-      if (newPower && newIcon) {
-        newPower.textContent = '?';
-        newIcon.style.display = 'none';
-      }
-    }
-
-    // Right Area Update
-    if (this.matrixWrapperElement) {
-      this.matrixWrapperElement.className = 'matrix-wrapper';
-      if (state.selectedCardId) {
-        this.matrixWrapperElement.classList.add('state-pick');
-      }
-      if (state.preview && lastPreviewEdge) {
-        this.matrixWrapperElement.classList.add('state-preview');
-        if (this.previewBoxElement) {
-          this.previewBoxElement.className = `preview-box preview-${lastPreviewEdge.toLowerCase()}`;
-        }
+        clashScoreEl.textContent = 'LANE CLASH';
       }
     }
 
     // Matrix
+    if (this.matrixWrapperElement) {
+      this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardId ? 'state-pick' : ''} ${state.preview ? 'state-preview' : ''}`;
+      if (this.previewBoxElement) this.previewBoxElement.className = `preview-box preview-${lastPreviewEdge?.toLowerCase() || ''}`;
+    }
+
     if (this.matrixElement) {
       this.matrixElement.innerHTML = '';
+      // Always render the base matrix grid, NOT the preview grid, 
+      // to keep the board stable until animation starts.
+      const gridToRender = state.matrix.grid;
+
       for (let r = 0; r < 3; r++) {
         for (let c = 0; c < 3; c++) {
           const img = document.createElement('img');
-          img.src = blockAsset(state.matrix.grid[r][c]);
-          if (state.preview && lastPreviewEdge && this.isPushedOut(r, c, lastPreviewEdge)) {
-            img.classList.add('pushed-out');
+          img.src = blockAsset(gridToRender[r][c]);
+          // Subtle highlight for lanes that will be affected
+          if (state.preview) {
+            const isReplaced = state.preview.replacedCells.some(cell => cell.r === r && cell.c === c);
+            if (isReplaced) img.style.filter = 'drop-shadow(0 0 5px rgba(255, 152, 0, 0.4))';
           }
           this.matrixElement.appendChild(img);
         }
       }
     }
 
-    // Drop Zones
     EDGE_ORDER.forEach(edge => {
       const dz = this.matrixWrapperElement?.querySelector(`.drop-zone-${edge.toLowerCase()}`) as HTMLElement;
       if (!dz) return;
-      
       dz.innerHTML = '';
-      if (state.preview && lastPreviewEdge === edge && selectedCard) {
-        // Render the attached card inside the drop zone
-        const asset = cardAsset(selectedCard);
-        
-        const cardContainer = document.createElement('div');
-        selectedCard.symbols.forEach(symbol => {
-          const img = document.createElement('img');
-          img.src = blockAsset(symbol);
-          img.style.width = '100%';
-          img.style.height = '100%';
-          img.style.objectFit = 'contain';
-          cardContainer.appendChild(img);
-        });
-        
-        cardContainer.setAttribute('data-flipped', asset.rotate ? 'true' : 'false');
-        dz.appendChild(cardContainer);
-
-        dz.style.borderStyle = 'solid';
-        dz.style.borderColor = 'transparent';
-        dz.style.background = 'transparent';
-      } else {
-        dz.style.borderStyle = '';
-        dz.style.borderColor = '';
-        dz.style.background = '';
+      
+      // Visual Card Attachment: Show the 3 blocks of the card outside the matrix
+      if (state.preview && lastPreviewEdge === edge) {
+        const selectedCard = state.hand.find(c => c.id === state.selectedCardId);
+        if (selectedCard) {
+          const cardContainer = document.createElement('div');
+          selectedCard.symbols.forEach(s => {
+            const img = document.createElement('img');
+            img.src = blockAsset(s);
+            cardContainer.appendChild(img);
+          });
+          // No data-flipped here: symbols are already in order, 
+          // and we want icons to stay upright.
+          dz.appendChild(cardContainer);
+        }
       }
     });
 
-    // Held Card
-    if (this.heldCardElement) {
-      if (state.selectedCardId && !state.preview) {
-        this.heldCardElement.classList.remove('hidden');
-        const asset = cardAsset(selectedCard!);
-        this.heldCardElement.src = asset.src;
-        // Keep it visible and slightly tilted when held
-        this.heldCardElement.style.transform = `translate(-50%, -50%) rotate(${asset.rotate ? 175 : -5}deg)`;
-      } else {
-        this.heldCardElement.classList.add('hidden');
-      }
-    }
-
-    // Hand
+    // Hand Cards
     if (this.handElement) {
-      this.handElement.innerHTML = '';
+      const currentHandIdStr = state.hand.map(c => c.id).join(',');
+      const handChanged = currentHandIdStr !== this.lastHandIdStr;
+
+      if (handChanged) {
+        this.handElement.innerHTML = '';
+        this.lastHandIdStr = currentHandIdStr;
+
+        state.hand.forEach((card) => {
+          const img = document.createElement('img');
+          img.className = 'card-asset';
+          img.setAttribute('data-card-id', card.id);
+          const asset = cardAsset(card);
+          img.src = asset.src;
+
+          img.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (state.selectedCardId === card.id) {
+              this.store.selectCard(null);
+            } else {
+              this.store.selectCard(card.id);
+            }
+            this.render();
+          });
+
+          this.handElement!.appendChild(img);
+        });
+      }
+
       const cardCount = state.hand.length;
-      state.hand.forEach((card, index) => {
-        const img = document.createElement('img');
-        img.className = `card-asset ${state.selectedCardId === card.id ? 'hidden' : ''}`;
+      Array.from(this.handElement.children).forEach((el, index) => {
+        const img = el as HTMLImageElement;
+        const card = state.hand[index];
         const asset = cardAsset(card);
         img.src = asset.src;
         
-        const angleStep = 6;
+        const isSelected = state.selectedCardId === card.id;
+        const isAttached = isSelected && state.preview !== null;
+        const isHeld = isSelected && state.preview === null;
+
+        if (isAttached) {
+          img.className = 'card-asset hidden';
+        } else if (isHeld) {
+          img.className = 'card-asset held';
+          img.style.left = `${this.mouseX}px`;
+          img.style.top = `${this.mouseY}px`;
+        } else {
+          img.className = `card-asset ${isSelected ? 'selected' : ''}`;
+        }
+
+        const angleStep = 10;
         const startAngle = -((cardCount - 1) * angleStep) / 2;
         const angle = startAngle + index * angleStep;
-        const vh = window.innerHeight;
-        const vw = window.innerWidth;
-        const vmin = Math.min(vh, vw);
+        const vmin = Math.min(window.innerHeight, window.innerWidth);
+        const fanX = Math.sin(angle * Math.PI / 180) * (vmin * 0.15);
+        const fanY = (1 - Math.cos(angle * Math.PI / 180)) * (vmin * 0.04);
         
-        const x = Math.sin(angle * Math.PI / 180) * (vmin * 0.08);
-        const y = (1 - Math.cos(angle * Math.PI / 180)) * (vmin * 0.02);
-        
-        const transformStr = `rotate(${angle}deg) translate(${x}px, ${y}px) ${asset.rotate ? 'rotate(180deg) translateY(100%)' : ''}`;
-        img.style.transform = transformStr;
-        img.style.zIndex = `${index}`;
-
-        img.addEventListener('mousedown', (e) => {
-          e.stopPropagation();
-          this.store.selectCard(card.id);
-          this.render();
-        });
-
-        this.handElement!.appendChild(img);
+        if (!isHeld && !isAttached) {
+          gsap.to(img, {
+            rotation: angle + (asset.rotate ? 180 : 0),
+            x: fanX,
+            y: fanY,
+            xPercent: 0,
+            yPercent: 0,
+            transformOrigin: "50% 50%",
+            zIndex: isSelected ? 1000 : index,
+            clearProps: "left,top,position",
+            duration: 0.2
+          });
+        } else if (isHeld) {
+          gsap.set(img, { 
+            rotation: asset.rotate ? 180 : 0, 
+            zIndex: 2000,
+            xPercent: -50,
+            yPercent: -50,
+            transformOrigin: "50% 50%",
+            x: 0,
+            y: 0
+          });
+        }
       });
     }
 
@@ -525,15 +435,9 @@ export class GameUI {
           </div>
         `;
         this.root.appendChild(overlay);
-        overlay.querySelector('#restart-btn')?.addEventListener('click', () => {
-          this.store.resetGame();
-          this.render();
-        });
+        overlay.querySelector('#restart-btn')?.addEventListener('click', () => { this.store.resetGame(); this.render(); });
       }
-      const scoreText = overlay.querySelector('#final-score-text');
-      if (scoreText) scoreText.textContent = `Final Score: ${state.currentScore}`;
-    } else if (overlay) {
-      overlay.remove();
-    }
+      (overlay.querySelector('#final-score-text') as HTMLElement).textContent = `Final Score: ${state.currentScore}`;
+    } else if (overlay) overlay.remove();
   }
 }
