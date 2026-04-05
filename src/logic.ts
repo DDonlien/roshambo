@@ -17,13 +17,36 @@ const SCORE_WEIGHTS: Record<RPS, number> = {
 export interface LaneResult {
   newGrid: RPS[][];
   totalScore: number;
+  penalty: number;
+  laneScores: number[];
   replacedCells: { r: number; c: number }[];
+  shiftedLanes: { index: number; type: 'row' | 'col'; direction: 1 | -1 }[];
 }
 
 /**
- * Performs the Lane Penetration Clash logic.
- * For each of the 3 symbols on the card, it clashes with the matrix cells in that lane.
+ * Shifts a row or column in the grid with loopback.
  */
+function shiftLane(grid: RPS[][], index: number, type: 'row' | 'col', direction: 1 | -1): void {
+  if (type === 'row') {
+    const row = grid[index];
+    if (direction === 1) {
+      const last = row[2];
+      row[2] = row[1]; row[1] = row[0]; row[0] = last;
+    } else {
+      const first = row[0];
+      row[0] = row[1]; row[1] = row[2]; row[2] = first;
+    }
+  } else {
+    if (direction === 1) {
+      const last = grid[2][index];
+      grid[2][index] = grid[1][index]; grid[1][index] = grid[0][index]; grid[0][index] = last;
+    } else {
+      const first = grid[0][index];
+      grid[0][index] = grid[1][index]; grid[1][index] = grid[2][index]; grid[2][index] = first;
+    }
+  }
+}
+
 export function executeLaneClash(
   currentGrid: RPS[][],
   edge: InsertEdge,
@@ -31,59 +54,63 @@ export function executeLaneClash(
 ): LaneResult {
   const newGrid = currentGrid.map(row => [...row]);
   let totalScore = 0;
+  let penalty = 0;
+  const laneScores: number[] = [0, 0, 0];
   const replacedCells: { r: number; c: number }[] = [];
-
-  // Define lanes based on edge
-  // TOP: Card is horizontal, symbols[0..2] match cols[0..2], moves TOP -> BOTTOM (rows 0->1->2)
-  // BOTTOM: Card is horizontal, symbols[0..2] match cols[0..2], moves BOTTOM -> TOP (rows 2->1->0)
-  // LEFT: Card is vertical, symbols[0..2] match rows[0..2], moves LEFT -> RIGHT (cols 0->1->2)
-  // RIGHT: Card is vertical, symbols[0..2] match rows[0..2], moves RIGHT -> LEFT (cols 2->1->0)
+  const shiftedLanes: { index: number; type: 'row' | 'col'; direction: 1 | -1 }[] = [];
 
   for (let i = 0; i < 3; i++) {
     const attacker = card.symbols[i];
-    if (attacker === RPS.BLANK) continue;
+    let r = 0, c = 0, dr = 0, dc = 0;
 
-    let r = 0, c = 0;
-    let dr = 0, dc = 0;
+    if (edge === 'TOP') { r = 0; c = i; dr = 1; dc = 0; }
+    else if (edge === 'BOTTOM') { r = 2; c = i; dr = -1; dc = 0; }
+    else if (edge === 'LEFT') { r = i; c = 0; dr = 0; dc = 1; }
+    else if (edge === 'RIGHT') { r = i; c = 2; dr = 0; dc = -1; }
 
-    if (edge === 'TOP') {
-      r = 0; c = i; dr = 1; dc = 0;
-    } else if (edge === 'BOTTOM') {
-      r = 2; c = i; dr = -1; dc = 0;
-    } else if (edge === 'LEFT') {
-      r = i; c = 0; dr = 0; dc = 1;
-    } else if (edge === 'RIGHT') {
-      r = i; c = 2; dr = 0; dc = -1;
+    const defender = newGrid[r][c];
+    
+    // NEW RULE: BLANK attacker loses to ANY non-BLANK defender.
+    const attackerLoses = defender !== RPS.BLANK && (attacker === RPS.BLANK || WIN_MAP[defender] === attacker);
+
+    if (attackerLoses) {
+      const deduction = SCORE_WEIGHTS[defender];
+      if (attacker !== RPS.BLANK) {
+        penalty += deduction;
+      }
+      if (edge === 'LEFT' || edge === 'RIGHT') {
+        const shiftDir: 1 | -1 = edge === 'LEFT' ? -1 : 1;
+        shiftLane(newGrid, i, 'row', shiftDir);
+        shiftedLanes.push({ index: i, type: 'row', direction: shiftDir });
+      } else {
+        const shiftDir: 1 | -1 = edge === 'TOP' ? -1 : 1;
+        shiftLane(newGrid, i, 'col', shiftDir);
+        shiftedLanes.push({ index: i, type: 'col', direction: shiftDir });
+      }
+      continue;
     }
 
-    // Clash through the lane
+    if (attacker === RPS.BLANK) continue;
+
     for (let step = 0; step < 3; step++) {
-      const defender = newGrid[r][c];
-      
-      // RPS Check: Does Attacker beat Defender?
-      // Special Rule: If Defender is BLANK, Attacker always wins? 
-      // Requirement says "RPS single-player判定". Usually RPS rules: Rock beats Scissors, etc.
-      // If Blank is considered a "symbol", and its WIN_MAP is null, it beats nothing.
-      // But usually in these games, Blank is an easy target.
-      const attackerWins = (WIN_MAP[attacker] === defender) || (defender === RPS.BLANK);
+      const currentDefender = newGrid[r][c];
+      const attackerWins = (WIN_MAP[attacker] === currentDefender) || (currentDefender === RPS.BLANK);
 
       if (attackerWins) {
-        // WIN: Replace, add score, move forward
-        totalScore += SCORE_WEIGHTS[defender];
+        const gain = SCORE_WEIGHTS[currentDefender];
+        totalScore += gain;
+        laneScores[i] += gain;
         newGrid[r][c] = attacker;
         replacedCells.push({ r, c });
-        
-        r += dr;
-        c += dc;
-        if (r < 0 || r > 2 || c < 0 || c > 2) break; // Reached boundary
+        r += dr; c += dc;
+        if (r < 0 || r > 2 || c < 0 || c > 2) break;
       } else {
-        // TIE or LOSE: Stop lane
         break;
       }
     }
   }
 
-  return { newGrid, totalScore, replacedCells };
+  return { newGrid, totalScore, penalty, laneScores, replacedCells, shiftedLanes };
 }
 
 export function createEmptyGrid(): RPS[][] {

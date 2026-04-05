@@ -1,8 +1,15 @@
 import { GameStore, KNOWN_ASSETS } from './state';
-import { Card, InsertEdge, RPS } from './types';
+import { Card, InsertEdge, RPS, ClashResult } from './types';
 import { gsap } from 'gsap';
 
 const EDGE_ORDER: readonly InsertEdge[] = ['TOP', 'BOTTOM', 'LEFT', 'RIGHT'];
+
+const SCORE_WEIGHTS: Record<RPS, number> = {
+  [RPS.ROCK]: 4,
+  [RPS.SCISSORS]: 3,
+  [RPS.PAPER]: 1,
+  [RPS.BLANK]: 0
+};
 
 function blockAsset(symbol: RPS): string {
   const nameMap: Record<RPS, string> = {
@@ -42,7 +49,6 @@ export class GameUI {
   private matrixElement: HTMLElement | null = null;
   private previewBoxElement: HTMLElement | null = null;
   private handElement: HTMLElement | null = null;
-  private lastHandIdStr: string = '';
   private mouseX: number = 0;
   private mouseY: number = 0;
   private isAnimating: boolean = false;
@@ -55,7 +61,10 @@ export class GameUI {
 
   private initialRender(): void {
     this.root.innerHTML = '';
-    this.root.id = 'app';
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.width = '100%';
+    container.style.height = '100%';
 
     const sidebar = document.createElement('div');
     sidebar.className = 'sidebar';
@@ -63,13 +72,20 @@ export class GameUI {
       <div class="sidebar-title">Roshambo!</div>
       <div style="flex: 1"></div>
       <div class="score-box">
+        <span class="label">LEVEL</span>
+        <span class="value" id="ui-level">1/3</span>
+      </div>
+      <div class="score-box">
+        <span class="label">GOAL</span>
+        <span class="value" id="ui-goal">100</span>
+      </div>
+      <div class="score-box">
         <span class="label">SCORE</span>
         <span class="value" id="ui-score">0</span>
       </div>
-      <div class="vs-panel" style="padding: 10px;">
-        <div class="vs-result" id="ui-clash-score" style="font-size: 1.2rem; color: var(--orange-accent); text-align: center;">
-          CLASH!
-        </div>
+      <div class="score-box" style="border-left: 4px solid #FFD700;">
+        <span class="label" style="color: #FFD700;">GOLD</span>
+        <span class="value" id="ui-gold" style="color: #FFD700;">0</span>
       </div>
       <div class="deck-actions">
         <div class="deck-btn" id="ui-btn-shuffle">
@@ -81,17 +97,22 @@ export class GameUI {
           <div class="val-box"><span class="val red" id="ui-deal-count">4</span></div>
         </div>
       </div>
-      <div style="flex: 1"></div>
+      <div class="vs-panel" style="padding: 10px;">
+        <div class="vs-result" id="ui-clash-score" style="font-size: 1.2rem; color: var(--orange-accent); text-align: center;">
+          LANE CLASH
+        </div>
+      </div>
       <div class="action-row">
         <button class="btn-end" id="ui-btn-end">END</button>
-        <button class="btn-rotate" id="ui-btn-rotate" disabled>Rotate</button>
+        <button class="btn-rotate" id="ui-btn-rotate">Rotate</button>
       </div>
     `;
-    this.root.appendChild(sidebar);
+    container.appendChild(sidebar);
 
     const playArea = document.createElement('div');
     playArea.className = 'play-area';
-    
+    container.appendChild(playArea);
+
     const relics = document.createElement('div');
     relics.className = 'relics-row';
     relics.innerHTML = '<div class="relic-slot"></div><div class="relic-slot"></div>';
@@ -111,7 +132,6 @@ export class GameUI {
       dz.className = `drop-zone drop-zone-${edge.toLowerCase()}`;
       dz.setAttribute('data-edge', edge);
       
-      // Hover to preview
       dz.addEventListener('mouseenter', () => {
         if (this.isAnimating) return;
         if (this.store.getState().selectedCardId) {
@@ -120,7 +140,6 @@ export class GameUI {
         }
       });
 
-      // Click to confirm
       dz.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isAnimating) return;
@@ -130,12 +149,12 @@ export class GameUI {
       });
 
       matrixWrapper.appendChild(dz);
-      });
+    });
+
     const previewBox = document.createElement('div');
     previewBox.className = 'preview-box';
     this.previewBoxElement = previewBox;
     
-    // Click preview box to confirm
     previewBox.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.isAnimating) return;
@@ -146,30 +165,30 @@ export class GameUI {
     });
 
     matrixWrapper.appendChild(previewBox);
-
-    matrixWrapper.addEventListener('mouseleave', () => {
-      if (this.isAnimating) return;
-      this.store.updatePreview(null);
-      this.render();
-    });
-
     playArea.appendChild(matrixWrapper);
 
-    const handRow = document.createElement('div');
-    handRow.className = 'hand-row';
-    this.handElement = handRow;
-    playArea.appendChild(handRow);
+    const bottomArea = document.createElement('div');
+    bottomArea.className = 'bottom-area';
+    
+    const deckPile = document.createElement('div');
+    deckPile.className = 'pile-icon';
+    deckPile.id = 'ui-deck-pile';
+    deckPile.innerHTML = `<span class="pile-count" id="ui-deck-count">0</span><span class="pile-label">DECK</span>`;
+    bottomArea.appendChild(deckPile);
 
-    this.root.appendChild(playArea);
+    const hand = document.createElement('div');
+    hand.className = 'hand-row';
+    this.handElement = hand;
+    bottomArea.appendChild(hand);
 
-    this.root.addEventListener('click', (e) => {
-      if (this.isAnimating) return;
-      const target = e.target as HTMLElement;
-      if (!target.closest('.card-asset') && !target.closest('.drop-zone') && !target.closest('.preview-box') && !target.closest('.sidebar')) {
-        this.store.selectCard(null);
-        this.render();
-      }
-    });
+    const discardPile = document.createElement('div');
+    discardPile.className = 'pile-icon';
+    discardPile.id = 'ui-discard-pile';
+    discardPile.innerHTML = `<span class="pile-count" id="ui-discard-count">0</span><span class="pile-label">WASTED</span>`;
+    bottomArea.appendChild(discardPile);
+
+    playArea.appendChild(bottomArea);
+    this.root.appendChild(container);
 
     this.root.querySelector('#ui-btn-rotate')?.addEventListener('click', () => {
       this.store.flipSelectedCard();
@@ -193,7 +212,6 @@ export class GameUI {
     });
 
     window.addEventListener('resize', () => this.render());
-    
     window.addEventListener('mousemove', (e) => {
       this.mouseX = e.clientX;
       this.mouseY = e.clientY;
@@ -206,90 +224,228 @@ export class GameUI {
   private async handleClash(edge: InsertEdge): Promise<void> {
     if (this.isAnimating) return;
     
+    const state = this.store.getState();
+    const selectedCard = state.hand.find(c => c.id === state.selectedCardId);
+    if (!selectedCard) return;
+
     const result = this.store.playSelectedToEdge(edge);
     if (!result) return;
 
     this.isAnimating = true;
     
-    // Step-by-step animation
-    for (let step = 0; step < 3; step++) {
-      const cellsToUpdate = result.replacedCells.filter(cell => {
-        if (edge === 'TOP') return cell.r === step;
-        if (edge === 'BOTTOM') return cell.r === 2 - step;
-        if (edge === 'LEFT') return cell.c === step;
-        if (edge === 'RIGHT') return cell.c === 2 - step;
+    const dz = this.matrixWrapperElement?.querySelector(`.drop-zone-${edge.toLowerCase()}`) as HTMLElement;
+    const dzBlocks = dz ? Array.from(dz.querySelectorAll('img')) : [];
+    
+    const lanes: number[][] = [];
+    for (let i = 0; i < 3; i++) {
+      const indices: number[] = [];
+      for (let step = 0; step < 3; step++) {
+        let r = 0, c = 0;
+        if (edge === 'TOP') { r = step; c = i; }
+        else if (edge === 'BOTTOM') { r = 2 - step; c = i; }
+        else if (edge === 'LEFT') { r = i; c = step; }
+        else if (edge === 'RIGHT') { r = i; c = 2 - step; }
+        indices.push(r * 3 + c);
+      }
+      lanes.push(indices);
+    }
+
+    let visualScore = state.currentScore;
+
+    for (let i = 0; i < 3; i++) {
+      const laneIndices = lanes[i];
+      const attackerBlock = dzBlocks[i];
+      
+      const firstCellIdx = laneIndices[0];
+      const firstCellPos = { r: Math.floor(firstCellIdx / 3), c: firstCellIdx % 3 };
+      
+      const laneShift = result.shiftedLanes?.find(s => {
+        if (edge === 'TOP' || edge === 'BOTTOM') return s.type === 'col' && s.index === i;
+        if (edge === 'LEFT' || edge === 'RIGHT') return s.type === 'row' && s.index === i;
         return false;
       });
 
-      if (cellsToUpdate.length > 0) {
-        // Calculate punch direction (attacker pushing in)
-        const pushOffset = 40;
-        let startX = 0, startY = 0;
-        if (edge === 'TOP') startY = -pushOffset;
-        if (edge === 'BOTTOM') startY = pushOffset;
-        if (edge === 'LEFT') startX = -pushOffset;
-        if (edge === 'RIGHT') startX = pushOffset;
+      if (laneShift && attackerBlock) {
+        const firstCell = this.matrixElement?.children[firstCellIdx] as HTMLElement;
+        const startRect = attackerBlock.getBoundingClientRect();
+        const endRect = firstCell.getBoundingClientRect();
+        
+        let localDx = endRect.left - startRect.left;
+        let localDy = endRect.top - startRect.top;
+        if (edge === 'TOP' || edge === 'BOTTOM') {
+          localDx = -(endRect.top - startRect.top);
+          localDy = (endRect.left - startRect.left);
+        }
 
-        cellsToUpdate.forEach(cell => {
-          const index = cell.r * 3 + cell.c;
-          const img = this.matrixElement?.children[index] as HTMLImageElement;
-          if (img) {
-            img.src = blockAsset(result.newGrid[cell.r][cell.c]);
-            gsap.fromTo(img, 
-              { x: startX, y: startY, scale: 1.6, zIndex: 10, filter: 'brightness(2) drop-shadow(0 0 15px rgba(255,152,0,1))' },
-              { x: 0, y: 0, scale: 1, zIndex: 1, filter: 'brightness(1) drop-shadow(0 0 0px rgba(0,0,0,0))', duration: 0.5, ease: "back.out(1.7)" }
-            );
+        const tl = gsap.timeline();
+        await tl.to(attackerBlock, { x: localDx * 0.4, y: localDy * 0.4, duration: 0.15, ease: "power2.out" })
+                .to(attackerBlock, { x: -localDx * 0.2, y: -localDy * 0.2, duration: 0.25, ease: "elastic.out(1, 0.3)" });
+
+        gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: 0.3, ease: "power2.in" });
+
+        gsap.fromTo(firstCell, { filter: 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' }, { filter: 'none', duration: 0.5 });
+
+        const penaltyVal = SCORE_WEIGHTS[state.matrix.grid[firstCellPos.r][firstCellPos.c]];
+        if (penaltyVal > 0) {
+          this.showScorePopup(-penaltyVal, firstCellIdx, true);
+          visualScore -= penaltyVal;
+          const scoreVal = document.getElementById('ui-score');
+          if (scoreVal) {
+            scoreVal.textContent = visualScore.toString();
+            gsap.fromTo(scoreVal, { scale: 1.4, color: "#F44336", x: 5 }, { scale: 1, color: "#FFF", x: 0, duration: 0.3 });
           }
+        }
+
+        const laneCells = laneIndices.map(idx => this.matrixElement?.children[idx] as HTMLElement);
+        const shiftAmount = (edge === 'TOP' || edge === 'BOTTOM') ? (this.matrixElement!.offsetWidth / 3 + 8) : (this.matrixElement!.offsetHeight / 3 + 8);
+        let sx = 0, sy = 0;
+        if (laneShift.type === 'row') sx = laneShift.direction * shiftAmount;
+        else sy = laneShift.direction * shiftAmount;
+
+        const shiftPromises = laneCells.map(cell => gsap.to(cell, { x: sx, y: sy, duration: 0.4, ease: "power2.inOut", onComplete: () => gsap.set(cell, { x: 0, y: 0 }) }));
+        await Promise.all(shiftPromises);
+        
+        laneIndices.forEach(idx => {
+          const r = Math.floor(idx / 3); const c = idx % 3;
+          (this.matrixElement?.children[idx] as HTMLImageElement).src = blockAsset(result.newGrid[r][c]);
         });
-        await new Promise(resolve => setTimeout(resolve, 250));
+        continue;
       }
+
+      const laneStartsWinning = result.replacedCells.some(c => c.r === firstCellPos.r && c.c === firstCellPos.c);
+
+      if (laneStartsWinning && attackerBlock) {
+        const firstCell = this.matrixElement?.children[firstCellIdx] as HTMLElement;
+        if (firstCell) {
+          const startRect = attackerBlock.getBoundingClientRect();
+          const endRect = firstCell.getBoundingClientRect();
+          let localDx = endRect.left - startRect.left;
+          let localDy = endRect.top - startRect.top;
+          if (edge === 'TOP' || edge === 'BOTTOM') { localDx = -(endRect.top - startRect.top); localDy = (endRect.left - startRect.left); }
+          await gsap.to(attackerBlock, { x: localDx, y: localDy, duration: 0.4, ease: "back.inOut(2)" });
+        }
+      } else if (attackerBlock) {
+        gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: 0.4, ease: "power2.in" });
+        await new Promise(r => setTimeout(r, 200));
+      }
+
+      for (let step = 0; step < 3; step++) {
+        const index = laneIndices[step];
+        const cellPos = { r: Math.floor(index / 3), c: index % 3 };
+        if (!result.replacedCells.some(c => c.r === cellPos.r && c.c === cellPos.c)) break;
+
+        const img = this.matrixElement?.children[index] as HTMLImageElement;
+        const defenderSymbol = state.matrix.grid[cellPos.r][cellPos.c];
+        const gain = SCORE_WEIGHTS[defenderSymbol];
+
+        if (img) {
+          const smash = 60; let sx = 0, sy = 0;
+          if (edge === 'TOP') sy = -smash; else if (edge === 'BOTTOM') sy = smash;
+          else if (edge === 'LEFT') sx = -smash; else if (edge === 'RIGHT') sx = smash;
+
+          img.src = blockAsset(result.newGrid[cellPos.r][cellPos.c]);
+          gsap.fromTo(img, 
+            { x: sx, y: sy, scale: 2.2, zIndex: 100, filter: 'brightness(3) contrast(1.2) drop-shadow(0 0 30px rgba(255,160,0,1))' },
+            { x: 0, y: 0, scale: 1, zIndex: 1, filter: 'brightness(1) contrast(1) drop-shadow(0 0 0px rgba(0,0,0,0))', duration: 0.4, ease: "back.out(2.5)" }
+          );
+
+          if (gain > 0) {
+            this.showScorePopup(gain, index);
+            visualScore += gain;
+            const scoreVal = document.getElementById('ui-score');
+            if (scoreVal) {
+              scoreVal.textContent = visualScore.toString();
+              gsap.fromTo(scoreVal, { scale: 1.4, color: "#FF9800", x: -5 }, { scale: 1, color: "#FFF", x: 0, duration: 0.3 });
+            }
+          }
+        }
+        await new Promise(r => setTimeout(r, 500));
+      }
+      await new Promise(r => setTimeout(r, 300));
     }
 
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(r => setTimeout(r, 300));
     this.store.applyClashResult(result);
     this.isAnimating = false;
     this.render();
   }
 
+  private showScorePopup(score: number, matrixIndex: number, isPenalty: boolean = false): void {
+    const tile = this.matrixElement?.children[matrixIndex] as HTMLElement;
+    if (!tile) return;
+    const popup = document.createElement('div');
+    popup.className = 'score-popup';
+    popup.textContent = score > 0 ? `+${score}` : `${score}`;
+    if (isPenalty) {
+      popup.style.color = '#F44336';
+      popup.style.textShadow = '0 0 10px rgba(0,0,0,0.9), 0 0 20px rgba(244, 67, 54, 0.6)';
+    }
+    document.body.appendChild(popup);
+    const rect = tile.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    gsap.set(popup, { left: 0, top: 0, x, y, scale: 0, opacity: 1, xPercent: -50, yPercent: -50 });
+    gsap.to(popup, { scale: 1.5, y: y - 100, duration: 0.8, ease: "back.out(2)" });
+    gsap.to(popup, { opacity: 0, delay: 0.6, duration: 0.4, onComplete: () => popup.remove() });
+  }
+
   private updateHeldPosition(): void {
     const held = document.querySelector('.card-asset.held') as HTMLElement;
-    if (held) {
-      held.style.left = `${this.mouseX}px`;
-      held.style.top = `${this.mouseY}px`;
-    }
+    if (held) { held.style.left = `${this.mouseX}px`; held.style.top = `${this.mouseY}px`; }
+  }
+
+  private showPileModal(type: 'DECK' | 'DISCARD'): void {
+    const state = this.store.getState();
+    const cards = type === 'DECK' ? state.deck : state.discardPile;
+    const title = type === 'DECK' ? 'Deck' : 'Wasted Cards';
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal-content pile-view">
+        <div class="modal-header"><h2>${title} (${cards.length})</h2><button class="close-btn">&times;</button></div>
+        <div class="pile-grid">
+          ${cards.map(card => `<div class="pile-card-item"><img src="${cardAsset(card).src}"></div>`).join('')}
+          ${cards.length === 0 ? '<p style="color:#888; grid-column: 1/-1;">No cards here yet.</p>' : ''}
+        </div>
+      </div>
+    `;
+    this.root.appendChild(overlay);
+    overlay.querySelector('.close-btn')?.addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
   }
 
   private render(): void {
     const state = this.store.getState();
     const lastPreviewEdge = (this.store as any).storeInternal?.lastPreviewEdge as InsertEdge | null;
 
-    const scoreEl = document.getElementById('ui-score');
-    if (scoreEl) scoreEl.textContent = state.currentScore.toString();
+    const levelEl = document.getElementById('ui-level'); if (levelEl) levelEl.textContent = `${state.currentLevel}/3`;
+    const goalEl = document.getElementById('ui-goal'); if (goalEl) goalEl.textContent = state.levelGoal.toString();
+    const scoreEl = document.getElementById('ui-score'); if (scoreEl) scoreEl.textContent = state.currentScore.toString();
+    const goldEl = document.getElementById('ui-gold'); if (goldEl) goldEl.textContent = state.gold.toString();
 
     const shuffleBtn = document.getElementById('ui-btn-shuffle');
     if (shuffleBtn) {
       shuffleBtn.querySelector('.val')!.textContent = state.shufflesLeft.toString();
       state.shufflesLeft <= 0 || state.status !== 'PLAYING' ? shuffleBtn.classList.add('disabled') : shuffleBtn.classList.remove('disabled');
     }
-
+    const deckIcon = document.getElementById('ui-deck-pile'); if (deckIcon) deckIcon.onclick = () => this.showPileModal('DECK');
+    const discardIcon = document.getElementById('ui-discard-pile'); if (discardIcon) discardIcon.onclick = () => this.showPileModal('DISCARD');
     const dealBtn = document.getElementById('ui-btn-deal');
     if (dealBtn) {
       dealBtn.querySelector('.val')!.textContent = state.dealsLeft.toString();
-      state.dealsLeft <= 0 || state.status !== 'PLAYING' ? dealBtn.classList.add('disabled') : dealBtn.classList.remove('disabled');
+      (state.dealsLeft <= 0 || state.status !== 'PLAYING' || state.deck.length === 0) ? dealBtn.classList.add('disabled') : dealBtn.classList.remove('disabled');
     }
-
     (document.getElementById('ui-btn-rotate') as HTMLButtonElement).disabled = !state.selectedCardId;
+    const deckCountEl = document.getElementById('ui-deck-count'); if (deckCountEl) deckCountEl.textContent = state.deck.length.toString();
+    const discardCountEl = document.getElementById('ui-discard-count'); if (discardCountEl) discardCountEl.textContent = state.discardPile.length.toString();
 
     const clashScoreEl = document.getElementById('ui-clash-score');
     if (clashScoreEl) {
-      if (state.preview) {
-        clashScoreEl.innerHTML = `GAIN: <span style="color: var(--orange-accent)">+${state.preview.scoreDelta}</span>`;
-      } else {
-        clashScoreEl.textContent = 'LANE CLASH';
-      }
+      if (state.preview && !this.isAnimating) clashScoreEl.textContent = 'LANE CLASH';
+      else if (state.preview && this.isAnimating) clashScoreEl.innerHTML = `GAIN: <span style="color: var(--orange-accent)">+${state.preview.scoreDelta}</span>`;
+      else clashScoreEl.textContent = 'LANE CLASH';
     }
 
-    // Matrix
     if (this.matrixWrapperElement) {
       this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardId ? 'state-pick' : ''} ${state.preview ? 'state-preview' : ''}`;
       if (this.previewBoxElement) this.previewBoxElement.className = `preview-box preview-${lastPreviewEdge?.toLowerCase() || ''}`;
@@ -297,18 +453,13 @@ export class GameUI {
 
     if (this.matrixElement) {
       this.matrixElement.innerHTML = '';
-      // Always render the base matrix grid, NOT the preview grid, 
-      // to keep the board stable until animation starts.
       const gridToRender = state.matrix.grid;
-
       for (let r = 0; r < 3; r++) {
         for (let c = 0; c < 3; c++) {
           const img = document.createElement('img');
           img.src = blockAsset(gridToRender[r][c]);
-          // Subtle highlight for lanes that will be affected
           if (state.preview) {
-            const isReplaced = state.preview.replacedCells.some(cell => cell.r === r && cell.c === c);
-            if (isReplaced) img.style.filter = 'drop-shadow(0 0 5px rgba(255, 152, 0, 0.4))';
+            if (state.preview.replacedCells.some(cell => cell.r === r && cell.c === c)) img.style.filter = 'drop-shadow(0 0 5px rgba(255, 152, 0, 0.4))';
           }
           this.matrixElement.appendChild(img);
         }
@@ -317,127 +468,85 @@ export class GameUI {
 
     EDGE_ORDER.forEach(edge => {
       const dz = this.matrixWrapperElement?.querySelector(`.drop-zone-${edge.toLowerCase()}`) as HTMLElement;
-      if (!dz) return;
-      dz.innerHTML = '';
-      
-      // Visual Card Attachment: Show the 3 blocks of the card outside the matrix
+      if (!dz) return; dz.innerHTML = '';
       if (state.preview && lastPreviewEdge === edge) {
         const selectedCard = state.hand.find(c => c.id === state.selectedCardId);
         if (selectedCard) {
           const cardContainer = document.createElement('div');
-          selectedCard.symbols.forEach(s => {
-            const img = document.createElement('img');
-            img.src = blockAsset(s);
-            cardContainer.appendChild(img);
-          });
-          // No data-flipped here: symbols are already in order, 
-          // and we want icons to stay upright.
+          selectedCard.symbols.forEach(s => { const img = document.createElement('img'); img.src = blockAsset(s); cardContainer.appendChild(img); });
           dz.appendChild(cardContainer);
         }
       }
     });
 
-    // Hand Cards
-    if (this.handElement) {
-      const currentHandIdStr = state.hand.map(c => c.id).join(',');
-      const handChanged = currentHandIdStr !== this.lastHandIdStr;
+    this.renderHand(state);
 
-      if (handChanged) {
-        this.handElement.innerHTML = '';
-        this.lastHandIdStr = currentHandIdStr;
-
-        state.hand.forEach((card) => {
-          const img = document.createElement('img');
-          img.className = 'card-asset';
-          img.setAttribute('data-card-id', card.id);
-          const asset = cardAsset(card);
-          img.src = asset.src;
-
-          img.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (state.selectedCardId === card.id) {
-              this.store.selectCard(null);
-            } else {
-              this.store.selectCard(card.id);
-            }
-            this.render();
-          });
-
-          this.handElement!.appendChild(img);
-        });
-      }
-
-      const cardCount = state.hand.length;
-      Array.from(this.handElement.children).forEach((el, index) => {
-        const img = el as HTMLImageElement;
-        const card = state.hand[index];
-        const asset = cardAsset(card);
-        img.src = asset.src;
-        
-        const isSelected = state.selectedCardId === card.id;
-        const isAttached = isSelected && state.preview !== null;
-        const isHeld = isSelected && state.preview === null;
-
-        if (isAttached) {
-          img.className = 'card-asset hidden';
-        } else if (isHeld) {
-          img.className = 'card-asset held';
-          img.style.left = `${this.mouseX}px`;
-          img.style.top = `${this.mouseY}px`;
-        } else {
-          img.className = `card-asset ${isSelected ? 'selected' : ''}`;
-        }
-
-        const angleStep = 10;
-        const startAngle = -((cardCount - 1) * angleStep) / 2;
-        const angle = startAngle + index * angleStep;
-        const vmin = Math.min(window.innerHeight, window.innerWidth);
-        const fanX = Math.sin(angle * Math.PI / 180) * (vmin * 0.15);
-        const fanY = (1 - Math.cos(angle * Math.PI / 180)) * (vmin * 0.04);
-        
-        if (!isHeld && !isAttached) {
-          gsap.to(img, {
-            rotation: angle + (asset.rotate ? 180 : 0),
-            x: fanX,
-            y: fanY,
-            xPercent: 0,
-            yPercent: 0,
-            transformOrigin: "50% 50%",
-            zIndex: isSelected ? 1000 : index,
-            clearProps: "left,top,position",
-            duration: 0.2
-          });
-        } else if (isHeld) {
-          gsap.set(img, { 
-            rotation: asset.rotate ? 180 : 0, 
-            zIndex: 2000,
-            xPercent: -50,
-            yPercent: -50,
-            transformOrigin: "50% 50%",
-            x: 0,
-            y: 0
-          });
-        }
-      });
-    }
-
-    // Game Over
     let overlay = this.root.querySelector('.modal-overlay');
-    if (state.status === 'GAME_OVER') {
+    if (state.status === 'CHOOSE_DECK') {
       if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
+        overlay = document.createElement('div'); overlay.className = 'modal-overlay';
         overlay.innerHTML = `
-          <div class="modal-content" style="background:#2F3F45; padding:40px; border-radius:12px; text-align:center;">
-            <h1>Game Over</h1>
-            <p id="final-score-text" style="font-size:1.5rem; margin:20px 0; color:#FFC107;"></p>
-            <button id="restart-btn" style="padding:15px 30px; font-size:1.2rem; background:#F44336; color:white; border:none; border-radius:8px; cursor:pointer;">Try Again</button>
+          <div class="modal-content deck-selector">
+            <h1>Choose Your Deck</h1>
+            <div class="deck-options">
+              <div class="deck-option" data-type="1"><h3>Balanced</h3><div class="preview-cards"><img src="Sketch/CardType=100.png"><img src="Sketch/CardType=300.png"><img src="Sketch/CardType=400.png"></div></div>
+              <div class="deck-option" data-type="2"><h3>Multi-hit</h3><div class="preview-cards"><img src="Sketch/CardType=110.png"><img src="Sketch/CardType=330.png"><img src="Sketch/CardType=440.png"></div></div>
+              <div class="deck-option" data-type="3"><h3>Hardcore</h3><div class="preview-cards"><img src="Sketch/CardType=111.png"><img src="Sketch/CardType=333.png"><img src="Sketch/CardType=444.png"></div></div>
+            </div>
           </div>
         `;
+        this.root.appendChild(overlay);
+        overlay.querySelectorAll('.deck-option').forEach(opt => opt.addEventListener('click', () => {
+          this.store.chooseDeck(parseInt(opt.getAttribute('data-type') || '1'));
+          this.render();
+        }));
+      }
+    } else if (state.status === 'LEVEL_WON') {
+      if (!overlay) {
+        overlay = document.createElement('div'); overlay.className = 'modal-overlay';
+        overlay.innerHTML = `<div class="modal-content" style="background:#2F3F45; padding:40px; border-radius:12px; text-align:center;"><h1 style="color:#4CAF50;">LEVEL COMPLETE!</h1><p style="font-size:1.5rem; margin:20px 0; color:#FFD700;">Reward: GOLD +25</p><button id="next-btn" style="padding:15px 30px; font-size:1.2rem; background:#4CAF50; color:white; border:none; border-radius:8px; cursor:pointer;">NEXT LEVEL</button></div>`;
+        this.root.appendChild(overlay);
+        overlay.querySelector('#next-btn')?.addEventListener('click', () => { this.store.nextLevel(); this.render(); });
+      }
+    } else if (state.status === 'WIN') {
+      if (!overlay) {
+        overlay = document.createElement('div'); overlay.className = 'modal-overlay';
+        overlay.innerHTML = `<div class="modal-content" style="background:#2F3F45; padding:40px; border-radius:12px; text-align:center;"><h1 style="color:#FFD700;">CONGRATULATIONS!</h1><p style="font-size:1.5rem; margin:20px 0; color:#FFD700;">You conquered all 3 levels!</p><p style="font-size:1.2rem; color:white;">Final Gold: ${state.gold}</p><button id="restart-btn" style="padding:15px 30px; font-size:1.2rem; background:#2196F3; color:white; border:none; border-radius:8px; cursor:pointer;">New Game</button></div>`;
+        this.root.appendChild(overlay);
+        overlay.querySelector('#restart-btn')?.addEventListener('click', () => { this.store.resetGame(); this.render(); });
+      }
+    } else if (state.status === 'GAME_OVER') {
+      if (!overlay) {
+        overlay = document.createElement('div'); overlay.className = 'modal-overlay';
+        overlay.innerHTML = `<div class="modal-content" style="background:#2F3F45; padding:40px; border-radius:12px; text-align:center;"><h1>Game Over</h1><p id="final-score-text" style="font-size:1.5rem; margin:20px 0; color:#FFC107;"></p><button id="restart-btn" style="padding:15px 30px; font-size:1.2rem; background:#F44336; color:white; border:none; border-radius:8px; cursor:pointer;">Try Again</button></div>`;
         this.root.appendChild(overlay);
         overlay.querySelector('#restart-btn')?.addEventListener('click', () => { this.store.resetGame(); this.render(); });
       }
       (overlay.querySelector('#final-score-text') as HTMLElement).textContent = `Final Score: ${state.currentScore}`;
-    } else if (overlay) overlay.remove();
+    } else if (overlay) {
+      overlay.remove();
+    }
+  }
+
+  private renderHand(state: any): void {
+    if (!this.handElement) return;
+    Array.from(this.handElement.children).forEach(el => { if (!state.hand.find((c: any) => c.id === el.getAttribute('data-card-id'))) el.remove(); });
+    state.hand.forEach((card: any, index: number) => {
+      let img = this.handElement!.querySelector(`[data-card-id="${card.id}"]`) as HTMLImageElement;
+      if (!img) {
+        img = document.createElement('img'); img.className = 'card-asset'; img.setAttribute('data-card-id', card.id);
+        img.addEventListener('click', (e) => { e.stopPropagation(); if (this.isAnimating) return; this.store.selectCard(card.id); this.render(); });
+        this.handElement!.appendChild(img);
+      }
+      const asset = cardAsset(card); img.src = asset.src;
+      const isSelected = state.selectedCardId === card.id;
+      if (isSelected) img.classList.add('selected'); else img.classList.remove('selected');
+      const total = state.hand.length; const spread = 40; const angleStep = 8;
+      const mid = (total - 1) / 2; const offset = index - mid;
+      const fanX = offset * spread; const fanY = Math.abs(offset) * 10; const angle = offset * angleStep;
+      if (!img.classList.contains('held')) {
+        gsap.to(img, { rotation: angle + (asset.rotate ? 180 : 0), x: fanX, y: fanY, xPercent: -50, yPercent: 0, transformOrigin: "50% 50%", zIndex: isSelected ? 1000 : index, duration: 0.4, ease: "power2.out" });
+      }
+    });
   }
 }
