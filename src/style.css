@@ -413,6 +413,7 @@ body {
   margin-top: auto;
   padding-bottom: 20px;
   pointer-events: none;
+  height: var(--card-height); /* Constrain height */
 }
 
 .hand-row, .pile-icon {
@@ -422,8 +423,8 @@ body {
 
 .hand-row {
   position: relative;
-  width: 600px;
-  height: var(--card-height);
+  width: 450px; /* Constrain width more */
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -530,17 +531,23 @@ body {
   bottom: 40px;
   z-index: 101 !important;
   filter: drop-shadow(0 0 15px rgba(255, 152, 0, 0.8));
+  /* Removed outline that caused the orange rectangle */
+}
+.matrix-wrapper.state-preview ~ .bottom-area .card-asset.held {
+  opacity: 0;
+  pointer-events: none;
 }
 .card-asset.held {
   position: fixed;
-  pointer-events: none;
+  pointer-events: none !important; /* CRITICAL: Must not block mouse */
   z-index: 2000 !important;
   transform-origin: center center !important;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.1);
   bottom: auto !important;
   top: -9999px;
   left: -9999px;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 15px 30px rgba(0,0,0,0.7));
+  outline: none; /* Picked state */
 }
 .card-asset.hidden {
   display: none;

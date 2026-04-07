@@ -52,11 +52,14 @@ function randomGrid(): RPS[][] {
 function createDeck(type: number): Card[] {
   const codes: string[] = [];
   if (type === 1) {
-    codes.push('100', '100', '100', '300', '300', '300', '400', '400', '400', '130', '140', '310', '340', '410', '430');
+    // 100, 300, 400 each 3 times
+    codes.push('100', '100', '100', '300', '300', '300', '400', '400', '400');
   } else if (type === 2) {
-    codes.push('110', '110', '110', '330', '330', '330', '440', '440', '440', '113', '334', '441', '114', '331', '443');
+    // 110, 330, 440 each 3 times
+    codes.push('110', '110', '110', '330', '330', '330', '440', '440', '440');
   } else {
-    codes.push('111', '111', '111', '333', '333', '333', '444', '444', '444', '134', '341', '413', '431', '143', '314');
+    // 111, 333, 444 each 3 times
+    codes.push('111', '111', '111', '333', '333', '333', '444', '444', '444');
   }
   
   const deck = codes.map(code => ({
@@ -87,10 +90,11 @@ export class GameStore {
       levelGoal: DEFAULT_LEVELS[0].goal,
       shufflesLeft: 4,
       dealsLeft: 4,
-      selectedCardId: null,
+      selectedCardIds: [],
       status: 'CHOOSE_DECK',
       lastClash: null,
-      preview: null
+      preview: null,
+      lastInterestEarned: 0
     };
     this.loadLevelConfigs();
   }
@@ -102,8 +106,8 @@ export class GameStore {
       const lines = text.trim().split('\n').slice(1);
       if (lines.length > 0) {
         this.levelConfigs = lines.map(line => {
-          const [level, goal, reward] = line.split(',').map(Number);
-          return { level, goal, reward };
+          const parts = line.split(',');
+          return { level: Number(parts[0]), goal: Number(parts[1]) };
         });
         this.state.levelGoal = this.levelConfigs[0].goal;
       }
@@ -137,16 +141,26 @@ export class GameStore {
 
   selectCard(cardId: string | null): void {
     if (this.state.status !== 'PLAYING') return;
-    this.state.selectedCardId = (this.state.selectedCardId === cardId || !cardId) ? null : cardId;
+    if (!cardId) {
+      this.state.selectedCardIds = [];
+    } else {
+      const idx = this.state.selectedCardIds.indexOf(cardId);
+      if (idx > -1) {
+        this.state.selectedCardIds.splice(idx, 1);
+      } else {
+        this.state.selectedCardIds.push(cardId);
+      }
+    }
     this.state.preview = null;
     this.storeInternal.lastPreviewEdge = null;
   }
 
   flipSelectedCard(): void {
-    const selected = this.state.selectedCardId;
-    if (!selected || this.state.status !== 'PLAYING') return;
+    if (this.state.selectedCardIds.length === 0 || this.state.status !== 'PLAYING') return;
+    const lastSelected = this.state.selectedCardIds[this.state.selectedCardIds.length - 1];
+
     this.state.hand = this.state.hand.map((card) => {
-      if (card.id !== selected) return card;
+      if (card.id !== lastSelected) return card;
       const newSymbols: [RPS, RPS, RPS] = [card.symbols[2], card.symbols[1], card.symbols[0]];
       return { ...card, symbols: newSymbols, isFlipped: !card.isFlipped };
     });
@@ -161,19 +175,21 @@ export class GameStore {
   updatePreview(edge: InsertEdge | null): void {
     if (this.storeInternal.lastPreviewEdge === edge && (this.state.preview !== null || edge === null)) return;
     this.storeInternal.lastPreviewEdge = edge;
-    if (this.state.status !== 'PLAYING' || !this.state.selectedCardId || !edge) {
+    if (this.state.status !== 'PLAYING' || this.state.selectedCardIds.length === 0 || !edge) {
       this.state.preview = null; return;
     }
-    const selectedCard = this.state.hand.find(c => c.id === this.state.selectedCardId);
+    const lastSelected = this.state.selectedCardIds[this.state.selectedCardIds.length - 1];
+    const selectedCard = this.state.hand.find(c => c.id === lastSelected);
     if (!selectedCard) { this.state.preview = null; return; }
     const res = executeLaneClash(this.state.matrix.grid, edge, selectedCard);
     this.state.preview = { ...res, insertedCardId: selectedCard.id };
   }
 
   playSelectedToEdge(edge: InsertEdge): ClashResult | null {
-    if (this.state.status !== 'PLAYING' || !this.state.selectedCardId) return null;
-    const selectedCard = this.state.hand.find(c => c.id === this.state.selectedCardId);
-    if (!selectedCard) { this.state.selectedCardId = null; return null; }
+    if (this.state.status !== 'PLAYING' || this.state.selectedCardIds.length === 0) return null;
+    const lastSelected = this.state.selectedCardIds[this.state.selectedCardIds.length - 1];
+    const selectedCard = this.state.hand.find(c => c.id === lastSelected);
+    if (!selectedCard) return null;
     const res = executeLaneClash(this.state.matrix.grid, edge, selectedCard);
     return { ...res, insertedCardId: selectedCard.id };
   }
@@ -186,7 +202,10 @@ export class GameStore {
     const card = this.state.hand.find(c => c.id === result.insertedCardId);
     if (card) this.state.discardPile.push(card);
     this.state.hand = this.state.hand.filter(c => c.id !== result.insertedCardId);
-    this.state.selectedCardId = null;
+    
+    // Remove the played card from selections
+    this.state.selectedCardIds = [];
+    
     this.state.preview = null;
     this.checkLevelWin();
     this.resolveRoundEnd();
@@ -196,7 +215,7 @@ export class GameStore {
     if (this.state.status !== 'PLAYING') return;
     if (this.state.currentScore >= this.state.levelGoal) {
       const config = this.levelConfigs[this.state.currentLevel - 1];
-      this.state.gold += config.reward;
+      this.state.gold += (config as any).reward || 25;
       this.state.status = this.state.currentLevel >= this.levelConfigs.length ? 'WIN' : 'LEVEL_WON';
     }
   }
@@ -222,27 +241,40 @@ export class GameStore {
     this.state.matrix.grid = randomGrid();
     this.state.shufflesLeft -= 1;
     this.state.preview = null;
-    this.state.selectedCardId = null;
+    this.state.selectedCardIds = [];
   }
 
   dealHand(): void {
     if (this.state.status !== 'PLAYING' || this.state.dealsLeft <= 0) return;
-    const needed = 5 - this.state.hand.length;
-    if (needed > 0 && this.state.deck.length > 0) {
-      const drawnCount = Math.min(needed, this.state.deck.length);
-      const drawn = this.state.deck.slice(0, drawnCount);
-      this.state.deck = this.state.deck.slice(drawnCount);
-      this.state.hand = [...this.state.hand, ...drawn];
+    
+    const lastSelected = this.state.selectedCardIds[this.state.selectedCardIds.length - 1];
+    
+    if (lastSelected && this.state.deck.length > 0) {
+      // SWAP LOGIC: Swap selected card with random card from deck
+      const handIdx = this.state.hand.findIndex(c => c.id === lastSelected);
+      const deckIdx = Math.floor(Math.random() * this.state.deck.length);
+      
+      const cardFromHand = this.state.hand[handIdx];
+      const cardFromDeck = this.state.deck[deckIdx];
+      
+      this.state.hand[handIdx] = cardFromDeck;
+      this.state.deck[deckIdx] = cardFromHand;
+      
       this.state.dealsLeft -= 1;
+      this.state.selectedCardIds = [];
       this.state.preview = null;
-      this.state.selectedCardId = null;
+    } else if (this.state.hand.length < 5 && this.state.deck.length > 0) {
+      // FALLBACK: If hand is not full, just draw
+      const drawn = this.state.deck.shift()!;
+      this.state.hand.push(drawn);
+      this.state.dealsLeft -= 1;
     }
   }
 
   private resolveRoundEnd(): void {
     if (this.state.status === 'PLAYING' && this.state.hand.length === 0 && this.state.deck.length === 0) {
       this.state.status = 'GAME_OVER';
-      this.state.selectedCardId = null;
+      this.state.selectedCardIds = [];
     }
   }
 

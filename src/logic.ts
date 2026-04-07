@@ -74,10 +74,10 @@ export function executeLaneClash(
     const attackerLoses = defender !== RPS.BLANK && (attacker === RPS.BLANK || WIN_MAP[defender] === attacker);
 
     if (attackerLoses) {
-      const deduction = SCORE_WEIGHTS[defender];
-      if (attacker !== RPS.BLANK) {
-        penalty += deduction;
-      }
+      // PENALTY: Use the weight of the ATTACKER card block
+      const attackerVal = Number(SCORE_WEIGHTS[attacker]) || 0;
+      penalty += attackerVal;
+
       if (edge === 'LEFT' || edge === 'RIGHT') {
         const shiftDir: 1 | -1 = edge === 'LEFT' ? -1 : 1;
         shiftLane(newGrid, i, 'row', shiftDir);
@@ -87,30 +87,34 @@ export function executeLaneClash(
         shiftLane(newGrid, i, 'col', shiftDir);
         shiftedLanes.push({ index: i, type: 'col', direction: shiftDir });
       }
-      continue;
-    }
+    } else if (attacker !== RPS.BLANK) {
+      for (let step = 0; step < 3; step++) {
+        const currentDefender = newGrid[r][c];
+        const attackerWins = (WIN_MAP[attacker] === currentDefender) || (currentDefender === RPS.BLANK);
 
-    if (attacker === RPS.BLANK) continue;
-
-    for (let step = 0; step < 3; step++) {
-      const currentDefender = newGrid[r][c];
-      const attackerWins = (WIN_MAP[attacker] === currentDefender) || (currentDefender === RPS.BLANK);
-
-      if (attackerWins) {
-        const gain = SCORE_WEIGHTS[currentDefender];
-        totalScore += gain;
-        laneScores[i] += gain;
-        newGrid[r][c] = attacker;
-        replacedCells.push({ r, c });
-        r += dr; c += dc;
-        if (r < 0 || r > 2 || c < 0 || c > 2) break;
-      } else {
-        break;
+        if (attackerWins) {
+          const gain = Number(SCORE_WEIGHTS[currentDefender]) || 0;
+          totalScore += gain;
+          laneScores[i] += gain;
+          newGrid[r][c] = attacker;
+          replacedCells.push({ r, c });
+          r += dr; c += dc;
+          if (r < 0 || r > 2 || c < 0 || c > 2) break;
+        } else {
+          break;
+        }
       }
     }
   }
 
-  return { newGrid, totalScore, penalty, laneScores, replacedCells, shiftedLanes };
+  return { 
+    newGrid, 
+    scoreDelta: totalScore || 0, 
+    penalty: penalty || 0, 
+    laneScores, 
+    replacedCells, 
+    shiftedLanes 
+  };
 }
 
 export function createEmptyGrid(): RPS[][] {

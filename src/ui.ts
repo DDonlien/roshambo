@@ -61,6 +61,28 @@ export class GameUI {
 
   private initialRender(): void {
     this.root.innerHTML = '';
+    
+    // Deselect if clicking on empty space
+    document.addEventListener('mousedown', (e) => {
+      const state = this.store.getState();
+      if (state.selectedCardIds.length > 0) {
+        const target = e.target as HTMLElement;
+        const isCard = target.closest('.card-asset');
+        const isDropZone = target.closest('.drop-zone') || target.closest('.preview-box');
+        const isButton = target.closest('button') || target.closest('.deck-btn');
+        if (!isCard && !isDropZone && !isButton) {
+          const lastId = state.selectedCardIds[state.selectedCardIds.length - 1];
+          const img = this.handElement?.querySelector(`[data-card-id="${lastId}"]`) as HTMLElement;
+          if (img) {
+            img.classList.remove('held');
+            gsap.set(img, { clearProps: "all" });
+          }
+          this.store.selectCard(null);
+          this.render();
+        }
+      }
+    });
+
     const container = document.createElement('div');
     container.style.display = 'flex';
     container.style.width = '100%';
@@ -134,16 +156,24 @@ export class GameUI {
       
       dz.addEventListener('mouseenter', () => {
         if (this.isAnimating) return;
-        if (this.store.getState().selectedCardId) {
+        const state = this.store.getState();
+        if (state.selectedCardIds.length > 0) {
           this.store.updatePreview(edge);
           this.render();
         }
       });
 
+      dz.addEventListener('mouseleave', () => {
+        if (this.isAnimating) return;
+        this.store.updatePreview(null);
+        this.render();
+      });
+
       dz.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isAnimating) return;
-        if (this.store.getState().selectedCardId) {
+        const state = this.store.getState();
+        if (state.selectedCardIds.length > 0) {
           this.handleClash(edge);
         }
       });
@@ -225,7 +255,8 @@ export class GameUI {
     if (this.isAnimating) return;
     
     const state = this.store.getState();
-    const selectedCard = state.hand.find(c => c.id === state.selectedCardId);
+    const lastId = state.selectedCardIds[state.selectedCardIds.length - 1];
+    const selectedCard = state.hand.find(c => c.id === lastId);
     if (!selectedCard) return;
 
     const result = this.store.playSelectedToEdge(edge);
@@ -250,7 +281,7 @@ export class GameUI {
       lanes.push(indices);
     }
 
-    let visualScore = state.currentScore;
+    let visualScore = Number(state.currentScore) || 0;
 
     for (let i = 0; i < 3; i++) {
       const laneIndices = lanes[i];
@@ -285,13 +316,15 @@ export class GameUI {
 
         gsap.fromTo(firstCell, { filter: 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' }, { filter: 'none', duration: 0.5 });
 
-        const penaltyVal = SCORE_WEIGHTS[state.matrix.grid[firstCellPos.r][firstCellPos.c]];
+        // FIX 1: Use the attacker block (from the played card) to calculate penalty
+        const attackerType = selectedCard.symbols[i];
+        const penaltyVal = Number(SCORE_WEIGHTS[attackerType]) || 0;
         if (penaltyVal > 0) {
           this.showScorePopup(-penaltyVal, firstCellIdx, true);
           visualScore -= penaltyVal;
           const scoreVal = document.getElementById('ui-score');
           if (scoreVal) {
-            scoreVal.textContent = visualScore.toString();
+            scoreVal.textContent = Math.floor(visualScore).toString();
             gsap.fromTo(scoreVal, { scale: 1.4, color: "#F44336", x: 5 }, { scale: 1, color: "#FFF", x: 0, duration: 0.3 });
           }
         }
@@ -390,8 +423,59 @@ export class GameUI {
   }
 
   private updateHeldPosition(): void {
-    const held = document.querySelector('.card-asset.held') as HTMLElement;
-    if (held) { held.style.left = `${this.mouseX}px`; held.style.top = `${this.mouseY}px`; }
+    const state = this.store.getState();
+    const lastId = state.selectedCardIds[state.selectedCardIds.length - 1];
+
+    // Clear any remaining held classes from cards that are NOT the current selection
+    this.handElement?.querySelectorAll('.held').forEach(el => {
+      const cardId = el.getAttribute('data-card-id');
+      if (cardId !== lastId) {
+        el.classList.remove('held');
+        (el as HTMLElement).style.left = '';
+        (el as HTMLElement).style.top = '';
+        gsap.set(el, { clearProps: "all" });
+      }
+    });
+
+    if (!lastId) return;
+
+    const img = this.handElement?.querySelector(`[data-card-id="${lastId}"]`) as HTMLElement;
+    if (!img) return;
+
+    const handRect = this.handElement!.getBoundingClientRect();
+    // Stricter threshold: if mouse moves into the top part of the hand area, drop it
+    const isAboveHand = this.mouseY < handRect.top + 20;
+
+    if (isAboveHand) {
+      if (!img.classList.contains('held')) {
+        img.classList.add('held');
+        // If multiple cards are selected, enforce only one is picked
+        if (state.selectedCardIds.length > 1) {
+          this.store.selectCard(lastId); // Re-select only this one to clear others
+          this.renderHand(this.store.getState()); // Update hand immediately
+        }
+      }
+      // Force pick position to match mouse using GSAP to avoid any offset from fan animations
+      gsap.set(img, { 
+        left: this.mouseX, 
+        top: this.mouseY, 
+        x: 0, 
+        y: 0, 
+        xPercent: -50, 
+        yPercent: -50, 
+        rotation: 0,
+        opacity: state.preview ? 0 : 1, // Hide if in preview mode
+        pointerEvents: state.preview ? 'none' : 'auto'
+      });
+    } else {
+      if (img.classList.contains('held')) {
+        img.classList.remove('held');
+        img.style.left = ''; img.style.top = '';
+        gsap.set(img, { opacity: 1, pointerEvents: 'auto' });
+        // Re-render hand to restore GSAP fan positions immediately
+        this.renderHand(state);
+      }
+    }
   }
 
   private showPileModal(type: 'DECK' | 'DISCARD'): void {
@@ -419,9 +503,9 @@ export class GameUI {
     const lastPreviewEdge = (this.store as any).storeInternal?.lastPreviewEdge as InsertEdge | null;
 
     const levelEl = document.getElementById('ui-level'); if (levelEl) levelEl.textContent = `${state.currentLevel}/3`;
-    const goalEl = document.getElementById('ui-goal'); if (goalEl) goalEl.textContent = state.levelGoal.toString();
-    const scoreEl = document.getElementById('ui-score'); if (scoreEl) scoreEl.textContent = state.currentScore.toString();
-    const goldEl = document.getElementById('ui-gold'); if (goldEl) goldEl.textContent = state.gold.toString();
+    const goalEl = document.getElementById('ui-goal'); if (goalEl) goalEl.textContent = (state.levelGoal || 0).toString();
+    const scoreEl = document.getElementById('ui-score'); if (scoreEl) scoreEl.textContent = (state.currentScore || 0).toString();
+    const goldEl = document.getElementById('ui-gold'); if (goldEl) goldEl.textContent = (state.gold || 0).toString();
 
     const shuffleBtn = document.getElementById('ui-btn-shuffle');
     if (shuffleBtn) {
@@ -435,7 +519,7 @@ export class GameUI {
       dealBtn.querySelector('.val')!.textContent = state.dealsLeft.toString();
       (state.dealsLeft <= 0 || state.status !== 'PLAYING' || state.deck.length === 0) ? dealBtn.classList.add('disabled') : dealBtn.classList.remove('disabled');
     }
-    (document.getElementById('ui-btn-rotate') as HTMLButtonElement).disabled = !state.selectedCardId;
+    (document.getElementById('ui-btn-rotate') as HTMLButtonElement).disabled = state.selectedCardIds.length === 0;
     const deckCountEl = document.getElementById('ui-deck-count'); if (deckCountEl) deckCountEl.textContent = state.deck.length.toString();
     const discardCountEl = document.getElementById('ui-discard-count'); if (discardCountEl) discardCountEl.textContent = state.discardPile.length.toString();
 
@@ -447,7 +531,7 @@ export class GameUI {
     }
 
     if (this.matrixWrapperElement) {
-      this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardId ? 'state-pick' : ''} ${state.preview ? 'state-preview' : ''}`;
+      this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardIds.length > 0 ? 'state-pick' : ''} ${state.preview ? 'state-preview' : ''}`;
       if (this.previewBoxElement) this.previewBoxElement.className = `preview-box preview-${lastPreviewEdge?.toLowerCase() || ''}`;
     }
 
@@ -470,7 +554,7 @@ export class GameUI {
       const dz = this.matrixWrapperElement?.querySelector(`.drop-zone-${edge.toLowerCase()}`) as HTMLElement;
       if (!dz) return; dz.innerHTML = '';
       if (state.preview && lastPreviewEdge === edge) {
-        const selectedCard = state.hand.find(c => c.id === state.selectedCardId);
+        const selectedCard = state.hand.find(c => c.id === state.selectedCardIds[state.selectedCardIds.length - 1]);
         if (selectedCard) {
           const cardContainer = document.createElement('div');
           selectedCard.symbols.forEach(s => { const img = document.createElement('img'); img.src = blockAsset(s); cardContainer.appendChild(img); });
@@ -480,6 +564,7 @@ export class GameUI {
     });
 
     this.renderHand(state);
+    this.updateHeldPosition();
 
     let overlay = this.root.querySelector('.modal-overlay');
     if (state.status === 'CHOOSE_DECK') {
@@ -530,22 +615,49 @@ export class GameUI {
 
   private renderHand(state: any): void {
     if (!this.handElement) return;
-    Array.from(this.handElement.children).forEach(el => { if (!state.hand.find((c: any) => c.id === el.getAttribute('data-card-id'))) el.remove(); });
+    Array.from(this.handElement.children).forEach(el => { 
+      if (!state.hand.find((c: any) => c.id === el.getAttribute('data-card-id'))) el.remove(); 
+    });
+
     state.hand.forEach((card: any, index: number) => {
       let img = this.handElement!.querySelector(`[data-card-id="${card.id}"]`) as HTMLImageElement;
       if (!img) {
         img = document.createElement('img'); img.className = 'card-asset'; img.setAttribute('data-card-id', card.id);
-        img.addEventListener('click', (e) => { e.stopPropagation(); if (this.isAnimating) return; this.store.selectCard(card.id); this.render(); });
+        img.addEventListener('click', (e) => { 
+          e.stopPropagation(); 
+          if (this.isAnimating) return; 
+          this.store.selectCard(card.id); 
+          this.render(); 
+        });
         this.handElement!.appendChild(img);
       }
       const asset = cardAsset(card); img.src = asset.src;
-      const isSelected = state.selectedCardId === card.id;
+      
+      const isSelected = state.selectedCardIds.includes(card.id);
+      const isLastSelected = state.selectedCardIds[state.selectedCardIds.length - 1] === card.id;
+      
       if (isSelected) img.classList.add('selected'); else img.classList.remove('selected');
-      const total = state.hand.length; const spread = 40; const angleStep = 8;
+      
+      const total = state.hand.length; 
+      const spread = 85; 
+      const angleStep = 4; 
       const mid = (total - 1) / 2; const offset = index - mid;
-      const fanX = offset * spread; const fanY = Math.abs(offset) * 10; const angle = offset * angleStep;
+      const fanX = offset * spread; 
+      const fanY = Math.abs(offset) * 5; 
+      const angle = offset * angleStep;
+
       if (!img.classList.contains('held')) {
-        gsap.to(img, { rotation: angle + (asset.rotate ? 180 : 0), x: fanX, y: fanY, xPercent: -50, yPercent: 0, transformOrigin: "50% 50%", zIndex: isSelected ? 1000 : index, duration: 0.4, ease: "power2.out" });
+        gsap.to(img, { 
+          rotation: angle + (asset.rotate ? 180 : 0), 
+          x: fanX, 
+          y: fanY, 
+          xPercent: -50, 
+          yPercent: 0, 
+          transformOrigin: "50% 50%", 
+          zIndex: isSelected ? (isLastSelected ? 1100 : 1000 + index) : index, 
+          duration: 0.4, 
+          ease: "power2.out" 
+        });
       }
     });
   }
