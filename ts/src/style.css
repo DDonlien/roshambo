@@ -411,8 +411,12 @@ body {
   opacity: 0;
 }
 
-.matrix-wrapper.state-pick:not(.state-preview) .drop-zone-visual {
+.matrix-wrapper.state-pick .drop-zone-visual {
   opacity: 1;
+}
+
+.matrix-wrapper.state-pick.state-preview .drop-zone-visual {
+  opacity: 0;
 }
 
 .matrix-wrapper.state-pick:not(.state-preview) .drop-zone:hover .drop-zone-visual {
@@ -422,7 +426,6 @@ body {
 
 .matrix-wrapper.state-pick .drop-zone {
   display: flex;
-  border-color: rgba(33, 150, 243, 0.4);
 }
 
 .matrix-wrapper.state-preview .drop-zone {
@@ -439,7 +442,7 @@ body {
 .drop-zone-top .drop-zone-visual {
   bottom: 0;
   left: var(--attach-hit-size);
-  right: var(--attach-hit-size);
+  width: var(--matrix-dimension);
   height: var(--cell-size);
 }
 
@@ -452,7 +455,7 @@ body {
 .drop-zone-bottom .drop-zone-visual {
   top: 0;
   left: var(--attach-hit-size);
-  right: var(--attach-hit-size);
+  width: var(--matrix-dimension);
   height: var(--cell-size);
 }
 
@@ -465,7 +468,7 @@ body {
 .drop-zone-left .drop-zone-visual {
   right: 0;
   top: var(--attach-hit-size);
-  bottom: var(--attach-hit-size);
+  height: var(--matrix-dimension);
   width: var(--cell-size);
 }
 
@@ -478,7 +481,7 @@ body {
 .drop-zone-right .drop-zone-visual {
   left: 0;
   top: var(--attach-hit-size);
-  bottom: var(--attach-hit-size);
+  height: var(--matrix-dimension);
   width: var(--cell-size);
 }
 

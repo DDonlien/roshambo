@@ -922,7 +922,7 @@ export class GameUI {
     }
 
     if (this.matrixWrapperElement) {
-      this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardIds.length > 0 ? 'state-pick' : ''} ${state.preview ? 'state-preview' : ''}`;
+      this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardIds.length > 0 && !this.isAnimating ? 'state-pick' : ''} ${state.preview && !this.isAnimating ? 'state-preview' : ''}`;
       if (this.previewBoxElement) this.previewBoxElement.className = `preview-box preview-${lastPreviewEdge?.toLowerCase() || ''}`;
     }
 
