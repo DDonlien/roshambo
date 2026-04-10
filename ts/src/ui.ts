@@ -111,10 +111,8 @@ function getCardFullAsset(card: Card): string {
     'PAPER': '3',
     'BLANK': '4'
   };
-  // Reverse the array when generating the key because the assets are named top-to-bottom
-  // but Card.symbols might be stored bottom-to-top (e.g. 004 instead of 400).
-  const key = [...card.symbols].reverse().map(s => map[s]).join('');
-  // Fix path for Vite/GitHub pages by adding leading slash or using relative path from root
+  // The symbols array is actually top-to-bottom. We should NOT reverse it.
+  const key = card.symbols.map(s => map[s]).join('');
   return `./Sketch/CardType=${key}.png`;
 }
 
