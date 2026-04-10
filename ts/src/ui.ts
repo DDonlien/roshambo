@@ -111,12 +111,12 @@ function getCardFullAsset(card: Card): string {
     'PAPER': '3',
     'BLANK': '4'
   };
+  // Always get the base un-flipped symbols to map to the single physical asset file
+  const baseSymbols = card.isFlipped ? [...card.symbols].reverse() : card.symbols;
+  
   // The symbols array is top-to-bottom.
   // BUT the image filenames are named bottom-to-top!
-  // e.g. Top=Rock, Mid=Blank, Bottom=Blank -> symbols is [Rock, Blank, Blank]
-  // The filename for this is "400" (bottom=4, mid=0, top=0 -> 400? Wait, 400 is bottom=4(Blank), mid=0(Rock), top=0(Rock)? No, 440 means bottom=4, mid=4, top=0)
-  // Let's just reverse the array mapping so [Rock, Blank, Blank] (0, 4, 4) becomes "440".
-  const key = [...card.symbols].reverse().map(s => map[s]).join('');
+  const key = [...baseSymbols].reverse().map(s => map[s]).join('');
   return `./Sketch/CardType=${key}.png`;
 }
 
@@ -481,6 +481,8 @@ export class GameUI {
       if (this.isAnimating || state.selectedCardIds.length === 0) return;
       e.preventDefault();
       this.store.flipSelectedCard();
+      // When a card is rotated, it should keep the full image but we must update the source
+      // The hand render will handle this automatically if we update the image src
       this.render();
     }, { passive: false });
 
@@ -1011,21 +1013,22 @@ export class GameUI {
             cardContainer.style.position = 'absolute';
             this.previewBoxElement.appendChild(cardContainer);
           } else {
-            // Update orientation class
-            if (orientation === 'horizontal') {
-              cardContainer.classList.add('render-card-horizontal');
+            // Check if symbols length changed or if it was rendered as full image when it shouldn't be
+            const currentBlocks = cardContainer.querySelectorAll('.card-block');
+            if (currentBlocks.length !== overlapCount || cardContainer.classList.contains('full-asset')) {
+              cardContainer.remove();
+              cardContainer = createCardElement(selectedCard, 'preview-card', orientation);
+              cardContainer.style.position = 'absolute';
+              this.previewBoxElement.appendChild(cardContainer);
             } else {
-              cardContainer.classList.remove('render-card-horizontal');
-            }
-            // Update full image or blocks
-            const fullImage = cardContainer.querySelector('.card-full-image') as HTMLImageElement;
-            if (fullImage) {
-              const expectedSrc = getCardFullAsset(selectedCard);
-              if (!fullImage.src.includes(expectedSrc)) {
-                fullImage.src = expectedSrc;
+              // Update orientation class
+              if (orientation === 'horizontal') {
+                cardContainer.classList.add('render-card-horizontal');
+              } else {
+                cardContainer.classList.remove('render-card-horizontal');
               }
-            } else {
-              const blocks = Array.from(cardContainer.querySelectorAll('.card-block')) as HTMLImageElement[];
+              // Update blocks
+              const blocks = Array.from(currentBlocks) as HTMLImageElement[];
               selectedCard.symbols.forEach((symbol, i) => {
                 const expectedSrc = blockAsset(symbol);
                 if (blocks[i] && !blocks[i].src.includes(expectedSrc)) {
@@ -1103,13 +1106,11 @@ export class GameUI {
         });
         handElement.appendChild(cardElement);
       } else {
-        // Update blocks if needed (e.g. if flipped)
+        // Update full image or blocks
         const fullImage = cardElement.querySelector('.card-full-image') as HTMLImageElement;
         if (fullImage) {
-          const expectedSrc = getCardFullAsset(card);
-          if (!fullImage.src.includes(expectedSrc)) {
-            fullImage.src = expectedSrc;
-          }
+          // No need to change the src because the image is a single physical file.
+          // The rotation is handled purely by CSS transform based on card.isFlipped below.
         } else {
           const blocks = Array.from(cardElement.querySelectorAll('.card-block')) as HTMLImageElement[];
           card.symbols.forEach((symbol, i) => {
@@ -1128,6 +1129,17 @@ export class GameUI {
         cardElement.classList.add('selected');
       } else {
         cardElement.classList.remove('selected');
+      }
+
+      // If the card is flipped, we want to visually rotate the image 180 degrees
+      const fullImage = cardElement.querySelector('.card-full-image') as HTMLImageElement;
+      if (fullImage) {
+        // If it's horizontal, base transform is already rotate(-90deg), so add 180 -> 90deg
+        if (card.isFlipped) {
+          fullImage.style.transform = cardElement.classList.contains('render-card-horizontal') ? 'rotate(90deg)' : 'rotate(180deg)';
+        } else {
+          fullImage.style.transform = cardElement.classList.contains('render-card-horizontal') ? 'rotate(-90deg)' : 'none';
+        }
       }
 
       const total = state.hand.length;
