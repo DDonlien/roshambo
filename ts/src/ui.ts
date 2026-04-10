@@ -111,8 +111,12 @@ function getCardFullAsset(card: Card): string {
     'PAPER': '3',
     'BLANK': '4'
   };
-  // The symbols array is actually top-to-bottom. We should NOT reverse it.
-  const key = card.symbols.map(s => map[s]).join('');
+  // The symbols array is top-to-bottom.
+  // BUT the image filenames are named bottom-to-top!
+  // e.g. Top=Rock, Mid=Blank, Bottom=Blank -> symbols is [Rock, Blank, Blank]
+  // The filename for this is "400" (bottom=4, mid=0, top=0 -> 400? Wait, 400 is bottom=4(Blank), mid=0(Rock), top=0(Rock)? No, 440 means bottom=4, mid=4, top=0)
+  // Let's just reverse the array mapping so [Rock, Blank, Blank] (0, 4, 4) becomes "440".
+  const key = [...card.symbols].reverse().map(s => map[s]).join('');
   return `./Sketch/CardType=${key}.png`;
 }
 
