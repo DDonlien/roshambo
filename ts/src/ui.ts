@@ -590,6 +590,8 @@ export class GameUI {
           await tl.to(attackerBlock, { x: localDx * 0.4, y: localDy * 0.4, duration: 0.15, ease: 'power2.out' })
             .to(attackerBlock, { x: -localDx * 0.2, y: -localDy * 0.2, duration: 0.25, ease: 'elastic.out(1, 0.3)' });
 
+          // Reset rotation before playing vanish animation to avoid compounding transforms
+          gsap.set(attackerBlock, { rotation: 0 });
           gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: 0.3, ease: 'power2.in' });
 
           gsap.fromTo(firstCell, { filter: 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' }, { filter: 'none', duration: 0.5 });
@@ -1024,58 +1026,63 @@ export class GameUI {
       if (!dz) return;
     });
 
-    if (this.previewBoxElement) {
-      const { cellSize, gap, stride } = this.getCellMetrics(size);
-      const matrixExtent = this.matrixElement?.offsetWidth ?? 0;
-      this.previewBoxElement.style.display = state.preview ? 'block' : 'none';
-      this.previewBoxElement.style.inset = '0';
+      // Ensure preview card is completely clean and rebuilt when NOT animating
+      if (this.previewBoxElement) {
+        if (!state.preview || this.isAnimating) {
+          // If we shouldn't show preview OR we are in animation, clean up completely
+          this.previewBoxElement.innerHTML = '';
+          this.previewBoxElement.style.display = 'none';
+        } else if (state.preview && lastPreviewEdge) {
+          const { cellSize, gap, stride } = this.getCellMetrics(size);
+          const matrixExtent = this.matrixElement?.offsetWidth ?? 0;
+          this.previewBoxElement.style.display = 'block';
+          this.previewBoxElement.style.inset = '0';
 
-      if (state.preview && lastPreviewEdge) {
-        const selectedCard = state.hand.find((card) => card.id === state.selectedCardIds[state.selectedCardIds.length - 1]);
-        if (selectedCard && !this.isAnimating) {
-          const overlapCount = selectedCard.symbols.length;
-          
-          let guide = this.previewBoxElement.querySelector('.preview-guide') as HTMLElement;
-          if (!guide) {
-            guide = document.createElement('div');
-            guide.className = 'preview-guide';
-            guide.style.position = 'absolute';
-            this.previewBoxElement.appendChild(guide);
-          }
+          const selectedCard = state.hand.find((card) => card.id === state.selectedCardIds[state.selectedCardIds.length - 1]);
+          if (selectedCard) {
+            const overlapCount = selectedCard.symbols.length;
+            
+            let guide = this.previewBoxElement.querySelector('.preview-guide') as HTMLElement;
+            if (!guide) {
+              guide = document.createElement('div');
+              guide.className = 'preview-guide';
+              guide.style.position = 'absolute';
+              this.previewBoxElement.appendChild(guide);
+            }
 
-          const orientation = lastPreviewEdge === 'TOP' || lastPreviewEdge === 'BOTTOM' ? 'horizontal' : 'vertical';
-          let cardContainer = this.previewBoxElement.querySelector('.preview-card') as HTMLElement;
-          if (!cardContainer) {
-            cardContainer = createCardElement(selectedCard, 'preview-card', orientation);
-            cardContainer.style.position = 'absolute';
-            this.previewBoxElement.appendChild(cardContainer);
-          } else {
-            // Check if symbols length changed or if it was rendered as full image when it shouldn't be
-            const currentBlocks = cardContainer.querySelectorAll('.card-block');
-            if (currentBlocks.length !== overlapCount || cardContainer.classList.contains('full-asset')) {
-              cardContainer.remove();
+            const orientation = lastPreviewEdge === 'TOP' || lastPreviewEdge === 'BOTTOM' ? 'horizontal' : 'vertical';
+            let cardContainer = this.previewBoxElement.querySelector('.preview-card') as HTMLElement;
+            if (!cardContainer) {
               cardContainer = createCardElement(selectedCard, 'preview-card', orientation);
               cardContainer.style.position = 'absolute';
               this.previewBoxElement.appendChild(cardContainer);
             } else {
-              // Update orientation class
-              if (orientation === 'horizontal') {
-                cardContainer.classList.add('render-card-horizontal');
+              // Check if symbols length changed or if it was rendered as full image when it shouldn't be
+              const currentBlocks = cardContainer.querySelectorAll('.card-block');
+              if (currentBlocks.length !== overlapCount || cardContainer.classList.contains('full-asset')) {
+                cardContainer.remove();
+                cardContainer = createCardElement(selectedCard, 'preview-card', orientation);
+                cardContainer.style.position = 'absolute';
+                this.previewBoxElement.appendChild(cardContainer);
               } else {
-                cardContainer.classList.remove('render-card-horizontal');
-              }
-              // Update blocks
-              const blocks = Array.from(currentBlocks) as HTMLImageElement[];
-              selectedCard.symbols.forEach((symbol, i) => {
-                const expectedSrc = blockAsset(symbol);
-                if (blocks[i] && !blocks[i].src.includes(expectedSrc)) {
-                  blocks[i].src = expectedSrc;
+                // Update orientation class
+                if (orientation === 'horizontal') {
+                  cardContainer.classList.add('render-card-horizontal');
+                } else {
+                  cardContainer.classList.remove('render-card-horizontal');
                 }
-              });
+                // Update blocks
+                const blocks = Array.from(currentBlocks) as HTMLImageElement[];
+                selectedCard.symbols.forEach((symbol, i) => {
+                  const expectedSrc = blockAsset(symbol);
+                  if (blocks[i] && !blocks[i].src.includes(expectedSrc)) {
+                    blocks[i].src = expectedSrc;
+                  }
+                });
+              }
             }
-          }
 
-          if (lastPreviewEdge === 'TOP') {
+            if (lastPreviewEdge === 'TOP') {
             const guideLeft = state.preview.attachmentOffset * stride;
             guide.style.left = `${guideLeft}px`;
             guide.style.top = `${-stride}px`;
