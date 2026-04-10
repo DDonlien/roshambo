@@ -769,20 +769,20 @@ export class GameUI {
 
     const shouldReturnToHand = this.isInsideSafeZone();
 
-    if (shouldReturnToHand) {
-      if (state.preview) {
-        this.store.updatePreview(null);
+      if (shouldReturnToHand) {
+        if (state.preview) {
+          this.store.updatePreview(null);
+        }
+        if (cardElement.classList.contains('held') || state.preview) {
+          cardElement.classList.remove('held');
+          cardElement.style.left = '';
+          cardElement.style.top = '';
+          gsap.killTweensOf(cardElement);
+          gsap.set(cardElement, { clearProps: 'all' });
+          this.render();
+        }
+        return;
       }
-      if (cardElement.classList.contains('held') || state.preview) {
-        cardElement.classList.remove('held');
-        cardElement.style.left = '';
-        cardElement.style.top = '';
-        gsap.killTweensOf(cardElement);
-        gsap.set(cardElement, { clearProps: 'all' });
-        this.render();
-      }
-      return;
-    }
 
     if (!cardElement.classList.contains('held')) {
       cardElement.classList.add('held');
@@ -1032,7 +1032,7 @@ export class GameUI {
 
       if (state.preview && lastPreviewEdge) {
         const selectedCard = state.hand.find((card) => card.id === state.selectedCardIds[state.selectedCardIds.length - 1]);
-        if (selectedCard) {
+        if (selectedCard && !this.isAnimating) {
           const overlapCount = selectedCard.symbols.length;
           
           let guide = this.previewBoxElement.querySelector('.preview-guide') as HTMLElement;
