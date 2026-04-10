@@ -506,11 +506,34 @@ body {
   gap: var(--cell-gap);
 }
 
+.render-card.full-asset {
+  display: block;
+}
+
+.render-card.full-asset .card-full-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .render-card-horizontal {
   width: calc(var(--cell-size) * var(--card-block-count) + var(--cell-gap) * (var(--card-block-count) - 1));
   height: var(--cell-size);
   grid-template-columns: repeat(var(--card-block-count), 1fr);
   grid-template-rows: 1fr;
+}
+
+.render-card-horizontal.full-asset {
+  display: block;
+}
+
+.render-card-horizontal.full-asset .card-full-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transform: rotate(-90deg);
 }
 
 .card-block {

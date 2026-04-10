@@ -124,6 +124,17 @@ function cardClassName(isHandCard: boolean): string {
 
 type CardOrientation = 'vertical' | 'horizontal';
 
+function getCardFullAsset(card: Card): string {
+  const map: Record<string, string> = {
+    'ROCK': '0',
+    'SCISSORS': '1',
+    'PAPER': '3',
+    'BLANK': '4'
+  };
+  const key = card.symbols.map(s => map[s]).join('');
+  return `Sketch/CardType=${key}.png`;
+}
+
 function createCardElement(
   card: Card,
   extraClass = '',
@@ -133,19 +144,28 @@ function createCardElement(
   const element = document.createElement('div');
   element.className = `${cardClassName(isHandCard)} ${orientation === 'horizontal' ? 'render-card-horizontal' : ''} ${extraClass}`.trim();
   element.style.setProperty('--card-block-count', String(card.symbols.length));
-  card.symbols.forEach((symbol) => {
+  
+  if (isHandCard || extraClass.includes('preview-card') || extraClass.includes('modal-card')) {
+    element.classList.add('full-asset');
     const image = document.createElement('img');
-    image.className = 'card-block';
-    image.src = blockAsset(symbol);
+    image.className = 'card-full-image';
+    image.src = getCardFullAsset(card);
     element.appendChild(image);
-  });
+  } else {
+    card.symbols.forEach((symbol) => {
+      const image = document.createElement('img');
+      image.className = 'card-block';
+      image.src = blockAsset(symbol);
+      element.appendChild(image);
+    });
+  }
   return element;
 }
 
 function createCardMarkup(card: Card): string {
   return `
-    <div class="render-card modal-card" style="--card-block-count:${card.symbols.length}">
-      ${card.symbols.map((symbol) => `<img class="card-block" src="${blockAsset(symbol)}">`).join('')}
+    <div class="render-card modal-card full-asset" style="--card-block-count:${card.symbols.length}">
+      <img class="card-full-image" src="${getCardFullAsset(card)}">
     </div>
   `;
 }
@@ -992,14 +1012,22 @@ export class GameUI {
             } else {
               cardContainer.classList.remove('render-card-horizontal');
             }
-            // Update blocks
-            const blocks = Array.from(cardContainer.querySelectorAll('.card-block')) as HTMLImageElement[];
-            selectedCard.symbols.forEach((symbol, i) => {
-              const expectedSrc = blockAsset(symbol);
-              if (blocks[i] && !blocks[i].src.includes(expectedSrc)) {
-                blocks[i].src = expectedSrc;
+            // Update full image or blocks
+            const fullImage = cardContainer.querySelector('.card-full-image') as HTMLImageElement;
+            if (fullImage) {
+              const expectedSrc = getCardFullAsset(selectedCard);
+              if (!fullImage.src.includes(expectedSrc)) {
+                fullImage.src = expectedSrc;
               }
-            });
+            } else {
+              const blocks = Array.from(cardContainer.querySelectorAll('.card-block')) as HTMLImageElement[];
+              selectedCard.symbols.forEach((symbol, i) => {
+                const expectedSrc = blockAsset(symbol);
+                if (blocks[i] && !blocks[i].src.includes(expectedSrc)) {
+                  blocks[i].src = expectedSrc;
+                }
+              });
+            }
           }
 
           if (lastPreviewEdge === 'TOP') {
@@ -1071,13 +1099,21 @@ export class GameUI {
         handElement.appendChild(cardElement);
       } else {
         // Update blocks if needed (e.g. if flipped)
-        const blocks = Array.from(cardElement.querySelectorAll('.card-block')) as HTMLImageElement[];
-        card.symbols.forEach((symbol, i) => {
-          const expectedSrc = blockAsset(symbol);
-          if (!blocks[i].src.includes(expectedSrc)) {
-            blocks[i].src = expectedSrc;
+        const fullImage = cardElement.querySelector('.card-full-image') as HTMLImageElement;
+        if (fullImage) {
+          const expectedSrc = getCardFullAsset(card);
+          if (!fullImage.src.includes(expectedSrc)) {
+            fullImage.src = expectedSrc;
           }
-        });
+        } else {
+          const blocks = Array.from(cardElement.querySelectorAll('.card-block')) as HTMLImageElement[];
+          card.symbols.forEach((symbol, i) => {
+            const expectedSrc = blockAsset(symbol);
+            if (blocks[i] && !blocks[i].src.includes(expectedSrc)) {
+              blocks[i].src = expectedSrc;
+            }
+          });
+        }
       }
 
       const isSelected = state.selectedCardIds.includes(card.id);
