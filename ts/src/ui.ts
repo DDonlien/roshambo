@@ -1187,7 +1187,12 @@ export class GameUI {
       }
 
       const total = state.hand.length;
-      const spread = 85;
+      
+      // Calculate dynamic spread based on card width to ensure 10% overlap
+      // We use offsetWidth to get the actual rendered width of the card element without rotation
+      const cardWidth = cardElement.offsetWidth > 0 ? cardElement.offsetWidth : 85; // fallback to 85 if not rendered yet
+      const spread = cardWidth * 0.9; // 10% overlap means distance between centers is 90% of width
+      
       const angleStep = 4;
       const mid = (total - 1) / 2;
       const offset = index - mid;
