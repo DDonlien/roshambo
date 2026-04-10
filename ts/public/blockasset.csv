@@ -1,4 +1,4 @@
-ROCK,Rock
-SCISSORS,Scissors
-PAPER,Paper
-BLANK,Blank
+ROCK,./Sketch/BlockType=Rock.png
+SCISSORS,./Sketch/BlockType=Scissors.png
+PAPER,./Sketch/BlockType=Paper.png
+BLANK,./Sketch/BlockType=Blank.png

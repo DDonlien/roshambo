@@ -158,16 +158,13 @@ function getCardFullAsset(card: Card): string {
   // Example: Top=ROCK(4), Mid=BLANK(0), Bottom=BLANK(0) => code "400"
   const code = baseSymbols.map(s => mapToDigit[s] || '0').join('');
   
-  // Look up the code in the CSV map. If not found, fallback to the code itself.
-  const mappedValue = cardAssetMap[code] || code;
-  
-  return `./Sketch/CardType=${mappedValue}.png`;
+  // Look up the full path in the CSV map.
+  return cardAssetMap[code] || `./Sketch/CardType=${code}.png`;
 }
 
 function blockAsset(symbol: RPS): string {
-  // Look up the symbol (e.g. 'ROCK') in the CSV map.
-  const val = blockAssetMap[symbol] || 'Blank';
-  return `./Sketch/BlockType=${val}.png`;
+  // Look up the full path in the CSV map.
+  return blockAssetMap[symbol] || `./Sketch/BlockType=Blank.png`;
 }
 
 function iconAsset(icon: LevelIcon): string {
