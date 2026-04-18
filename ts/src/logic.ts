@@ -19,6 +19,9 @@ const SCORE_WEIGHTS: Record<RPS, number> = {
 export interface LaneResult {
   newGrid: RPS[][];
   scoreDelta: number;
+  baseScoreDelta: number;
+  pierceCount: number;
+  pierceMultiplier: number;
   penalty: number;
   laneScores: number[];
   replacedCells: { r: number; c: number }[];
@@ -107,13 +110,14 @@ export function executeLaneClash(
 ): LaneResult {
   const newGrid = currentGrid.map((row) => [...row]);
   const size = newGrid.length;
-  let totalScore = 0;
+  let baseTotalScore = 0;
   let penalty = 0;
   const laneScores: number[] = Array.from({ length: card.symbols.length }, () => 0);
   const replacedCells: { r: number; c: number }[] = [];
   const failedCells: { r: number; c: number }[] = [];
   const tieCells: { r: number; c: number }[] = [];
   const shiftedLanes: { index: number; type: 'row' | 'col'; direction: 1 | -1 }[] = [];
+  let pierceCount = 0;
 
   for (let cardIndex = 0; cardIndex < card.symbols.length; cardIndex += 1) {
     const laneIndex = attachmentOffset + cardIndex;
@@ -155,6 +159,7 @@ export function executeLaneClash(
         shiftedLanes.push({ index: laneIndex, type: 'col', direction: shiftDir });
       }
     } else if (attackerSymbol !== RPS.BLANK) {
+      let replacedInLane = 0;
       for (let step = 0; step < size; step += 1) {
         const currentDefender = newGrid[r][c];
         const resolved = resolvePair(attackerSymbol, currentDefender);
@@ -162,12 +167,15 @@ export function executeLaneClash(
 
         if (attackerWins) {
           const gain = Number(SCORE_WEIGHTS[resolved.defender]) || 0;
-          totalScore += gain;
+          baseTotalScore += gain;
           laneScores[cardIndex] += gain;
           newGrid[r][c] = resolved.attacker;
           replacedCells.push({ r, c });
+          replacedInLane += 1;
           r += dr; c += dc;
-          if (r < 0 || r > size - 1 || c < 0 || c > size - 1) break;
+          if (r < 0 || r > size - 1 || c < 0 || c > size - 1) {
+            break;
+          }
         } else {
           // Attacker loses to the current defender (or tie), apply penalty if it's a loss
           if (WIN_MAP[resolved.defender] === resolved.attacker) {
@@ -185,12 +193,21 @@ export function executeLaneClash(
           break;
         }
       }
+      if (replacedInLane >= size) {
+        pierceCount += 1;
+      }
     }
   }
 
+  const pierceMultiplier = 2 ** pierceCount;
+  const totalScore = baseTotalScore * pierceMultiplier;
+
   return { 
     newGrid, 
-    scoreDelta: totalScore || 0, 
+    scoreDelta: totalScore || 0,
+    baseScoreDelta: baseTotalScore || 0,
+    pierceCount,
+    pierceMultiplier,
     penalty: penalty || 0, 
     laneScores, 
     replacedCells, 

@@ -204,6 +204,9 @@ export class GameStore {
     return {
       ...result,
       newGrid: result.newGrid.map((row) => [...row]),
+      baseScoreDelta: result.baseScoreDelta ?? result.scoreDelta,
+      pierceCount: result.pierceCount ?? 0,
+      pierceMultiplier: result.pierceMultiplier ?? 1,
       laneScores: [...result.laneScores],
       replacedCells: result.replacedCells.map((cell) => ({ ...cell })),
       shiftedLanes: result.shiftedLanes?.map((lane) => ({ ...lane })) ?? []
@@ -437,6 +440,7 @@ export class GameStore {
     const card = this.state.hand.find((item) => item.id === result.insertedCardId);
     if (card) this.state.discardPile.push(card);
     this.state.hand = this.state.hand.filter((item) => item.id !== result.insertedCardId);
+    this.state.chips += this.state.hand.length;
     this.state.selectedCardIds = [];
     this.state.preview = null;
     this.lastPreviewEdge = null;

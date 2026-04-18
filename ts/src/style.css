@@ -802,6 +802,70 @@ body {
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 152, 0, 0.6);
 }
 
+.pierce-formula {
+  position: fixed;
+  z-index: 3500;
+  background: rgba(17, 24, 26, 0.92);
+  border: 1px solid rgba(255, 214, 107, 0.35);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  min-width: 220px;
+}
+
+.pierce-formula-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+}
+
+.pierce-base {
+  color: #ff9800;
+}
+
+.pierce-mult {
+  color: #ffffff;
+}
+
+.pierce-eq {
+  opacity: 0.8;
+}
+
+.pierce-total {
+  color: #ffd66b;
+}
+
+.pierce-badges {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pierce-badge {
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255, 214, 107, 0.16);
+  border: 1px solid rgba(255, 214, 107, 0.35);
+  color: #ffd66b;
+  font-weight: 900;
+}
+
+.pierce-fly {
+  position: fixed;
+  z-index: 3600;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffd66b;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 18px rgba(255, 214, 107, 0.55);
+  pointer-events: none;
+}
+
 .deck-selector,
 .status-card {
   padding: 40px;

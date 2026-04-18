@@ -34,6 +34,9 @@ export type InsertEdge = 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT';
 export interface ClashResult {
   newGrid: RPS[][];
   scoreDelta: number;
+  baseScoreDelta?: number;
+  pierceCount?: number;
+  pierceMultiplier?: number;
   penalty: number;
   laneScores: number[];
   replacedCells: { r: number; c: number }[];

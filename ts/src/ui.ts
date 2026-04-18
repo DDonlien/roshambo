@@ -308,6 +308,8 @@ export class GameUI {
   private mouseX: number = 0;
   private mouseY: number = 0;
   private isAnimating: boolean = false;
+  private lastWheelDirection: -1 | 0 | 1 = 0;
+  private lastWheelAt = 0;
 
   constructor(private readonly store: GameStore, private readonly root: HTMLElement) {}
 
@@ -580,9 +582,18 @@ export class GameUI {
       const state = this.store.getState();
       if (this.isAnimating || state.selectedCardIds.length === 0) return;
       e.preventDefault();
+      const now = performance.now();
+      const direction = e.deltaY === 0 ? 0 : (e.deltaY > 0 ? 1 : -1);
+      const pausedLongEnough = now - this.lastWheelAt >= 500;
+      const directionChanged = direction !== 0 && direction !== this.lastWheelDirection;
+      const shouldFlip = direction !== 0 && (pausedLongEnough || directionChanged);
+
+      this.lastWheelAt = now;
+
+      if (!shouldFlip) return;
+      this.lastWheelDirection = direction;
+
       this.store.flipSelectedCard();
-      // When a card is rotated, it should keep the full image but we must update the source
-      // The hand render will handle this automatically if we update the image src
       this.render();
     }, { passive: false });
 
@@ -786,12 +797,94 @@ export class GameUI {
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
+      const baseScoreDelta = result.baseScoreDelta ?? result.scoreDelta;
+      const pierceCount = result.pierceCount ?? 0;
+      const pierceBonus = Math.max(0, result.scoreDelta - baseScoreDelta);
+
+      if (pierceCount > 0 && baseScoreDelta > 0 && pierceBonus > 0) {
+        await this.showPierceFormula(baseScoreDelta, pierceCount, result.scoreDelta, visualScore, pierceBonus);
+        visualScore += pierceBonus;
+      }
+
       await new Promise((resolve) => setTimeout(resolve, 300));
     } finally {
       this.store.applyClashResult(result);
       this.isAnimating = false;
       this.render();
     }
+  }
+
+  private async showPierceFormula(
+    base: number,
+    count: number,
+    total: number,
+    startScore: number,
+    bonus: number
+  ): Promise<void> {
+    const matrixRect = this.matrixWrapperElement?.getBoundingClientRect();
+    const scoreEl = document.getElementById('ui-score');
+    if (!matrixRect || !scoreEl) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'pierce-formula';
+    overlay.innerHTML = `
+      <div class="pierce-formula-row">
+        <span class="pierce-base">+${base}</span>
+        <span class="pierce-mult" id="pierce-mult">×1</span>
+        <span class="pierce-eq">=</span>
+        <span class="pierce-total">+${total}</span>
+      </div>
+      <div class="pierce-badges" id="pierce-badges"></div>
+    `;
+    document.body.appendChild(overlay);
+
+    const x = matrixRect.left + matrixRect.width / 2;
+    const y = matrixRect.top - 18;
+    gsap.set(overlay, { left: 0, top: 0, x, y, xPercent: -50, yPercent: -100, opacity: 0, scale: 0.9 });
+    gsap.to(overlay, { opacity: 1, scale: 1, duration: 0.2, ease: 'power2.out' });
+
+    const multEl = overlay.querySelector('#pierce-mult') as HTMLElement | null;
+    const badgesEl = overlay.querySelector('#pierce-badges') as HTMLElement | null;
+
+    if (badgesEl && multEl) {
+      let currentMult = 1;
+      for (let i = 0; i < count; i += 1) {
+        const badge = document.createElement('div');
+        badge.className = 'pierce-badge';
+        badge.textContent = '×2';
+        badgesEl.appendChild(badge);
+        gsap.fromTo(badge, { opacity: 0, x: 18, scale: 0.9 }, { opacity: 1, x: 0, scale: 1, duration: 0.22, ease: 'back.out(2)' });
+        await new Promise((resolve) => setTimeout(resolve, 140));
+        currentMult *= 2;
+        multEl.textContent = `×${currentMult}`;
+        gsap.fromTo(multEl, { scale: 1.25, color: '#ffd700' }, { scale: 1, color: '#ffffff', duration: 0.22 });
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 180));
+
+    const scoreTarget = startScore + bonus;
+    const scoreObj = { value: startScore };
+    gsap.to(scoreObj, {
+      value: scoreTarget,
+      duration: 0.5,
+      ease: 'power2.out',
+      onUpdate: () => {
+        scoreEl.textContent = Math.floor(scoreObj.value).toString();
+      }
+    });
+    gsap.fromTo(scoreEl, { scale: 1.5, color: '#ffd66b' }, { scale: 1, color: '#FFF', duration: 0.35, ease: 'power2.out' });
+
+    const scoreRect = scoreEl.getBoundingClientRect();
+    const fly = document.createElement('div');
+    fly.className = 'pierce-fly';
+    fly.textContent = `+${bonus}`;
+    document.body.appendChild(fly);
+    gsap.set(fly, { left: 0, top: 0, x, y: matrixRect.top - 10, xPercent: -50, yPercent: -100, opacity: 1, scale: 1 });
+    gsap.to(fly, { x: scoreRect.left + scoreRect.width / 2, y: scoreRect.top + scoreRect.height / 2, scale: 0.6, opacity: 0, duration: 0.55, ease: 'power2.inOut', onComplete: () => fly.remove() });
+
+    await new Promise((resolve) => setTimeout(resolve, 520));
+    gsap.to(overlay, { opacity: 0, duration: 0.2, onComplete: () => overlay.remove() });
   }
 
   private showScorePopup(score: number, matrixIndex: number, isPenalty: boolean = false): void {
