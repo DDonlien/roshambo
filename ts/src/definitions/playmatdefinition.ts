@@ -1,5 +1,5 @@
 import { RPS } from '../types';
-import { isEnabledByToggle, loadEffectToggles } from './effecttoggle';
+import { getContentStatus, loadContentStatuses } from './contentStatus';
 
 export type LocalizedText = Partial<Record<'EN' | 'ZH' | 'ZH_TW' | 'JA', string>>;
 export type PlaymatTiming = 'playing';
@@ -38,16 +38,19 @@ const DEFAULT_PLAYMAT_DEFINITION: PlaymatDefinitionFile = {
 
 export async function loadPlaymatDefinitionFile(): Promise<PlaymatDefinitionFile> {
   try {
-    const [response, toggles] = await Promise.all([
+    const [response, statuses] = await Promise.all([
       fetch('/definition/playmatdefinition.json'),
-      loadEffectToggles()
+      loadContentStatuses()
     ]);
     if (!response.ok) return DEFAULT_PLAYMAT_DEFINITION;
     const parsed = (await response.json()) as PlaymatDefinitionFile;
     if (!parsed || !Array.isArray(parsed.playmats)) return DEFAULT_PLAYMAT_DEFINITION;
     return {
       ...parsed,
-      playmats: parsed.playmats.filter((playmat) => isEnabledByToggle(toggles, playmat.id, 'playmat'))
+      playmats: parsed.playmats.filter((playmat) => {
+        const status = getContentStatus(statuses, playmat.id, 'playmat');
+        return status.implemented && status.enabled;
+      })
     };
   } catch {
     return DEFAULT_PLAYMAT_DEFINITION;

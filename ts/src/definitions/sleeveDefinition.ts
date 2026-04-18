@@ -1,5 +1,5 @@
 import { Card, ClashResult, RPS } from '../types';
-import { isEnabledByToggle, loadEffectToggles } from './effecttoggle';
+import { getContentStatus, loadContentStatuses } from './contentStatus';
 import {
   countCapturesByAttacker,
   isFlush,
@@ -83,16 +83,19 @@ export interface SleeveClashBonus {
 
 export async function loadSleeveDefinitionFile(): Promise<SleeveDefinitionFile> {
   try {
-    const [response, toggles] = await Promise.all([
+    const [response, statuses] = await Promise.all([
       fetch('/definition/sleevedefinition.json'),
-      loadEffectToggles()
+      loadContentStatuses()
     ]);
     if (!response.ok) return DEFAULT_SLEEVE_DEFINITION;
     const parsed = (await response.json()) as SleeveDefinitionFile;
     if (!parsed || !Array.isArray(parsed.sleeves)) return DEFAULT_SLEEVE_DEFINITION;
     return {
       ...parsed,
-      sleeves: parsed.sleeves.filter((sleeve) => isEnabledByToggle(toggles, sleeve.id, 'sleeve'))
+      sleeves: parsed.sleeves.filter((sleeve) => {
+        const status = getContentStatus(statuses, sleeve.id, 'sleeve');
+        return status.implemented && status.enabled;
+      })
     };
   } catch {
     return DEFAULT_SLEEVE_DEFINITION;

@@ -1,4 +1,5 @@
 import { createEmptyGrid, executeLaneClash, resolveAttachmentOffset } from './logic';
+import { CardCatalogFile, loadCardCatalogFile } from './definitions/cardcatalog';
 import { DeckDefinition, DeckDefinitionFile, loadDeckDefinitionFile } from './definitions/deckdefinition';
 import { GiftCardDefinition, GiftCardDefinitionFile, loadGiftCardDefinitionFile } from './definitions/giftcarddefinition';
 import { loadPlaymatDefinitionFile, PlaymatDefinition, PlaymatDefinitionFile } from './definitions/playmatdefinition';
@@ -44,7 +45,7 @@ const DEFAULT_LEVELS: LevelConfig[] = createDefaultLevels();
 
 const DEFAULT_INITIAL_CONFIG: InitialConfig = {
   chips: 10,
-  interestRate: 2,
+  interestRate: 0.2,
   dealsLeft: 4,
   shufflesLeft: 4
 };
@@ -170,18 +171,14 @@ function upgradeSymbol(symbol: RPS): RPS {
 export class GameStore {
   private state: GameState;
   private levelConfigs: LevelConfig[] = DEFAULT_LEVELS;
+  private cardCatalogFile: CardCatalogFile | null = null;
   private deckDefinitionFile: DeckDefinitionFile | null = null;
   private sleeveDefinitionFile: SleeveDefinitionFile | null = null;
   private giftCardDefinitionFile: GiftCardDefinitionFile | null = null;
   private playmatDefinitionFile: PlaymatDefinitionFile | null = null;
   private shopDefinitionFile: ShopDefinitionFile | null = null;
   private runDeckTemplate: Card[] = [];
-  private initialConfigs: Record<number, InitialConfig> = {
-    1: { chips: 10, interestRate: 2, dealsLeft: 4, shufflesLeft: 4 },
-    2: { chips: 10, interestRate: 2, dealsLeft: 4, shufflesLeft: 4 },
-    3: { chips: 10, interestRate: 2, dealsLeft: 4, shufflesLeft: 4 }
-  };
-  private selectedDeckConfigIndex = 1;
+  private selectedDeckId: string | null = null;
   private lastPreviewEdge: InsertEdge | null = null;
   private lastPreviewOffset = 0;
   private lastPreviewPointerRatio = 0.5;
@@ -192,8 +189,8 @@ export class GameStore {
 
   async initialize(): Promise<void> {
     await Promise.all([
+      this.loadCardCatalog(),
       this.loadLevelConfigs(),
-      this.loadInitialConfig(),
       this.loadDeckDefinitions(),
       this.loadSleeveDefinitions(),
       this.loadGiftCardDefinitions(),
@@ -203,8 +200,13 @@ export class GameStore {
     this.state = this.createInitialState();
   }
 
+  private async loadCardCatalog(): Promise<void> {
+    this.cardCatalogFile = await loadCardCatalogFile();
+  }
+
   private async loadDeckDefinitions(): Promise<void> {
     this.deckDefinitionFile = await loadDeckDefinitionFile();
+    this.selectedDeckId = this.selectedDeckId ?? this.deckDefinitionFile.decks[0]?.id ?? null;
   }
 
   private async loadSleeveDefinitions(): Promise<void> {
@@ -281,12 +283,15 @@ export class GameStore {
   }
 
   private getShopCardCodePool(): string[] {
+    const catalogCodes = this.cardCatalogFile?.cards.map((card) => card.code) ?? [];
+    if (catalogCodes.length > 0) return catalogCodes;
+
     const basicDigits = ['0', '1', '3', '4'];
-    const pool: string[] = [];
+    const fallbackPool: string[] = [];
     for (const a of basicDigits) {
       for (const b of basicDigits) {
         for (const c of basicDigits) {
-          pool.push(`${a}${b}${c}`);
+          fallbackPool.push(`${a}${b}${c}`);
         }
       }
     }
@@ -295,11 +300,11 @@ export class GameStore {
         for (const c of [...basicDigits, 'O']) {
           const code = `${a}${b}${c}`;
           if (!code.includes('O')) continue;
-          pool.push(code);
+          fallbackPool.push(code);
         }
       }
     }
-    return Array.from(new Set(pool));
+    return Array.from(new Set(fallbackPool));
   }
 
   estimateShopCardCost(code: string): number {
@@ -348,6 +353,19 @@ export class GameStore {
     return this.deckDefinitionFile?.decks ?? [];
   }
 
+  private getDefaultDeckDefinition(): DeckDefinition | null {
+    return this.getDeckDefinitions()[0] ?? null;
+  }
+
+  private getSelectedDeckDefinition(): DeckDefinition | null {
+    if (!this.selectedDeckId) return this.getDefaultDeckDefinition();
+    return this.getDeckDefinitions().find((deck) => deck.id === this.selectedDeckId) ?? this.getDefaultDeckDefinition();
+  }
+
+  private getSelectedDeckInitialConfig(): InitialConfig {
+    return this.getSelectedDeckDefinition()?.startingConfig ?? DEFAULT_INITIAL_CONFIG;
+  }
+
   getDeckPreviewCards(deckId: string): Card[] {
     const deck = this.getDeckDefinitions().find((candidate) => candidate.id === deckId);
     if (!deck) return [];
@@ -357,7 +375,7 @@ export class GameStore {
 
   private createInitialState(): GameState {
     const firstLevel = this.levelConfigs[0] ?? DEFAULT_LEVELS[0];
-    const conf = this.initialConfigs[this.selectedDeckConfigIndex] || this.initialConfigs[1];
+    const conf = this.getSelectedDeckInitialConfig();
 
     return {
       matrix: {
@@ -609,35 +627,6 @@ export class GameStore {
     }
   }
 
-  private async loadInitialConfig(): Promise<void> {
-    try {
-      const response = await fetch('/definition/initial.csv');
-      const text = await response.text();
-      const lines = text.trim().split('\n').filter(Boolean);
-      
-      const parsed: Record<string, number[]> = {};
-      for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split(',').map(s => s.trim());
-        const key = cols[0].toLowerCase();
-        parsed[key] = [Number(cols[1]), Number(cols[2]), Number(cols[3])];
-      }
-
-      if (parsed['chips']) {
-        for (let type of [1, 2, 3]) {
-          const idx = type - 1;
-          this.initialConfigs[type] = {
-            chips: Number.isFinite(parsed['chips'][idx]) ? parsed['chips'][idx] : DEFAULT_INITIAL_CONFIG.chips,
-            interestRate: Number.isFinite(parsed['interest'][idx]) ? parsed['interest'][idx] : DEFAULT_INITIAL_CONFIG.interestRate,
-            dealsLeft: Number.isFinite(parsed['deal'][idx]) ? parsed['deal'][idx] : DEFAULT_INITIAL_CONFIG.dealsLeft,
-            shufflesLeft: Number.isFinite(parsed['shuffle'][idx]) ? parsed['shuffle'][idx] : DEFAULT_INITIAL_CONFIG.shufflesLeft
-          };
-        }
-      }
-    } catch (error) {
-      console.warn('Could not load initial.csv, using defaults', error);
-    }
-  }
-
   getState(): GameState {
     return {
       ...this.state,
@@ -667,9 +656,8 @@ export class GameStore {
   chooseDeckById(deckId: string): void {
     if (this.state.status !== 'CHOOSE_DECK') return;
     const deckDefinitions = this.getDeckDefinitions();
-    const deckIndex = deckDefinitions.findIndex((deck) => deck.id === deckId);
     const selectedDeck = deckDefinitions.find((deck) => deck.id === deckId) ?? deckDefinitions[0];
-    this.selectedDeckConfigIndex = deckIndex >= 0 ? Math.min(3, deckIndex + 1) : 1;
+    this.selectedDeckId = selectedDeck?.id ?? this.getDefaultDeckDefinition()?.id ?? null;
     this.runDeckTemplate = selectedDeck ? createDeckFromDefinition(selectedDeck) : [];
     this.refillRoundResources();
     this.buildDeckForCurrentLevel();
@@ -809,7 +797,7 @@ export class GameStore {
   }
 
   private refillRoundResources(): void {
-    const conf = this.initialConfigs[this.selectedDeckConfigIndex] || this.initialConfigs[1];
+    const conf = this.getSelectedDeckInitialConfig();
     const bonuses = this.getPerLevelResourceBonuses();
     this.state.shufflesLeft = conf.shufflesLeft + bonuses.shuffles;
     this.state.dealsLeft = conf.dealsLeft + bonuses.deals;
@@ -1030,7 +1018,7 @@ export class GameStore {
   }
 
   resetGame(): void {
-    this.selectedDeckConfigIndex = 1;
+    this.selectedDeckId = this.getDefaultDeckDefinition()?.id ?? null;
     this.runDeckTemplate = [];
     this.lastPreviewEdge = null;
     this.lastPreviewOffset = 0;

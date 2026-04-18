@@ -1,4 +1,4 @@
-import { isEnabledByToggle, loadEffectToggles } from './effecttoggle';
+import { getContentStatus, loadContentStatuses } from './contentStatus';
 
 export type GiftCardTiming = 'prepare_level';
 export type LocalizedText = Partial<Record<'EN' | 'ZH' | 'ZH_TW' | 'JA', string>>;
@@ -38,16 +38,19 @@ const DEFAULT_GIFTCARD_DEFINITION: GiftCardDefinitionFile = {
 
 export async function loadGiftCardDefinitionFile(): Promise<GiftCardDefinitionFile> {
   try {
-    const [response, toggles] = await Promise.all([
+    const [response, statuses] = await Promise.all([
       fetch('/definition/giftcarddefinition.json'),
-      loadEffectToggles()
+      loadContentStatuses()
     ]);
     if (!response.ok) return DEFAULT_GIFTCARD_DEFINITION;
     const parsed = (await response.json()) as GiftCardDefinitionFile;
     if (!parsed || !Array.isArray(parsed.giftcards)) return DEFAULT_GIFTCARD_DEFINITION;
     return {
       ...parsed,
-      giftcards: parsed.giftcards.filter((giftcard) => isEnabledByToggle(toggles, giftcard.id, 'giftcard'))
+      giftcards: parsed.giftcards.filter((giftcard) => {
+        const status = getContentStatus(statuses, giftcard.id, 'giftcard');
+        return status.implemented && status.enabled;
+      })
     };
   } catch {
     return DEFAULT_GIFTCARD_DEFINITION;
