@@ -416,7 +416,8 @@ export class GameStore {
       handsPlayedThisRun: 0,
       handsPlayedThisLevel: 0,
       dealsUsedThisLevel: 0,
-      lastUsedGiftCardDefinitionId: null
+      lastUsedGiftCardDefinitionId: null,
+      sleeveChoices: []
     };
   }
 
@@ -644,7 +645,8 @@ export class GameStore {
       specialCards: this.state.specialCards.map((specialCard) => cloneSpecialCard(specialCard)),
       sleeves: this.state.sleeves.map((sleeve) => cloneSpecialCard(sleeve)),
       giftCards: this.state.giftCards.map((giftCard) => cloneGiftCard(giftCard)),
-      playmats: this.state.playmats.map((playmat) => clonePlaymat(playmat))
+      playmats: this.state.playmats.map((playmat) => clonePlaymat(playmat)),
+      sleeveChoices: [...this.state.sleeveChoices]
     };
   }
 
@@ -659,6 +661,18 @@ export class GameStore {
     const selectedDeck = deckDefinitions.find((deck) => deck.id === deckId) ?? deckDefinitions[0];
     this.selectedDeckId = selectedDeck?.id ?? this.getDefaultDeckDefinition()?.id ?? null;
     this.runDeckTemplate = selectedDeck ? createDeckFromDefinition(selectedDeck) : [];
+    
+    const allSleeves = this.getSleeveDefinitions();
+    const shuffledSleeves = [...allSleeves].sort(() => Math.random() - 0.5);
+    this.state.sleeveChoices = shuffledSleeves.slice(0, 3).map(s => s.id);
+    this.state.status = 'CHOOSE_SLEEVE';
+  }
+
+  chooseSleeveById(sleeveDefId: string): void {
+    if (this.state.status !== 'CHOOSE_SLEEVE') return;
+    if (sleeveDefId) {
+      this.state.sleeves = [{ instanceId: randomId(), definitionId: sleeveDefId }];
+    }
     this.refillRoundResources();
     this.buildDeckForCurrentLevel();
     this.state.status = 'PLAYING';

@@ -3,7 +3,28 @@ import { CARD_LENGTH, Card, GameState, InsertEdge, LevelIcon, RPS } from './type
 import { gsap } from 'gsap';
 
 type Lang = 'EN' | 'ZH' | 'ZH_TW' | 'JA';
-let currentLang: Lang = 'EN';
+
+function getDefaultLang(): Lang {
+  const stored = localStorage.getItem('user_lang') as Lang | null;
+  if (stored && ['EN', 'ZH', 'ZH_TW', 'JA'].includes(stored)) {
+    return stored;
+  }
+
+  const browserLang = navigator.language || (navigator as any).userLanguage || 'en';
+  const langLower = browserLang.toLowerCase();
+  
+  if (langLower.startsWith('zh')) {
+    if (langLower.includes('tw') || langLower.includes('hk') || langLower.includes('hant')) {
+      return 'ZH_TW';
+    }
+    return 'ZH';
+  } else if (langLower.startsWith('ja')) {
+    return 'JA';
+  }
+  return 'EN';
+}
+
+let currentLang: Lang = getDefaultLang();
 
 const LANG_DISPLAY: Record<Lang, string> = {
   EN: 'EN',
@@ -27,6 +48,7 @@ const I18N = {
     RUBIK: 'Rubik',
     MASTER: 'Master',
     CHOOSE_DECK: 'Choose your deck',
+    CHOOSE_SLEEVE: 'Choose your sleeve',
     LEVEL_WON: 'Round Cleared!',
     GAME_OVER: 'Game Over',
     WIN: 'You Win!',
@@ -39,6 +61,16 @@ const I18N = {
     LEVEL_REWARD: 'Level Reward',
     INTEREST_REWARD: 'Interest',
     TOTAL_REWARD: 'Total',
+    TARGET_SCORE: 'TARGET SCORE',
+    TOTAL_SCORE: 'TOTAL SCORE',
+    BASE_SCORE: 'BASE SCORE',
+    MULTIPLIER: 'MULTIPLIER',
+    GOLD: 'GOLD',
+    SLEEVE: 'SLEEVE',
+    GIFT_CARD: 'GIFT CARD',
+    PLAYMAT: 'PLAYMAT',
+    NONE: 'None',
+    MASTER_EFFECT: '+1 Multiplier for every 3 matches made.',
     BUY: 'Buy',
     PURCHASED: 'Purchased',
     SPECIAL_CARDS: 'Special Cards',
@@ -68,6 +100,7 @@ const I18N = {
     RUBIK: 'Rubik',
     MASTER: 'Master',
     CHOOSE_DECK: '选择牌组',
+    CHOOSE_SLEEVE: '选择初始卡套',
     LEVEL_WON: '关卡完成！',
     GAME_OVER: '游戏结束',
     WIN: '你赢了！',
@@ -80,13 +113,23 @@ const I18N = {
     LEVEL_REWARD: '关卡奖励',
     INTEREST_REWARD: '利息奖励',
     TOTAL_REWARD: '总奖励',
+    TARGET_SCORE: '目标分数',
+    TOTAL_SCORE: '总分',
+    BASE_SCORE: '基础分',
+    MULTIPLIER: '倍率',
+    GOLD: '金币',
+    SLEEVE: '卡套',
+    GIFT_CARD: '礼品卡',
+    PLAYMAT: '卡垫',
+    NONE: '无',
+    MASTER_EFFECT: '每达成 3 次匹配，倍率 +1。',
     BUY: '购买',
     PURCHASED: '已购买',
     SPECIAL_CARDS: '特殊牌',
     INVENTORY: '库存',
-    GIFT_CARDS: 'Gift Card',
-    PLAYMATS: 'Playmat',
-    SLEEVES: 'Sleeve',
+    GIFT_CARDS: '礼品卡',
+    PLAYMATS: '卡垫',
+    SLEEVES: '卡套',
     USE: '使用',
     START_LEVEL: '开始本关',
     PREPARE_LEVEL: '关前准备',
@@ -109,6 +152,7 @@ const I18N = {
     RUBIK: 'Rubik',
     MASTER: 'Master',
     CHOOSE_DECK: '選擇牌組',
+    CHOOSE_SLEEVE: '選擇初始卡套',
     LEVEL_WON: '關卡完成！',
     GAME_OVER: '遊戲結束',
     WIN: '你贏了！',
@@ -121,13 +165,23 @@ const I18N = {
     LEVEL_REWARD: '關卡獎勵',
     INTEREST_REWARD: '利息獎勵',
     TOTAL_REWARD: '總獎勵',
+    TARGET_SCORE: '目標分數',
+    TOTAL_SCORE: '總分',
+    BASE_SCORE: '基礎分',
+    MULTIPLIER: '倍率',
+    GOLD: '金幣',
+    SLEEVE: '卡套',
+    GIFT_CARD: '禮品卡',
+    PLAYMAT: '卡墊',
+    NONE: '無',
+    MASTER_EFFECT: '每達成 3 次配對，倍率 +1。',
     BUY: '購買',
     PURCHASED: '已購買',
     SPECIAL_CARDS: '特殊牌',
     INVENTORY: '庫存',
-    GIFT_CARDS: 'Gift Card',
-    PLAYMATS: 'Playmat',
-    SLEEVES: 'Sleeve',
+    GIFT_CARDS: '禮品卡',
+    PLAYMATS: '卡墊',
+    SLEEVES: '卡套',
     USE: '使用',
     START_LEVEL: '開始本關',
     PREPARE_LEVEL: '關前準備',
@@ -150,6 +204,7 @@ const I18N = {
     RUBIK: 'Rubik',
     MASTER: 'Master',
     CHOOSE_DECK: 'デッキを選択',
+    CHOOSE_SLEEVE: '初期スリーブを選択',
     LEVEL_WON: 'ステージクリア！',
     GAME_OVER: 'ゲームオーバー',
     WIN: 'クリア！',
@@ -162,6 +217,16 @@ const I18N = {
     LEVEL_REWARD: 'ステージ報酬',
     INTEREST_REWARD: '利息',
     TOTAL_REWARD: '合計',
+    TARGET_SCORE: '目標スコア',
+    TOTAL_SCORE: '合計スコア',
+    BASE_SCORE: '基本点',
+    MULTIPLIER: '倍率',
+    GOLD: 'ゴールド',
+    SLEEVE: 'スリーブ',
+    GIFT_CARD: 'ギフトカード',
+    PLAYMAT: 'プレイマット',
+    NONE: 'なし',
+    MASTER_EFFECT: '3回マッチするたびに倍率 +1。',
     BUY: '購入',
     PURCHASED: '購入済み',
     SPECIAL_CARDS: '特殊カード',
@@ -246,7 +311,7 @@ function getCardFullAsset(card: Card): string {
   const code = baseSymbols.map(s => mapToDigit[s] || '0').join('');
   
   // Look up the full path in the CSV map.
-  return cardAssetMap[code] || `./Sketch/CardType=${code}.png`;
+  return cardAssetMap[code] || `/Sketch/CardType=${code}.png`;
 }
 
 function hasFullCardAsset(card: Card): boolean {
@@ -276,11 +341,11 @@ function blockAsset(symbol: RPS): string {
     return tricolorDataUrl();
   }
   // Look up the full path in the CSV map.
-  return blockAssetMap[symbol] || `./Sketch/BlockType=Blank.png`;
+  return blockAssetMap[symbol] || `/Sketch/BlockType=Blank.png`;
 }
 
 function iconAsset(icon: LevelIcon): string {
-  return `./Sketch/icon_${icon}.png`;
+  return `/Sketch/icon_${icon}.png`;
 }
 
 function cardClassName(isHandCard: boolean): string {
@@ -348,8 +413,90 @@ function createSpecialCardMarkup(
   `;
 }
 
+const FALLBACK_TEXT_I18N: Record<string, Partial<Record<Lang, string>>> = {
+  Joker: { ZH: '小丑', ZH_TW: '小丑', JA: 'ジョーカー' },
+  Jkr: { ZH: '小丑', ZH_TW: '小丑', JA: 'Jkr' },
+  'Greedy Joker': { ZH: '贪婪小丑', ZH_TW: '貪婪小丑', JA: '欲張りジョーカー' },
+  Grd: { ZH: '贪婪', ZH_TW: '貪婪', JA: '欲張' },
+  'Lusty Joker': { ZH: '欲念小丑', ZH_TW: '慾念小丑', JA: '色欲ジョーカー' },
+  Lst: { ZH: '欲念', ZH_TW: '慾念', JA: '色欲' },
+  'Wrathful Joker': { ZH: '愤怒小丑', ZH_TW: '憤怒小丑', JA: '憤怒ジョーカー' },
+  Wrt: { ZH: '愤怒', ZH_TW: '憤怒', JA: '憤怒' },
+  'Gluttonous Joker': { ZH: '暴食小丑', ZH_TW: '暴食小丑', JA: '暴食ジョーカー' },
+  Glt: { ZH: '暴食', ZH_TW: '暴食', JA: '暴食' },
+  'Jolly Joker': { ZH: '快活小丑', ZH_TW: '快活小丑', JA: '陽気ジョーカー' },
+  Jly: { ZH: '快活', ZH_TW: '快活', JA: '陽気' },
+  'Zany Joker': { ZH: '古怪小丑', ZH_TW: '古怪小丑', JA: '奇妙ジョーカー' },
+  Zny: { ZH: '古怪', ZH_TW: '古怪', JA: '奇妙' },
+  'Crazy Joker': { ZH: '疯狂小丑', ZH_TW: '瘋狂小丑', JA: '狂気ジョーカー' },
+  Crz: { ZH: '疯狂', ZH_TW: '瘋狂', JA: '狂気' },
+  'Droll Joker': { ZH: '滑稽小丑', ZH_TW: '滑稽小丑', JA: 'おどけジョーカー' },
+  Drl: { ZH: '滑稽', ZH_TW: '滑稽', JA: '滑稽' },
+  'Sly Joker': { ZH: '狡黠小丑', ZH_TW: '狡黠小丑', JA: '狡猾ジョーカー' },
+  Sly: { ZH: '狡黠', ZH_TW: '狡黠', JA: '狡猾' },
+  'Wily Joker': { ZH: '机敏小丑', ZH_TW: '機敏小丑', JA: '策士ジョーカー' },
+  Wily: { ZH: '机敏', ZH_TW: '機敏', JA: '策士' },
+  Wly: { ZH: '机敏', ZH_TW: '機敏', JA: '策士' },
+  'Devious Joker': { ZH: '诡计小丑', ZH_TW: '詭計小丑', JA: '悪知恵ジョーカー' },
+  Dev: { ZH: '诡计', ZH_TW: '詭計', JA: '悪知' },
+  'Crafty Joker': { ZH: '巧手小丑', ZH_TW: '巧手小丑', JA: '技巧ジョーカー' },
+  Crf: { ZH: '巧手', ZH_TW: '巧手', JA: '技巧' },
+  'Half Joker': { ZH: '半张小丑', ZH_TW: '半張小丑', JA: 'ハーフジョーカー' },
+  Half: { ZH: '半张', ZH_TW: '半張', JA: '半分' },
+  'Joker Stencil': { ZH: '小丑模板', ZH_TW: '小丑模板', JA: 'ジョーカーステンシル' },
+  Stencil: { ZH: '模板', ZH_TW: '模板', JA: '型紙' },
+  Sten: { ZH: '模板', ZH_TW: '模板', JA: '型紙' },
+  Banner: { ZH: '旗帜', ZH_TW: '旗幟', JA: '旗印' },
+  Bnr: { ZH: '旗帜', ZH_TW: '旗幟', JA: '旗印' },
+  'Mystic Summit': { ZH: '神秘峰顶', ZH_TW: '神秘峰頂', JA: '神秘の頂' },
+  Summit: { ZH: '峰顶', ZH_TW: '峰頂', JA: '頂' },
+  'Loyalty Card': { ZH: '忠诚卡', ZH_TW: '忠誠卡', JA: 'ロイヤルティカード' },
+  Loyalty: { ZH: '忠诚', ZH_TW: '忠誠', JA: '忠誠' },
+  Loyal: { ZH: '忠诚', ZH_TW: '忠誠', JA: '忠誠' },
+  Misprint: { ZH: '错印', ZH_TW: '錯印', JA: 'ミスプリント' },
+  Rand: { ZH: '随机', ZH_TW: '隨機', JA: 'ランダム' },
+  Abstract: { ZH: '抽象', ZH_TW: '抽象', JA: '抽象' },
+  'Abstract Joker': { ZH: '抽象小丑', ZH_TW: '抽象小丑', JA: '抽象ジョーカー' },
+  Abs: { ZH: '抽象', ZH_TW: '抽象', JA: '抽象' },
+  Runner: { ZH: '跑者', ZH_TW: '跑者', JA: 'ランナー' },
+  Run: { ZH: '跑者', ZH_TW: '跑者', JA: '走者' },
+  'Blue Joker': { ZH: '蓝色小丑', ZH_TW: '藍色小丑', JA: '青ジョーカー' },
+  Blue: { ZH: '蓝色', ZH_TW: '藍色', JA: '青' },
+  Drunkard: { ZH: '醉汉', ZH_TW: '醉漢', JA: '酔いどれ' },
+  Drnk: { ZH: '醉汉', ZH_TW: '醉漢', JA: '酔い' },
+  'Golden Joker': { ZH: '黄金小丑', ZH_TW: '黃金小丑', JA: '黄金ジョーカー' },
+  Golden: { ZH: '黄金', ZH_TW: '黃金', JA: '黄金' },
+  Gold: { ZH: '黄金', ZH_TW: '黃金', JA: '黄金' },
+  Bull: { ZH: '公牛', ZH_TW: '公牛', JA: '雄牛' },
+  'To the Moon': { ZH: '奔向月球', ZH_TW: '奔向月球', JA: '月まで' },
+  Moon: { ZH: '月球', ZH_TW: '月球', JA: '月' },
+  Acrobat: { ZH: '杂技演员', ZH_TW: '雜技演員', JA: '曲芸師' },
+  Acro: { ZH: '杂技', ZH_TW: '雜技', JA: '曲芸' },
+  'Rough Gem': { ZH: '粗糙宝石', ZH_TW: '粗糙寶石', JA: '原石' },
+  Gem: { ZH: '宝石', ZH_TW: '寶石', JA: '宝石' },
+  Bloodstone: { ZH: '血石', ZH_TW: '血石', JA: '血石' },
+  Blood: { ZH: '血石', ZH_TW: '血石', JA: '血石' },
+  Arrowhead: { ZH: '箭头', ZH_TW: '箭頭', JA: '矢じり' },
+  Arrow: { ZH: '箭头', ZH_TW: '箭頭', JA: '矢' },
+  'Onyx Agate': { ZH: '缟玛瑙', ZH_TW: '縞瑪瑙', JA: 'オニキス' },
+  Onyx: { ZH: '缟玛瑙', ZH_TW: '縞瑪瑙', JA: 'オニキス' },
+  Agate: { ZH: '玛瑙', ZH_TW: '瑪瑙', JA: '瑪瑙' },
+  'Seeing Double': { ZH: '双重视野', ZH_TW: '雙重視野', JA: '二重視' },
+  Double: { ZH: '双重', ZH_TW: '雙重', JA: '二重' },
+  'The Duo': { ZH: '二重奏', ZH_TW: '二重奏', JA: 'デュオ' },
+  Duo: { ZH: '二重', ZH_TW: '二重', JA: 'デュオ' },
+  'The Trio': { ZH: '三重奏', ZH_TW: '三重奏', JA: 'トリオ' },
+  Trio: { ZH: '三重', ZH_TW: '三重', JA: 'トリオ' },
+  'The Order': { ZH: '秩序', ZH_TW: '秩序', JA: '秩序' },
+  Order: { ZH: '秩序', ZH_TW: '秩序', JA: '秩序' },
+  'The Tribe': { ZH: '部族', ZH_TW: '部族', JA: '部族' },
+  Tribe: { ZH: '部族', ZH_TW: '部族', JA: '部族' },
+  Bootstraps: { ZH: '鞋带', ZH_TW: '鞋帶', JA: 'ブートストラップ' },
+  Boot: { ZH: '鞋带', ZH_TW: '鞋帶', JA: 'ブート' }
+};
+
 function localizeText(base: string, i18n?: Partial<Record<Lang, string>>): string {
-  return i18n?.[currentLang] ?? i18n?.EN ?? base;
+  return i18n?.[currentLang] ?? i18n?.EN ?? FALLBACK_TEXT_I18N[base]?.[currentLang] ?? base;
 }
 
 export class GameUI {
@@ -363,6 +510,11 @@ export class GameUI {
   private lastWheelDirection: -1 | 0 | 1 = 0;
   private lastWheelAt = 0;
   private deckSelectIndex = 0;
+  
+  // Follow cursor state
+  private isHovering = false;
+  private currentCardX = 0;
+  private currentCardY = 0;
 
   constructor(private readonly store: GameStore, private readonly root: HTMLElement) {}
 
@@ -443,8 +595,18 @@ export class GameUI {
           const cardElement = this.handElement?.querySelector(`[data-card-id="${lastId}"]`) as HTMLElement | null;
           if (cardElement) {
             cardElement.classList.remove('held');
-            gsap.set(cardElement, { clearProps: 'all' });
+            cardElement.style.left = '';
+            cardElement.style.top = '';
+            gsap.killTweensOf(cardElement);
+            // DO NOT clearProps 'all' here! It removes all inline styles and causes jumps.
+            // Just clear the specific 3D properties we added during follow/tilt.
+            gsap.set(cardElement, { 
+              clearProps: 'xPercent,yPercent,rotationX,rotationY,transformPerspective,opacity,pointerEvents' 
+            });
           }
+          this.isHovering = false;
+          this.currentCardX = 0;
+          this.currentCardY = 0;
           this.store.selectCard(null);
           this.render();
         }
@@ -460,23 +622,38 @@ export class GameUI {
     sidebar.className = 'sidebar';
     sidebar.innerHTML = `
       <div class="sidebar-header">
-        <div class="sidebar-title">Roshambo!</div>
+        <div class="sidebar-title">ROSHAMBO</div>
         <button class="btn-lang" id="ui-btn-lang" title="Switch Language">${LANG_DISPLAY[currentLang]}</button>
       </div>
       <div class="stage-box">
-        <img id="ui-level-icon" class="stage-icon" src="${iconAsset('pocket')}" alt="stage">
+        <div class="stage-icon-frame">
+          <img id="ui-level-icon" class="stage-icon" src="${iconAsset('pocket')}" alt="stage">
+        </div>
         <div class="stage-copy">
           <span class="stage-label" id="ui-level">STAGE 1/9</span>
+          <span class="goal-label" id="ui-target-score-label">TARGET SCORE</span>
+          <span class="stage-goal" id="ui-goal">10</span>
           <span class="stage-name" id="ui-level-name">Pocket</span>
+          <span class="stage-effect" id="ui-stage-effect"></span>
         </div>
-        <div class="stage-goal" id="ui-goal">10</div>
       </div>
-      <div class="score-box">
-        <span class="label" id="ui-score-label">SCORE</span>
-        <span class="value" id="ui-score">0</span>
+      <div class="score-box total-score-box" id="ui-total-score-panel">
+        <span class="label" id="ui-score-label">TOTAL SCORE</span>
+        <span class="value score-ratio"><span id="ui-score">0</span><span class="score-separator">/</span><span id="ui-goal-inline">10</span></span>
+      </div>
+      <div class="score-split-box">
+        <div class="score-split-cell">
+          <span class="label" id="ui-base-score-label">BASE SCORE</span>
+          <span class="value" id="ui-base-score">0</span>
+        </div>
+        <div class="score-times">×</div>
+        <div class="score-split-cell">
+          <span class="label" id="ui-multiplier-label">MULTIPLIER</span>
+          <span class="value multiplier-value" id="ui-score-multiplier">1</span>
+        </div>
       </div>
       <div class="score-box chips-box" id="ui-chips-box">
-        <span class="label chips-label" id="ui-chips-label">CHIPS</span>
+        <span class="label chips-label" id="ui-chips-label">GOLD</span>
         <div class="chips-value-wrap">
           <span class="value chips-value" id="ui-chips">10</span>
           <span class="interest-preview" id="ui-interest-preview">+2</span>
@@ -620,6 +797,7 @@ export class GameUI {
         else if (currentLang === 'ZH_TW') currentLang = 'JA';
         else currentLang = 'EN';
         
+        localStorage.setItem('user_lang', currentLang);
         langBtn.textContent = LANG_DISPLAY[currentLang];
         this.render();
       });
@@ -629,7 +807,29 @@ export class GameUI {
     window.addEventListener('mousemove', (e) => {
       this.mouseX = e.clientX;
       this.mouseY = e.clientY;
-      this.updateHeldPosition();
+      
+      const state = this.store.getState();
+      const hasSelectedCard = state.selectedCardIds.length > 0;
+      const shouldReturnToHand = this.isInsideSafeZone();
+
+      // Only act as hovering if we have a card AND we are outside the safe zone (i.e. in the matrix area)
+      if (hasSelectedCard && !shouldReturnToHand) {
+        if (!this.isHovering) {
+          // Snap initial target to mouse immediately upon entering hover state
+          const r = this.matrixWrapperElement?.getBoundingClientRect();
+          if (r) {
+             this.currentCardX = e.clientX - r.left - r.width / 2;
+             this.currentCardY = e.clientY - r.top - r.height / 2;
+          }
+        }
+        this.isHovering = true;
+      } else {
+        if (this.isHovering) {
+           this.isHovering = false;
+           // If we transition out of hovering, force an immediate render to snap it back to hand
+           this.render();
+        }
+      }
     });
     window.addEventListener('wheel', (e) => {
       const state = this.store.getState();
@@ -651,6 +851,74 @@ export class GameUI {
     }, { passive: false });
 
     this.render();
+
+    // Start GSAP Ticker for smooth lagging tilt follow
+    gsap.ticker.add(this.updateFollower);
+  }
+
+  private updateFollower = (): void => {
+    const state = this.store.getState();
+    const lastId = state.selectedCardIds[state.selectedCardIds.length - 1];
+    if (!lastId || this.isAnimating || !this.handElement) return;
+
+    const cardElement = this.handElement.querySelector(`[data-card-id="${lastId}"]`) as HTMLElement;
+    if (!cardElement || !cardElement.classList.contains('held')) return;
+    
+    // We only follow and tilt if NOT in preview mode (snapped to edge)
+    if (state.preview) {
+      gsap.set(cardElement, { opacity: 0 }); // Hide while snapped/previewing
+      return;
+    }
+
+    const r = this.matrixWrapperElement?.getBoundingClientRect();
+    if (!r) return;
+
+    if (!this.isHovering) {
+      // If we are not hovering, we want the ticker to stop controlling this card
+      // so it can naturally tween back to the hand via render()
+      return;
+    }
+
+    // Target is mouse relative to matrix center
+    let targetX = this.mouseX - r.left - r.width / 2;
+    let targetY = this.mouseY - r.top - r.height / 2;
+
+    // LERP to target
+    this.currentCardX += (targetX - this.currentCardX) * 0.15;
+    this.currentCardY += (targetY - this.currentCardY) * 0.15;
+
+    // Calculate delta for tilt
+    const dx = targetX - this.currentCardX;
+    const dy = targetY - this.currentCardY;
+
+    // TILT math
+    let rotY = dx * 0.4;
+    let rotX = -dy * 0.4;
+
+    // Clamp tilt
+    rotY = gsap.utils.clamp(-30, 30, rotY);
+    rotX = gsap.utils.clamp(-30, 30, rotX);
+    
+    // If card is rotated (flipped manually via button or scroll wheel)
+    // we still need to preserve its Z rotation logic
+    const baseRotation = cardElement.classList.contains('render-card-horizontal') ? -90 : 0;
+    const isFlipped = state.hand.find(c => c.id === lastId)?.isFlipped;
+    const extraZ = isFlipped ? 180 : 0;
+
+    gsap.set(cardElement, {
+      left: r.left + r.width / 2,
+      top: r.top + r.height / 2,
+      x: this.currentCardX,
+      y: this.currentCardY,
+      rotationX: rotX,
+      rotationY: rotY,
+      rotationZ: baseRotation + extraZ,
+      xPercent: -50,
+      yPercent: -50,
+      opacity: 1,
+      pointerEvents: 'none',
+      transformPerspective: 800 // Give the tilt a 3D feel
+    });
   }
 
   private async handleClash(edge: InsertEdge): Promise<void> {
@@ -682,8 +950,22 @@ export class GameUI {
         return indices;
       };
 
-      let visualScore = Number(state.currentScore) || 0;
       const { stride } = this.getCellMetrics(size);
+
+      let currentRoundBase = 0;
+      let currentPierce = 0;
+      let isFirstScore = true;
+      
+      const roundScoreBox = document.querySelector('.score-split-box') as HTMLElement | null;
+      const baseEl = document.getElementById('ui-base-score');
+      const multEl = document.getElementById('ui-score-multiplier');
+
+      if (roundScoreBox && baseEl && multEl) {
+        baseEl.textContent = '0';
+        multEl.textContent = '1';
+        gsap.set(baseEl, { opacity: 1, scale: 1 });
+        gsap.set(multEl, { opacity: 1, scale: 1 });
+      }
 
       for (let cardIndex = 0; cardIndex < selectedCard.symbols.length; cardIndex += 1) {
         const laneIndex = result.attachmentOffset + cardIndex;
@@ -717,7 +999,6 @@ export class GameUI {
           await tl.to(attackerBlock, { x: localDx * 0.4, y: localDy * 0.4, duration: 0.15, ease: 'power2.out' })
             .to(attackerBlock, { x: -localDx * 0.2, y: -localDy * 0.2, duration: 0.25, ease: 'elastic.out(1, 0.3)' });
 
-          // Reset rotation before playing vanish animation to avoid compounding transforms
           gsap.set(attackerBlock, { rotation: 0 });
           gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: 0.3, ease: 'power2.in' });
 
@@ -726,12 +1007,21 @@ export class GameUI {
           const attackerType = selectedCard.symbols[cardIndex];
           const penaltyVal = Number(SCORE_WEIGHTS[attackerType]) || 0;
           if (penaltyVal > 0) {
-            this.showScorePopup(-penaltyVal, firstCellIdx, true);
-            visualScore -= penaltyVal;
-            const scoreVal = document.getElementById('ui-score');
-            if (scoreVal) {
-              scoreVal.textContent = Math.floor(visualScore).toString();
-              gsap.fromTo(scoreVal, { scale: 1.4, color: '#F44336', x: 5 }, { scale: 1, color: '#FFF', x: 0, duration: 0.3 });
+            const popupIndex = firstCellIdx;
+            const popupTile = this.matrixElement?.children[popupIndex] as HTMLElement;
+            if (popupTile) {
+              this.showScorePopup(-penaltyVal, popupIndex, true);
+              if (baseEl && roundScoreBox) {
+                await this.transferParticles(popupTile, baseEl, true);
+                const oldBase = currentRoundBase;
+                currentRoundBase -= penaltyVal;
+                if (isFirstScore) {
+                  baseEl.textContent = currentRoundBase.toString();
+                  isFirstScore = false;
+                } else {
+                  this.animateAdd(oldBase, currentRoundBase, baseEl, roundScoreBox);
+                }
+              }
             }
           }
 
@@ -808,13 +1098,20 @@ export class GameUI {
                 gsap.fromTo(img, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.4 });
                 
                 const popupIndex = step > 0 ? laneIndices[step - 1] : index;
-                this.showScorePopup(-penaltyVal, popupIndex, true);
-                
-                visualScore -= penaltyVal;
-                const scoreVal = document.getElementById('ui-score');
-                if (scoreVal) {
-                  scoreVal.textContent = Math.floor(visualScore).toString();
-                  gsap.fromTo(scoreVal, { scale: 1.4, color: '#F44336', x: 5 }, { scale: 1, color: '#FFF', x: 0, duration: 0.3 });
+                const popupTile = this.matrixElement?.children[popupIndex] as HTMLElement;
+                if (popupTile) {
+                  this.showScorePopup(-penaltyVal, popupIndex, true);
+                  if (baseEl && roundScoreBox) {
+                    await this.transferParticles(popupTile, baseEl, true);
+                    const oldBase = currentRoundBase;
+                    currentRoundBase -= penaltyVal;
+                    if (isFirstScore) {
+                      baseEl.textContent = currentRoundBase.toString();
+                      isFirstScore = false;
+                    } else {
+                      this.animateAdd(oldBase, currentRoundBase, baseEl, roundScoreBox);
+                    }
+                  }
                 }
               }
             }
@@ -837,26 +1134,47 @@ export class GameUI {
 
             if (gain > 0) {
               this.showScorePopup(gain, index);
-              visualScore += gain;
-              const scoreVal = document.getElementById('ui-score');
-              if (scoreVal) {
-                scoreVal.textContent = visualScore.toString();
-                gsap.fromTo(scoreVal, { scale: 1.4, color: '#FF9800', x: -5 }, { scale: 1, color: '#FFF', x: 0, duration: 0.3 });
+              if (baseEl && roundScoreBox) {
+                await this.transferParticles(img, baseEl);
+                const oldBase = currentRoundBase;
+                currentRoundBase += gain;
+                if (isFirstScore) {
+                  baseEl.textContent = currentRoundBase.toString();
+                  isFirstScore = false;
+                } else {
+                  this.animateAdd(oldBase, currentRoundBase, baseEl, roundScoreBox);
+                }
               }
             }
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
         }
+        
+        const replacedInLane = result.replacedCells.filter(c => {
+          return laneIndices.some(idx => Math.floor(idx / size) === c.r && idx % size === c.c);
+        }).length;
+        
+        if (replacedInLane >= size) {
+          currentPierce += 1;
+          if (multEl && roundScoreBox) {
+            const newMult = 2 ** currentPierce;
+            if (currentPierce === 1) {
+              multEl.textContent = `2`;
+              gsap.fromTo(multEl, { scale: 0.85, y: 6 }, { scale: 1.18, y: 0, duration: 0.22, yoyo: true, repeat: 1, ease: 'steps(4)' });
+            } else {
+              const oldMult = 2 ** (currentPierce - 1);
+              this.animateAdd(oldMult, newMult, multEl, roundScoreBox);
+            }
+            await new Promise((resolve) => setTimeout(resolve, 300));
+          }
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
-      const baseScoreDelta = result.baseScoreDelta ?? result.scoreDelta;
-      const pierceCount = result.pierceCount ?? 0;
-      const pierceBonus = Math.max(0, result.scoreDelta - baseScoreDelta);
-
-      if (pierceCount > 0 && baseScoreDelta > 0 && pierceBonus > 0) {
-        await this.showPierceFormula(baseScoreDelta, pierceCount, result.scoreDelta, visualScore, pierceBonus);
-        visualScore += pierceBonus;
+      if (roundScoreBox && baseEl && (currentRoundBase !== 0 || currentPierce > 0)) {
+        gsap.fromTo(roundScoreBox, { filter: 'brightness(1)' }, { filter: 'brightness(1.18)', duration: 0.08, yoyo: true, repeat: 3 });
+        await new Promise((resolve) => setTimeout(resolve, 260));
       }
 
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -867,96 +1185,108 @@ export class GameUI {
     }
   }
 
-  private async showPierceFormula(
-    base: number,
-    count: number,
-    total: number,
-    startScore: number,
-    bonus: number
-  ): Promise<void> {
-    const matrixRect = this.matrixWrapperElement?.getBoundingClientRect();
-    const scoreEl = document.getElementById('ui-score');
-    if (!matrixRect || !scoreEl) return;
 
-    const overlay = document.createElement('div');
-    overlay.className = 'pierce-formula';
-    overlay.innerHTML = `
-      <div class="pierce-formula-row">
-        <span class="pierce-base">+${base}</span>
-        <span class="pierce-mult" id="pierce-mult">×1</span>
-        <span class="pierce-eq">=</span>
-        <span class="pierce-total">+${total}</span>
-      </div>
-      <div class="pierce-badges" id="pierce-badges"></div>
-    `;
-    document.body.appendChild(overlay);
-
-    const x = matrixRect.left + matrixRect.width / 2;
-    const y = matrixRect.top - 18;
-    gsap.set(overlay, { left: 0, top: 0, x, y, xPercent: -50, yPercent: -100, opacity: 0, scale: 0.9 });
-    gsap.to(overlay, { opacity: 1, scale: 1, duration: 0.2, ease: 'power2.out' });
-
-    const multEl = overlay.querySelector('#pierce-mult') as HTMLElement | null;
-    const badgesEl = overlay.querySelector('#pierce-badges') as HTMLElement | null;
-
-    if (badgesEl && multEl) {
-      let currentMult = 1;
-      for (let i = 0; i < count; i += 1) {
-        const badge = document.createElement('div');
-        badge.className = 'pierce-badge';
-        badge.textContent = '×2';
-        badgesEl.appendChild(badge);
-        gsap.fromTo(badge, { opacity: 0, x: 18, scale: 0.9 }, { opacity: 1, x: 0, scale: 1, duration: 0.22, ease: 'back.out(2)' });
-        await new Promise((resolve) => setTimeout(resolve, 140));
-        currentMult *= 2;
-        multEl.textContent = `×${currentMult}`;
-        gsap.fromTo(multEl, { scale: 1.25, color: '#ffd700' }, { scale: 1, color: '#ffffff', duration: 0.22 });
-      }
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 180));
-
-    const scoreTarget = startScore + bonus;
-    const scoreObj = { value: startScore };
-    gsap.to(scoreObj, {
-      value: scoreTarget,
-      duration: 0.5,
-      ease: 'power2.out',
-      onUpdate: () => {
-        scoreEl.textContent = Math.floor(scoreObj.value).toString();
-      }
-    });
-    gsap.fromTo(scoreEl, { scale: 1.5, color: '#ffd66b' }, { scale: 1, color: '#FFF', duration: 0.35, ease: 'power2.out' });
-
-    const scoreRect = scoreEl.getBoundingClientRect();
-    const fly = document.createElement('div');
-    fly.className = 'pierce-fly';
-    fly.textContent = `+${bonus}`;
-    document.body.appendChild(fly);
-    gsap.set(fly, { left: 0, top: 0, x, y: matrixRect.top - 10, xPercent: -50, yPercent: -100, opacity: 1, scale: 1 });
-    gsap.to(fly, { x: scoreRect.left + scoreRect.width / 2, y: scoreRect.top + scoreRect.height / 2, scale: 0.6, opacity: 0, duration: 0.55, ease: 'power2.inOut', onComplete: () => fly.remove() });
-
-    await new Promise((resolve) => setTimeout(resolve, 520));
-    gsap.to(overlay, { opacity: 0, duration: 0.2, onComplete: () => overlay.remove() });
-  }
 
   private showScorePopup(score: number, matrixIndex: number, isPenalty: boolean = false): void {
     const tile = this.matrixElement?.children[matrixIndex] as HTMLElement;
-    if (!tile) return;
+    const wrapper = this.matrixWrapperElement;
+    if (!tile || !wrapper) return;
+
     const popup = document.createElement('div');
-    popup.className = 'score-popup';
+    popup.className = 'float';
     popup.textContent = score > 0 ? `+${score}` : `${score}`;
     if (isPenalty) {
       popup.style.color = '#F44336';
-      popup.style.textShadow = '0 0 10px rgba(0,0,0,0.9), 0 0 20px rgba(244, 67, 54, 0.6)';
+      popup.style.textShadow = '0 4px 12px rgba(244, 67, 54, 0.9), 0 0 6px rgba(244, 67, 54, 0.6)';
     }
-    document.body.appendChild(popup);
-    const rect = tile.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    gsap.set(popup, { left: 0, top: 0, x, y, scale: 0, opacity: 1, xPercent: -50, yPercent: -50 });
-    gsap.to(popup, { scale: 1.5, y: y - 100, duration: 0.8, ease: "back.out(2)" });
-    gsap.to(popup, { opacity: 0, delay: 0.6, duration: 0.4, onComplete: () => popup.remove() });
+    wrapper.appendChild(popup);
+    
+    // Calculate position relative to the wrapper
+    const tileRect = tile.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const startX = tileRect.left - wrapperRect.left + tileRect.width / 2;
+    const startY = tileRect.top - wrapperRect.top + tileRect.height / 2;
+    
+    gsap.fromTo(popup, { left: startX, top: startY, xPercent: -50, yPercent: -50, opacity: 1, scale: 0.5 }, {
+      left: startX + (Math.random() * 2 - 1) * 30,
+      top: startY - 60,
+      opacity: 0,
+      scale: 1.5,
+      duration: 0.8,
+      ease: "power3.out",
+      onComplete: () => popup.remove()
+    });
+  }
+
+  private async transferParticles(fromEl: HTMLElement, toEl: HTMLElement, isPenalty: boolean = false): Promise<void> {
+    const stage = document.body;
+    const a = fromEl.getBoundingClientRect();
+    const b = toEl.getBoundingClientRect();
+    const from = { x: a.left + a.width / 2, y: a.top + a.height / 2 };
+    const to = { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+
+    const count = 22;
+    const color = isPenalty ? '#F44336' : '#fff';
+    
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement("div");
+      p.className = "p";
+      p.style.width = "6px";
+      p.style.height = "6px";
+      p.style.backgroundColor = color;
+      p.style.boxShadow = `0 0 6px ${color}`;
+      stage.appendChild(p);
+      gsap.fromTo(p, { left: from.x, top: from.y, opacity: 1, scale: 1 }, {
+        left: to.x + (Math.random() * 2 - 1) * 26,
+        top: to.y + (Math.random() * 2 - 1) * 26,
+        opacity: 0,
+        scale: 0,
+        duration: 0.7,
+        delay: Math.random() * 0.1,
+        ease: "power3.inOut",
+        onComplete: () => p.remove()
+      });
+    }
+    
+    // Wait for the average duration
+    await new Promise((resolve) => setTimeout(resolve, 700));
+  }
+
+  private animateAdd(from: number, to: number, el: HTMLElement, wrap: HTMLElement): void {
+    const state = { value: from };
+    
+    // 1) 数字滚动
+    gsap.to(state, {
+      value: to,
+      duration: 0.55,
+      ease: "power3.out",
+      overwrite: true,
+      onUpdate: () => { el.textContent = Math.round(state.value).toLocaleString(); }
+    });
+
+    // 2) 轻微闪烁
+    gsap.fromTo(wrap, { filter: "brightness(1)" }, { filter: "brightness(1.35)", duration: 0.08, yoyo: true, repeat: 1 });
+    gsap.fromTo(el, { color: "#2d3432" }, { color: "#1049f1", duration: 0.12, yoyo: true, repeat: 1, repeatDelay: 0.08, delay: 0 });
+
+    // 3) 数字本体抖动
+    gsap.fromTo(el, { x: 0, y: 0 }, {
+      x: () => gsap.utils.random(-10, 10),
+      y: () => gsap.utils.random(-4, 4),
+      duration: 0.25,
+      ease: "power2.out",
+      yoyo: true,
+      repeat: 5,
+      repeatRefresh: true
+    });
+
+    // 4) 数字放大再回落
+    const popBoost = Math.max(0, 1.14 - 1);
+    const currentScale = Number(gsap.getProperty(el, "scale")) || 1;
+    const targetScale = Math.min(Math.max(1.14, currentScale + popBoost), 1 + popBoost * 3);
+    gsap.killTweensOf(el, "scale");
+    gsap.timeline()
+      .to(el, { scale: targetScale, duration: 0.18, ease: "power2.out" })
+      .to(el, { scale: 1, duration: 0.18 * 1.15, ease: "power3.out" });
   }
 
   private updateHeldPosition(): void {
@@ -989,7 +1319,13 @@ export class GameUI {
           cardElement.style.left = '';
           cardElement.style.top = '';
           gsap.killTweensOf(cardElement);
-          gsap.set(cardElement, { clearProps: 'all' });
+          gsap.set(cardElement, { 
+            clearProps: 'xPercent,yPercent,rotationX,rotationY,transformPerspective,opacity,pointerEvents' 
+          });
+          // Reset follower state
+          this.isHovering = false;
+          this.currentCardX = 0;
+          this.currentCardY = 0;
           this.render();
         }
         return;
@@ -998,22 +1334,20 @@ export class GameUI {
     if (!cardElement.classList.contains('held')) {
       cardElement.classList.add('held');
       gsap.killTweensOf(cardElement);
+      
+      // Initialize the follower coordinates to current mouse pos when we pick it up
+      const r = this.matrixWrapperElement?.getBoundingClientRect();
+      if (r) {
+        this.currentCardX = this.mouseX - r.left - r.width / 2;
+        this.currentCardY = this.mouseY - r.top - r.height / 2;
+      }
+      
       if (state.selectedCardIds.length > 1) {
         this.store.focusCard(lastId);
         this.renderHand(this.store.getState());
       }
     }
-    gsap.set(cardElement, {
-      left: this.mouseX,
-      top: this.mouseY,
-      x: 0,
-      y: 0,
-      xPercent: -50,
-      yPercent: -50,
-      rotation: 0,
-      opacity: state.preview ? 0 : 1,
-      pointerEvents: 'none'
-    });
+    // Removed direct static GSAP set here, because updateFollower() handles it via ticker now.
   }
 
   private showPileModal(type: 'DECK' | 'DISCARD'): void {
@@ -1059,18 +1393,9 @@ export class GameUI {
       })
       .filter((card): card is NonNullable<typeof card> => card !== null);
 
-    if (sleeves.length === 0 && giftCards.length === 0 && playmats.length === 0) {
-      container.innerHTML = `
-        <div class="special-cards-header">${I18N[currentLang].INVENTORY}</div>
-        <div class="special-card-empty">No Sleeves, Gift Cards or Playmats</div>
-      `;
-      return;
-    }
-
     container.innerHTML = `
-      <div class="special-cards-header">${I18N[currentLang].INVENTORY}</div>
-      <div class="inventory-section">
-        <div class="inventory-label">${I18N[currentLang].SLEEVES}</div>
+      <div class="reward-slot reward-slot-sleeves">
+        <div class="inventory-label">${I18N[currentLang].SLEEVE}</div>
         <div class="special-cards-list">
           ${sleeves.map((card) => createSpecialCardMarkup(
             localizeText(card.definition.name, card.definition.nameI18n),
@@ -1078,11 +1403,11 @@ export class GameUI {
             localizeText(card.definition.description, card.definition.descriptionI18n),
             card.definition.accent,
             'special-card-mini'
-          )).join('') || '<div class="special-card-empty mini">None</div>'}
+          )).join('') || `<div class="special-card-empty mini">${I18N[currentLang].NONE}</div>`}
         </div>
       </div>
-      <div class="inventory-section">
-        <div class="inventory-label">${I18N[currentLang].GIFT_CARDS}</div>
+      <div class="reward-slot reward-slot-gifts">
+        <div class="inventory-label">${I18N[currentLang].GIFT_CARD}</div>
         <div class="special-cards-list gift-cards-list">
           ${giftCards.map((card) => `
             <div class="gift-card-item">
@@ -1095,11 +1420,11 @@ export class GameUI {
               )}
               <button class="giftcard-use-btn" data-giftcard-id="${card.instanceId}" ${state.status !== 'SHOP' ? 'disabled' : ''}>${I18N[currentLang].USE}</button>
             </div>
-          `).join('') || '<div class="special-card-empty mini">None</div>'}
+          `).join('') || `<div class="special-card-empty mini">${I18N[currentLang].NONE}</div>`}
         </div>
       </div>
-      <div class="inventory-section">
-        <div class="inventory-label">${I18N[currentLang].PLAYMATS}${state.activePlaymatDefinitionId ? ' · ACTIVE' : ''}</div>
+      <div class="reward-slot reward-slot-playmats">
+        <div class="inventory-label">${I18N[currentLang].PLAYMAT}${state.activePlaymatDefinitionId ? ' · ACTIVE' : ''}</div>
         <div class="special-cards-list gift-cards-list">
           ${playmats.map((card) => `
             <div class="gift-card-item">
@@ -1112,7 +1437,7 @@ export class GameUI {
               )}
               <button class="playmat-use-btn" data-playmat-id="${card.instanceId}" ${state.status !== 'PLAYING' || Boolean(state.activePlaymatDefinitionId) ? 'disabled' : ''}>${I18N[currentLang].USE}</button>
             </div>
-          `).join('') || '<div class="special-card-empty mini">None</div>'}
+          `).join('') || `<div class="special-card-empty mini">${I18N[currentLang].NONE}</div>`}
         </div>
       </div>
     `;
@@ -1199,6 +1524,47 @@ export class GameUI {
       overlay.querySelector('#deck-confirm-btn')?.addEventListener('click', () => {
         this.store.chooseDeckById(deck.id);
         this.render();
+      });
+      return;
+    }
+
+    if (state.status === 'CHOOSE_SLEEVE') {
+      const sleeveIds = state.sleeveChoices;
+      const sleeves = sleeveIds.map(id => this.store.getSleeveDefinitions().find(s => s.id === id)).filter(Boolean);
+
+      overlay.innerHTML = `
+        <div class="modal-content shop-card">
+          <h1 class="status-title gold">${I18N[currentLang].CHOOSE_SLEEVE}</h1>
+          <div class="pack-picker">
+            <div class="shop-grid">
+              ${sleeves.map((sleeve) => `
+                <div class="shop-offer" data-sleeve-id="${sleeve!.id}">
+                  <div class="shop-offer-kind">${I18N[currentLang].SLEEVES}</div>
+                  ${createSpecialCardMarkup(
+                    localizeText(sleeve!.name, sleeve!.nameI18n),
+                    localizeText(sleeve!.shortName, sleeve!.shortNameI18n),
+                    localizeText(sleeve!.description, sleeve!.descriptionI18n),
+                    sleeve!.accent
+                  )}
+                  <button class="status-button success select-sleeve-btn">${I18N[currentLang].USE}</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+      this.root.appendChild(overlay);
+
+      const btns = overlay.querySelectorAll('.select-sleeve-btn');
+      btns.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const choiceEl = (e.target as HTMLElement).closest('.shop-offer');
+          const sleeveId = choiceEl?.getAttribute('data-sleeve-id');
+          if (sleeveId) {
+            this.store.chooseSleeveById(sleeveId);
+            this.render();
+          }
+        });
       });
       return;
     }
@@ -1415,6 +1781,8 @@ export class GameUI {
     const state = this.store.getState();
     const size = state.matrix.size;
     const lastPreviewEdge = this.store.getLastPreviewEdge();
+    const htmlLang: Record<Lang, string> = { EN: 'en', ZH: 'zh-Hans', ZH_TW: 'zh-Hant', JA: 'ja' };
+    document.documentElement.lang = htmlLang[currentLang];
 
     document.documentElement.style.setProperty('--matrix-size', String(size));
     document.documentElement.style.setProperty('--card-length', String(CARD_LENGTH));
@@ -1422,9 +1790,16 @@ export class GameUI {
     const levelEl = document.getElementById('ui-level'); if (levelEl) levelEl.textContent = `${I18N[currentLang].STAGE} ${state.currentStage}/${state.totalStages}`;
     const levelNameEl = document.getElementById('ui-level-name'); if (levelNameEl) levelNameEl.textContent = state.levelName;
     const levelIconEl = document.getElementById('ui-level-icon') as HTMLImageElement | null; if (levelIconEl) levelIconEl.src = iconAsset(state.levelIcon);
-    const goalEl = document.getElementById('ui-goal'); if (goalEl) goalEl.textContent = (state.levelGoal || 0).toString();
-    const scoreEl = document.getElementById('ui-score'); if (scoreEl) scoreEl.textContent = (state.currentScore || 0).toString();
-    const chipsEl = document.getElementById('ui-chips'); if (chipsEl) chipsEl.textContent = (state.chips || 0).toString();
+    const formatNumber = (value: number) => Math.max(0, Math.floor(value || 0)).toLocaleString('en-US');
+    const activeScoreSource = state.preview ?? state.lastClash;
+    const baseScore = activeScoreSource?.baseScoreDelta ?? activeScoreSource?.scoreDelta ?? 0;
+    const multiplier = activeScoreSource?.pierceMultiplier ?? 1;
+    const goalEl = document.getElementById('ui-goal'); if (goalEl) goalEl.textContent = formatNumber(state.levelGoal || 0);
+    const goalInlineEl = document.getElementById('ui-goal-inline'); if (goalInlineEl) goalInlineEl.textContent = formatNumber(state.levelGoal || 0);
+    const scoreEl = document.getElementById('ui-score'); if (scoreEl) scoreEl.textContent = formatNumber(state.currentScore || 0);
+    const baseScoreEl = document.getElementById('ui-base-score'); if (baseScoreEl) baseScoreEl.textContent = formatNumber(baseScore);
+    const scoreMultiplierEl = document.getElementById('ui-score-multiplier'); if (scoreMultiplierEl) scoreMultiplierEl.textContent = `${multiplier}`;
+    const chipsEl = document.getElementById('ui-chips'); if (chipsEl) chipsEl.textContent = formatNumber(state.chips || 0);
     const interestPreviewEl = document.getElementById('ui-interest-preview'); if (interestPreviewEl) interestPreviewEl.textContent = `+${this.store.getProjectedInterest()}`;
 
     const shuffleBtn = document.getElementById('ui-btn-shuffle');
@@ -1452,12 +1827,31 @@ export class GameUI {
       const key = state.levelName.toUpperCase() as keyof typeof I18N['EN'];
       stageName.textContent = I18N[currentLang][key] || state.levelName;
     }
+    const stageEffect = document.getElementById('ui-stage-effect');
+    if (stageEffect) {
+      if (state.levelIcon === 'master') {
+        stageEffect.textContent = I18N[currentLang].MASTER_EFFECT;
+        stageEffect.classList.add('visible');
+      } else {
+        stageEffect.textContent = '';
+        stageEffect.classList.remove('visible');
+      }
+    }
     
     const scoreLabel = document.getElementById('ui-score-label');
-    if (scoreLabel) scoreLabel.textContent = I18N[currentLang].SCORE;
+    if (scoreLabel) scoreLabel.textContent = I18N[currentLang].TOTAL_SCORE;
+
+    const targetScoreLabel = document.getElementById('ui-target-score-label');
+    if (targetScoreLabel) targetScoreLabel.textContent = I18N[currentLang].TARGET_SCORE;
+
+    const baseScoreLabel = document.getElementById('ui-base-score-label');
+    if (baseScoreLabel) baseScoreLabel.textContent = I18N[currentLang].BASE_SCORE;
+
+    const multiplierLabel = document.getElementById('ui-multiplier-label');
+    if (multiplierLabel) multiplierLabel.textContent = I18N[currentLang].MULTIPLIER;
 
     const chipsLabel = document.getElementById('ui-chips-label');
-    if (chipsLabel) chipsLabel.textContent = I18N[currentLang].CHIPS;
+    if (chipsLabel) chipsLabel.textContent = I18N[currentLang].GOLD;
 
     const shuffleLabel = document.getElementById('ui-shuffle-label');
     if (shuffleLabel) shuffleLabel.textContent = I18N[currentLang].SHUFFLE_MATRIX;
@@ -1491,7 +1885,7 @@ export class GameUI {
     }
 
     if (this.matrixWrapperElement) {
-      this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardIds.length > 0 && !this.isAnimating ? 'state-pick' : ''} ${state.preview && !this.isAnimating ? 'state-preview' : ''}`;
+      this.matrixWrapperElement.className = `matrix-wrapper ${state.selectedCardIds.length > 0 && !this.isAnimating ? 'state-pick' : ''} ${state.preview && !this.isAnimating ? 'state-preview' : ''} ${this.isAnimating ? 'state-animating' : ''}`;
       if (this.previewBoxElement) this.previewBoxElement.className = `preview-box preview-${lastPreviewEdge?.toLowerCase() || ''}`;
     }
 
@@ -1640,9 +2034,14 @@ export class GameUI {
       }
     });
 
+    const total = state.hand.length;
+    const open = 1; // fan openness 0..1 (can tweak)
+    
     state.hand.forEach((card, index) => {
       let cardElement = handElement.querySelector(`[data-card-id="${card.id}"]`) as HTMLElement;
+      let isNew = false;
       if (!cardElement) {
+        isNew = true;
         cardElement = createCardElement(card, '', 'vertical', true);
         cardElement.setAttribute('data-card-id', card.id);
         cardElement.addEventListener('click', (e) => {
@@ -1655,10 +2054,7 @@ export class GameUI {
       } else {
         // Update full image or blocks
         const fullImage = cardElement.querySelector('.card-full-image') as HTMLImageElement;
-        if (fullImage) {
-          // No need to change the src because the image is a single physical file.
-          // The rotation is handled purely by CSS transform based on card.isFlipped below.
-        } else {
+        if (!fullImage) {
           const blocks = Array.from(cardElement.querySelectorAll('.card-block')) as HTMLImageElement[];
           card.symbols.forEach((symbol, i) => {
             const expectedSrc = blockAsset(symbol);
@@ -1681,7 +2077,6 @@ export class GameUI {
       // If the card is flipped, we want to visually rotate the image 180 degrees
       const fullImage = cardElement.querySelector('.card-full-image') as HTMLImageElement;
       if (fullImage) {
-        // If it's horizontal, base transform is already rotate(-90deg), so add 180 -> 90deg
         if (card.isFlipped) {
           fullImage.style.transform = cardElement.classList.contains('render-card-horizontal') ? 'rotate(90deg)' : 'rotate(180deg)';
         } else {
@@ -1689,33 +2084,55 @@ export class GameUI {
         }
       }
 
-      const total = state.hand.length;
-      
-      // Calculate dynamic spread based on card width to ensure 10% overlap
-      // We use offsetWidth to get the actual rendered width of the card element without rotation
-      const cardWidth = cardElement.offsetWidth > 0 ? cardElement.offsetWidth : 85; // fallback to 85 if not rendered yet
-      const spread = cardWidth * 0.9; // 10% overlap means distance between centers is 90% of width
-      
-      const angleStep = 4;
-      const mid = (total - 1) / 2;
-      const offset = index - mid;
-      const fanX = offset * spread;
-      const fanY = Math.abs(offset) * 5;
-      const angle = offset * angleStep;
-
       if (!cardElement.classList.contains('held')) {
-        gsap.to(cardElement, {
-          rotation: angle,
-          x: fanX,
-          y: fanY,
-          xPercent: -50,
-          yPercent: 0,
-          transformOrigin: '50% 50%',
-          zIndex: isSelected ? (isLastSelected ? 1100 : 1000 + index) : index,
-          duration: 0.4,
-          ease: 'power2.out',
-          overwrite: 'auto'
-        });
+        const center = Math.max((total - 1) / 2, 1);
+        const offset = index - (total - 1) / 2;
+        const t = offset / center; // -1..1
+        
+        // Base lift pushes the center up and edges down
+        const baseLift = -Math.abs(t) * 10;
+        // Arc function for the fan
+        const f = Math.abs(t); 
+        const fanY = (baseLift + f * 20) * open;
+        const fanX = offset * 50 * open;
+        const angle = offset * (15 / Math.max(total - 1, 1)) * open;
+
+        if (isNew) {
+          // DEAL & FAN intro animation for newly dealt cards
+          gsap.fromTo(cardElement, {
+            x: -360,
+            y: 100,
+            rotation: -20,
+            scale: 0.9,
+            transformOrigin: "50% 120%",
+            zIndex: index
+          }, {
+            x: fanX,
+            y: fanY,
+            rotation: angle,
+            scale: 1,
+            zIndex: isSelected ? (isLastSelected ? 1100 : 1000 + index) : index,
+            duration: 0.6,
+            delay: index * 0.05,
+            ease: "power3.out",
+            overwrite: 'auto'
+          });
+        } else {
+          // Normal state update (e.g. after playing a card)
+          gsap.to(cardElement, {
+            rotation: angle,
+            x: fanX,
+            y: fanY,
+            xPercent: -50,
+            yPercent: 0,
+            transformOrigin: '50% 120%',
+            scale: 1,
+            zIndex: isSelected ? (isLastSelected ? 1100 : 1000 + index) : index,
+            duration: 0.4,
+            ease: 'power2.out',
+            overwrite: 'auto'
+          });
+        }
       }
     });
   }

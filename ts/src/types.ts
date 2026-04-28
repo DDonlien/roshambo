@@ -13,6 +13,7 @@ export type LevelIcon = 'pocket' | 'rubik' | 'master';
 export type GameStatus =
   | 'HOME'
   | 'CHOOSE_DECK'
+  | 'CHOOSE_SLEEVE'
   | 'PLAYING'
   | 'ROUND_REWARD'
   | 'SHOP'
@@ -159,4 +160,5 @@ export interface GameState {
   handsPlayedThisLevel: number;
   dealsUsedThisLevel: number;
   lastUsedGiftCardDefinitionId: string | null;
+  sleeveChoices: string[];
 }

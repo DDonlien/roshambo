@@ -208,16 +208,17 @@ export function executeLaneClash(
     }
   }
 
+  const netBase = baseTotalScore - penalty;
   const pierceMultiplier = 2 ** pierceCount;
-  const totalScore = baseTotalScore * pierceMultiplier;
+  const totalScore = netBase * pierceMultiplier;
 
   return { 
     newGrid, 
     scoreDelta: totalScore || 0,
-    baseScoreDelta: baseTotalScore || 0,
+    baseScoreDelta: netBase || 0,
     pierceCount,
     pierceMultiplier,
-    penalty: penalty || 0, 
+    penalty: 0, // Penalty is now baked into the net base score before multiplication
     laneScores, 
     replacedCells, 
     captureEvents,
