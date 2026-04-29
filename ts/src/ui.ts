@@ -864,9 +864,8 @@ export class GameUI {
     const cardElement = this.handElement.querySelector(`[data-card-id="${lastId}"]`) as HTMLElement;
     if (!cardElement || !cardElement.classList.contains('held')) return;
     
-    // We only follow and tilt if NOT in preview mode (snapped to edge)
     if (state.preview) {
-      gsap.set(cardElement, { opacity: 0 }); // Hide while snapped/previewing
+      gsap.set(cardElement, { opacity: 1 });
       return;
     }
 
@@ -951,6 +950,16 @@ export class GameUI {
       };
 
       const { stride } = this.getCellMetrics(size);
+      const clashTiming = {
+        vanish: 0.22,
+        shakeStep: 0.04,
+        impact: 0.42,
+        shift: 0.3,
+        scorePause: 300,
+        lanePause: 160,
+        failPause: 320,
+        settlePause: 180
+      };
 
       let currentRoundBase = 0;
       let currentPierce = 0;
@@ -973,7 +982,7 @@ export class GameUI {
 
         if (laneIndex < 0 || laneIndex >= size) {
           if (attackerBlock) {
-            await gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: 0.3, ease: 'power2.in' });
+            await gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: clashTiming.vanish, ease: 'power2.in' });
           }
           continue;
         }
@@ -996,13 +1005,13 @@ export class GameUI {
           const localDy = endRect.top - startRect.top;
 
           const tl = gsap.timeline();
-          await tl.to(attackerBlock, { x: localDx * 0.4, y: localDy * 0.4, duration: 0.15, ease: 'power2.out' })
-            .to(attackerBlock, { x: -localDx * 0.2, y: -localDy * 0.2, duration: 0.25, ease: 'elastic.out(1, 0.3)' });
+          await tl.to(attackerBlock, { x: localDx * 0.4, y: localDy * 0.4, duration: 0.1, ease: 'power2.out' })
+            .to(attackerBlock, { x: -localDx * 0.2, y: -localDy * 0.2, duration: 0.18, ease: 'elastic.out(1, 0.3)' });
 
           gsap.set(attackerBlock, { rotation: 0 });
-          gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: 0.3, ease: 'power2.in' });
+          gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: clashTiming.vanish, ease: 'power2.in' });
 
-          gsap.fromTo(firstCell, { filter: 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' }, { filter: 'none', duration: 0.5 });
+          gsap.fromTo(firstCell, { filter: 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' }, { filter: 'none', duration: 0.34 });
 
           const attackerType = selectedCard.symbols[cardIndex];
           const penaltyVal = Number(SCORE_WEIGHTS[attackerType]) || 0;
@@ -1033,7 +1042,7 @@ export class GameUI {
           const shiftPromises = laneCells.map((cell) => gsap.to(cell, {
             x: sx,
             y: sy,
-            duration: 0.4,
+            duration: clashTiming.shift,
             ease: 'power2.inOut',
             onComplete: () => {
               gsap.set(cell, { x: 0, y: 0 });
@@ -1059,22 +1068,23 @@ export class GameUI {
             const isTie = result.tieCells?.some(c => c.r === firstCellPos.r && c.c === firstCellPos.c);
 
             if (isTie) {
-              gsap.to(attackerBlock, { x: "+=4", duration: 0.05, yoyo: true, repeat: 5, onComplete: () => {
-                gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: 0.3, ease: 'power2.in' });
+              gsap.to(attackerBlock, { x: "+=4", duration: clashTiming.shakeStep, yoyo: true, repeat: 5, onComplete: () => {
+                gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: clashTiming.vanish, ease: 'power2.in' });
               }});
-              gsap.fromTo(firstCell, { x: -4 }, { x: 4, duration: 0.05, yoyo: true, repeat: 5, onComplete: () => { gsap.set(firstCell, { x: 0 }); } });
+              gsap.fromTo(firstCell, { x: -4 }, { x: 4, duration: clashTiming.shakeStep, yoyo: true, repeat: 5, onComplete: () => { gsap.set(firstCell, { x: 0 }); } });
             } else {
-              gsap.to(attackerBlock, { scale: 0, opacity: 0, duration: 0.3, ease: 'power2.in' });
-              gsap.fromTo(firstCell, { x: -4 }, { x: 4, duration: 0.05, yoyo: true, repeat: 5, onComplete: () => { gsap.set(firstCell, { x: 0 }); } });
-              gsap.fromTo(firstCell, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.4 });
+              gsap.to(attackerBlock, { scale: 0, opacity: 0, duration: clashTiming.vanish, ease: 'power2.in' });
+              gsap.fromTo(firstCell, { x: -4 }, { x: 4, duration: clashTiming.shakeStep, yoyo: true, repeat: 5, onComplete: () => { gsap.set(firstCell, { x: 0 }); } });
+              gsap.fromTo(firstCell, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.28 });
             }
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, clashTiming.scorePause));
           } else {
-            gsap.to(attackerBlock, { scale: 0, opacity: 0, duration: 0.4, ease: 'power2.in' });
-            await new Promise((resolve) => setTimeout(resolve, 200));
+            gsap.to(attackerBlock, { scale: 0, opacity: 0, duration: clashTiming.vanish, ease: 'power2.in' });
+            await new Promise((resolve) => setTimeout(resolve, clashTiming.settlePause));
           }
         }
 
+        let laneWinStreak = 0;
         for (let step = 0; step < size; step += 1) {
           const index = laneIndices[step];
           const cellPos = { r: Math.floor(index / size), c: index % size };
@@ -1088,14 +1098,14 @@ export class GameUI {
           const img = this.matrixElement?.children[index] as HTMLImageElement;
           
           if ((isFailed || isTie) && img) {
-            gsap.fromTo(img, { x: -4 }, { x: 4, duration: 0.05, yoyo: true, repeat: 5, onComplete: () => { gsap.set(img, { x: 0 }); } });
+            gsap.fromTo(img, { x: -4 }, { x: 4, duration: clashTiming.shakeStep, yoyo: true, repeat: 5, onComplete: () => { gsap.set(img, { x: 0 }); } });
             
             if (isFailed) {
               const attackerType = selectedCard.symbols[cardIndex];
               const penaltyVal = Number(SCORE_WEIGHTS[attackerType]) || 0;
               
               if (penaltyVal > 0) {
-                gsap.fromTo(img, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.4 });
+                gsap.fromTo(img, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.28 });
                 
                 const popupIndex = step > 0 ? laneIndices[step - 1] : index;
                 const popupTile = this.matrixElement?.children[popupIndex] as HTMLElement;
@@ -1115,11 +1125,12 @@ export class GameUI {
                 }
               }
             }
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, clashTiming.failPause));
             break;
           }
 
           if (isReplaced && img) {
+            laneWinStreak += 1;
             const defenderSymbol = state.matrix.grid[cellPos.r][cellPos.c];
             const gain = SCORE_WEIGHTS[defenderSymbol];
             const smash = 30; let sx = 0, sy = 0;
@@ -1129,11 +1140,11 @@ export class GameUI {
             img.src = blockAsset(result.newGrid[cellPos.r][cellPos.c]);
             gsap.fromTo(img,
               { x: sx, y: sy, scale: 1.5, zIndex: 100, filter: 'brightness(2) contrast(1.1) drop-shadow(0 0 15px rgba(255,160,0,0.8))' },
-              { x: 0, y: 0, scale: 1, zIndex: 1, filter: 'brightness(1) contrast(1) drop-shadow(0 0 0px rgba(0,0,0,0))', duration: 0.6, ease: 'elastic.out(1, 0.6)' }
+              { x: 0, y: 0, scale: 1, zIndex: 1, filter: 'brightness(1) contrast(1) drop-shadow(0 0 0px rgba(0,0,0,0))', duration: clashTiming.impact, ease: 'elastic.out(1, 0.6)' }
             );
 
             if (gain > 0) {
-              this.showScorePopup(gain, index);
+              this.showScorePopup(gain, index, false, laneWinStreak);
               if (baseEl && roundScoreBox) {
                 await this.transferParticles(img, baseEl);
                 const oldBase = currentRoundBase;
@@ -1146,7 +1157,7 @@ export class GameUI {
                 }
               }
             }
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, clashTiming.scorePause));
           }
         }
         
@@ -1157,6 +1168,9 @@ export class GameUI {
         if (replacedInLane >= size) {
           currentPierce += 1;
           if (multEl && roundScoreBox) {
+            const popupIndex = laneIndices[Math.floor(laneIndices.length / 2)] ?? laneIndices[laneIndices.length - 1];
+            const pierceScale = laneWinStreak + 1;
+            await this.showPierceMultiplierPopup(popupIndex, multEl, pierceScale);
             const newMult = 2 ** currentPierce;
             if (currentPierce === 1) {
               multEl.textContent = `2`;
@@ -1165,19 +1179,19 @@ export class GameUI {
               const oldMult = 2 ** (currentPierce - 1);
               this.animateAdd(oldMult, newMult, multEl, roundScoreBox);
             }
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, clashTiming.lanePause));
           }
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, clashTiming.lanePause));
       }
 
       if (roundScoreBox && baseEl && (currentRoundBase !== 0 || currentPierce > 0)) {
         gsap.fromTo(roundScoreBox, { filter: 'brightness(1)' }, { filter: 'brightness(1.18)', duration: 0.08, yoyo: true, repeat: 3 });
-        await new Promise((resolve) => setTimeout(resolve, 260));
+        await new Promise((resolve) => setTimeout(resolve, 180));
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, clashTiming.settlePause));
     } finally {
       this.store.applyClashResult(result);
       this.isAnimating = false;
@@ -1473,16 +1487,65 @@ export class GameUI {
     overlay.className = 'modal-overlay status-overlay';
 
     if (state.status === 'HOME') {
+      const decks = this.store.getDeckDefinitions();
+      if (decks.length === 0) return;
+      this.deckSelectIndex = ((this.deckSelectIndex % decks.length) + decks.length) % decks.length;
+      const deck = decks[this.deckSelectIndex];
+      const symbolCounts = deck.cards.reduce((counts, entry) => {
+        entry.code.toUpperCase().split('').forEach((digit) => {
+          if (digit === '4') counts.rock += entry.count;
+          else if (digit === '3') counts.scissors += entry.count;
+          else if (digit === '1') counts.paper += entry.count;
+          else if (digit === '7' || digit === 'O') counts.tricolor += entry.count;
+        });
+        return counts;
+      }, { rock: 0, scissors: 0, paper: 0, tricolor: 0 });
+
       overlay.innerHTML = `
-        <div class="modal-content home-screen">
-          <div class="home-logo">ROSHAMBO</div>
-          <div class="home-tagline">Roguelike Matrix Card Clash</div>
-          <button id="home-start-btn" class="status-button success">Start Game</button>
+        <div class="home-screen">
+          <div class="home-stage">
+            <div class="home-logo">ROSHAMBO</div>
+            <div class="home-deck-carousel">
+              <button class="home-arrow home-arrow-left" id="home-deck-prev" aria-label="Previous deck">‹</button>
+              <div class="home-deck-card" data-deck-id="${deck.id}">
+                <div class="home-deck-cover" aria-hidden="true"></div>
+                <h2>${deck.name}</h2>
+                <div class="home-deck-divider"></div>
+                <p>${deck.unlockDocument?.description || 'A balanced starting deck for steady scoring.'}</p>
+                <div class="home-deck-stats">
+                  <span><img src="${blockAsset(RPS.ROCK)}" alt="">${symbolCounts.rock}</span>
+                  <span><img src="${blockAsset(RPS.PAPER)}" alt="">${symbolCounts.paper}</span>
+                  <span><img src="${blockAsset(RPS.SCISSORS)}" alt="">${symbolCounts.scissors}</span>
+                  <span class="home-tricolor-stat">◆ ${symbolCounts.tricolor || Math.round(deck.startingConfig.interestRate * 100)}%</span>
+                </div>
+              </div>
+              <button class="home-arrow home-arrow-right" id="home-deck-next" aria-label="Next deck">›</button>
+            </div>
+            <div class="home-deck-dots">
+              ${decks.map((_, index) => `<span class="${index === this.deckSelectIndex ? 'active' : ''}"></span>`).join('')}
+            </div>
+            <div class="home-actions">
+              <button class="home-action secondary">Settings</button>
+              <button class="home-action secondary">Collection</button>
+              <button id="home-start-btn" class="home-action primary">Start Game</button>
+              <button class="home-action secondary">Records</button>
+              <button class="home-action danger">Quit</button>
+            </div>
+          </div>
         </div>
       `;
       this.root.appendChild(overlay);
+      overlay.querySelector('#home-deck-prev')?.addEventListener('click', () => {
+        this.deckSelectIndex = (this.deckSelectIndex - 1 + decks.length) % decks.length;
+        this.render();
+      });
+      overlay.querySelector('#home-deck-next')?.addEventListener('click', () => {
+        this.deckSelectIndex = (this.deckSelectIndex + 1) % decks.length;
+        this.render();
+      });
       overlay.querySelector('#home-start-btn')?.addEventListener('click', () => {
         this.store.openDeckSelect();
+        this.store.chooseDeckById(deck.id);
         this.render();
       });
       return;
