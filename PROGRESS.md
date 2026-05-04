@@ -2,7 +2,7 @@
 
 ## 当前状态
 - Web 端（`ts/`）可运行：TypeScript + DOM + GSAP，Vite 构建
-- 配置集中在 `ts/public/definition/`（levels/content_status/deck_catalog/deck_cards/deck_effects/card_catalog/shop/assets/sleeve/giftcard/playmat）
+- 配置集中在 `ts/public/definition/`（*_definition.csv + deck_effects.json + shopdefinition.json）
 - 已接入：27 关卡流程、初始卡套选择、关卡选择页、Claim 奖励查看页与分区商店页、特殊牌展示与购买、三色格与击穿翻倍等
 
 ## 最近完成
@@ -35,6 +35,7 @@
 - 2026-05-02T12:40:08+08:00 `ts/` 修正卡套计分层级：所有“得分 +/-”效果改为修正基础分，所有 `x` 效果改为修正基础分倍率，再乘击穿倍率；赌徒现在翻倍基础得失分，并同步预览/结算的 Base Score。
 - 2026-05-02T12:48:22+08:00 `ts/` 调整卡套表现结算点：出手 PK 结束后先显示原始基础分/击穿倍率，再闪烁卡套并修正基础分，最后执行乘法合并；同步神秘峰顶为“无剩余替换手牌时基础分 +15”。
 - 2026-05-02T13:12:00+08:00 `ts/` 逐页精修关卡选择页左侧栏目：改为接近 Main/参考图的纸质像素面板、虚线内框、蓝红积分条、金币/积分圆章、紫蓝操作按钮和底部关卡信息块；修复当前构建中的 `??` 优先级错误。
+- 2026-05-04T10:30:00+08:00 `ts/` definition 结构重构：新增 `deck_definition.csv`（合并 deck_catalog/deck_cards）、`card_definition.csv`（合并 card_catalog/cardasset 并补充 shop 权重）、`block_definition.csv`、`levels_definition.csv`；移除运行时对 `content_status.csv` 的依赖，并调整同步脚本仅同步 `*_definition.csv` 到运行时目录。
 
 ## 阻塞项
 - 暂无

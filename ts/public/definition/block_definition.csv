@@ -1,3 +1,4 @@
+symbol,asset_path
 ROCK,/game-design/art/sketch/BlockType=Rock.png
 SCISSORS,/game-design/art/sketch/BlockType=Scissors.png
 PAPER,/game-design/art/sketch/BlockType=Paper.png

@@ -13,7 +13,10 @@
 - 前端为原生 TypeScript + DOM 渲染，无 React/Vue/Svelte
 - 构建/开发由 Vite 提供；动画由 GSAP 提供
 - 游戏核心规则集中在 `ts/src/logic.ts`；状态机与流程集中在 `ts/src/state.ts`；界面集中在 `ts/src/ui.ts`
-- 配置与定义集中在 `ts/public/definition/`（levels/initial/assets/deck/sleeve/giftcard）
+- 配置与定义：
+  - CSV 真源：`game-design/definition/`
+  - TS 专属 JSON：`ts/public/definition/`
+  - TS 运行时读取：`ts/public/definition/`（CSV 由同步脚本从真源复制）
 
 ## 开发范式
 - Definition-first：优先改定义文件与加载逻辑，再改 UI 表现
@@ -30,18 +33,27 @@
 - 用户口头提到 `sleeve.csv` 时，优先按当前实际卡套定义文件理解；若文件名或列名已迁移，先在 `ts/public/definition/` 中确认真实路径与表头再操作。
 
 ## 文档纪律（强制）
-- 若为“刚开始的对话/新会话”，开始任何实现与修改前先阅读 `game-design/requirement.md`，确认当前规则、流程与定义文件约定。
+- 若为“刚开始的对话/新会话”，开始任何实现与修改前先阅读 `REQUIREMENT.md`，确认当前规则、流程与定义文件约定。
 - 每次有功能/规则/结构变更时，同步更新：
   - `PROGRESS.md`（当前状态、最近完成、阻塞、下一步）
   - `agent/ROADMAP.md`（近期/中期/长期规划，若相关）
 - 对“明确的修改”（可验证的功能/规则/结构变更），必须在 `PROGRESS.md` 的“最近完成”里记录一条，并附时间戳（ISO 8601，例如 `2026-04-16T10:23:00+08:00`）
-- `game-design/requirement.md` 作为“真实实现的规格说明书”，以代码为准持续同步
-- 若对话中用户定义了新的“游戏设计层面的逻辑/规则/流程/数值体系”，需将其整理并更新到 `game-design/requirement.md`（以实现为准，标注规则语义与适用边界）。
+- `REQUIREMENT.md` 作为“真实实现的规格说明书”，以代码为准持续同步
+- 若对话中用户定义了新的“游戏设计层面的逻辑/规则/流程/数值体系”，需将其整理并更新到 `REQUIREMENT.md`（以实现为准，标注规则语义与适用边界）。
+
+## 仓库结构（强制）
+根目录必须存在并只承担这些职责：
+- `README.md`：对外的项目与游戏介绍（面向所有人）
+- `AGENTS.md`：AI 协作规范（告诉 AI 应该做什么、怎么做、验收标准与目录规范）
+- `REQUIREMENT.md`：玩法与数据定义（实现同步版，描述游戏“实际上怎么运作”）
+- `PROGRESS.md`：当前进度与近期计划（面向 AI，便于跨会话协作）
 
 ## 目录约定
 - `ts/`：Web 端实现（Vite + TS + GSAP）
-- `game-design/definition/`：配置与定义文件（单一真源）
-- `ts/public/definition/`：运行时加载用的配置镜像（从 `game-design/definition/` 同步生成）
+- `game-design/definition/`：配置与定义 CSV（单一真源）
+- `ts/public/definition/`：运行时加载用的 definition（CSV 由 `game-design/definition/` 同步生成；JSON 为 TS 专属）
+- `game-design/art/`：美术资产真源（按类型分目录，如 `sketch/`、`ui/`）
+- `ts/public/game-design/art/`：TS 运行时加载用的美术镜像（由同步脚本从 `game-design/art/` 复制生成）
 - `agent/skills/`：子工程协作规范（按子工程拆分）
 - `agent/`：协作相关脚本、路线图、工具配置等
 - `game-design/specs/`：详细规格（功能拆分、验收标准）

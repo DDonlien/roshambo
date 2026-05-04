@@ -1,5 +1,6 @@
 import { GameStore } from './state';
 import { CARD_LENGTH, Card, GameState, InsertEdge, LevelConfig, LevelIcon, RPS, ShopOffer } from './types';
+import { parseCsvWithHeader } from './definitions/csv';
 import { gsap } from 'gsap';
 
 type Lang = 'EN' | 'ZH' | 'ZH_TW' | 'JA';
@@ -324,22 +325,24 @@ let cardAssetMap: Record<string, string> = {};
 export async function loadAssetMaps(): Promise<void> {
   try {
     const [blockRes, cardRes] = await Promise.all([
-      fetch('/definition/blockasset.csv'),
-      fetch('/definition/cardasset.csv')
+      fetch('/definition/block_definition.csv'),
+      fetch('/definition/card_definition.csv')
     ]);
     
     if (blockRes.ok) {
       const text = await blockRes.text();
-      text.split('\n').forEach(line => {
-        const [k, v] = line.trim().split(',');
+      parseCsvWithHeader(text).forEach((row) => {
+        const k = (row.symbol ?? '').trim();
+        const v = (row.asset_path ?? '').trim();
         if (k && v) blockAssetMap[k] = v;
       });
     }
     
     if (cardRes.ok) {
       const text = await cardRes.text();
-      text.split('\n').forEach(line => {
-        const [k, v] = line.trim().split(',');
+      parseCsvWithHeader(text).forEach((row) => {
+        const k = (row.card_code ?? '').trim();
+        const v = (row.asset_path ?? '').trim();
         if (k && v) cardAssetMap[k] = v;
       });
     }
@@ -367,7 +370,7 @@ function getCardFullAsset(card: Card): string {
   const code = baseSymbols.map(s => mapToDigit[s] || '0').join('');
   
   // Look up the full path in the CSV map.
-  return cardAssetMap[code] || `/Sketch/CardType=${code}.png`;
+  return cardAssetMap[code] || `/game-design/art/sketch/CardType=${code}.png`;
 }
 
 function hasFullCardAsset(card: Card): boolean {
@@ -397,11 +400,11 @@ function blockAsset(symbol: RPS): string {
     return tricolorDataUrl();
   }
   // Look up the full path in the CSV map.
-  return blockAssetMap[symbol] || `/Sketch/BlockType=Blank.png`;
+  return blockAssetMap[symbol] || `/game-design/art/sketch/BlockType=Blank.png`;
 }
 
 function iconAsset(icon: LevelIcon): string {
-  return `/Sketch/icon_${icon}.png`;
+  return `/game-design/art/sketch/icon_${icon}.png`;
 }
 
 function cardClassName(isHandCard: boolean): string {

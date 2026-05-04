@@ -317,8 +317,19 @@ export class GameStore {
   }
 
   private getShopCardCodePool(): string[] {
-    const catalogCodes = this.cardCatalogFile?.cards.map((card) => card.code) ?? [];
-    if (catalogCodes.length > 0) return catalogCodes;
+    const catalogCards = this.cardCatalogFile?.cards ?? [];
+    if (catalogCards.length > 0) {
+      const pool: string[] = [];
+      catalogCards.forEach((card) => {
+        const weight = Math.max(0, Math.floor(card.shopRatio ?? 1));
+        const repeats = Math.min(50, Math.max(1, weight));
+        for (let i = 0; i < repeats; i += 1) {
+          pool.push(card.code);
+        }
+      });
+      if (pool.length > 0) return pool;
+      return catalogCards.map((card) => card.code);
+    }
 
     const basicDigits = ['0', '1', '3', '4'];
     const fallbackPool: string[] = [];
@@ -654,7 +665,7 @@ export class GameStore {
 
   private async loadLevelConfigs(): Promise<void> {
     try {
-      const response = await fetch('/definition/levels.csv');
+      const response = await fetch('/definition/levels_definition.csv');
       const text = await response.text();
       const lines = text.trim().split('\n').slice(1).filter(Boolean);
       if (lines.length > 0) {

@@ -1,4 +1,4 @@
-import { getContentStatus, loadContentStatuses } from './contentStatus';
+import { parseCsvWithHeader } from './csv';
 
 export type CardCatalogGroup = 'basic' | 'tricolor';
 export type CardAssetMode = 'full' | 'dynamic';
@@ -8,6 +8,7 @@ export interface CardCatalogEntry {
   group: CardCatalogGroup;
   assetMode: CardAssetMode;
   notes?: string;
+  shopRatio?: number;
 }
 
 export interface CardCatalogFile {
@@ -20,28 +21,28 @@ const DEFAULT_CARD_CATALOG: CardCatalogFile = {
 
 export async function loadCardCatalogFile(): Promise<CardCatalogFile> {
   try {
-    const [response, statuses] = await Promise.all([
-      fetch('/definition/card_catalog.csv'),
-      loadContentStatuses()
-    ]);
+    const response = await fetch('/definition/card_definition.csv');
     if (!response.ok) return DEFAULT_CARD_CATALOG;
     const text = await response.text();
-    const cards = text
-      .trim()
-      .split('\n')
-      .slice(1)
-      .filter(Boolean)
-      .map((line) => line.split(',').map((part) => part.trim()))
-      .map((row) => ({
-        code: row[0] ?? '',
-        group: (row[1] ?? 'basic') as CardCatalogGroup,
-        assetMode: (row[2] ?? 'dynamic') as CardAssetMode,
-        notes: row[3] ?? ''
-      }))
-      .filter((entry) => {
-        const status = getContentStatus(statuses, `card:${entry.code}`, 'card');
-        return status.implemented && status.enabled && status.shopEnabled;
-      });
+    const cards = parseCsvWithHeader(text)
+      .map((row) => {
+        const code = (row.card_code ?? '').trim();
+        const enabled = (row.enabled ?? '1').trim();
+        const shopEnabled = (row.shop_enabled ?? '1').trim();
+        if (!code) return null;
+        if (enabled !== '1') return null;
+        if (shopEnabled !== '1') return null;
+        const ratio = Number(row.shop_ratio ?? '1');
+        const entry: CardCatalogEntry = {
+          code,
+          group: ((row.group ?? 'basic').trim() || 'basic') as CardCatalogGroup,
+          assetMode: ((row.asset_mode ?? 'dynamic').trim() || 'dynamic') as CardAssetMode,
+          shopRatio: Number.isFinite(ratio) ? ratio : 1
+        };
+        if ((row.notes ?? '').trim()) entry.notes = row.notes;
+        return entry;
+      })
+      .filter((entry): entry is CardCatalogEntry => Boolean(entry));
     return { cards };
   } catch {
     return DEFAULT_CARD_CATALOG;

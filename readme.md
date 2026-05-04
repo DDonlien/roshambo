@@ -12,5 +12,5 @@ Roshambo 是一款基于“石头剪刀布”克制关系的 Roguelike 策略卡
 - 通关流程：达标后进入奖励结算页，再进入商店购买特殊牌，然后进入下一关
 
 ## 文档
-- 规则与规格（随实现同步）：[requirement.md](file:///Users/taobe/Documents/GitHub/Roshambo/game-design/requirement.md)
+- 规则与规格（随实现同步）：[REQUIREMENT.md](file:///Users/taobe/Documents/GitHub/Roshambo/REQUIREMENT.md)
 - 参考图与资料：`game-design/reference/`

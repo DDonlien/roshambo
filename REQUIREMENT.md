@@ -6,21 +6,27 @@
 - 前端：原生 TypeScript + DOM 渲染（无 React/Vue/Svelte）
 - 动画：GSAP
 - 构建：Vite（位于 `ts/`）
-- 配置：单一真源在 `game-design/definition/`；TS 运行时通过 fetch 从 `ts/public/definition/` 加载（由同步脚本生成）
+- 配置：CSV 真源在 `game-design/definition/`；TS 专属 JSON 在 `ts/public/definition/`；TS 运行时通过 fetch 从 `ts/public/definition/` 加载（CSV 由同步脚本从真源复制）
 
 ## 2. 配置与定义（Definition）
-所有可配置内容单一真源集中在 `game-design/definition/`，TS 运行时读取 `ts/public/definition/`（由同步脚本从真源复制）：
-- `levels.csv`：关卡配置（`level,goal,reward`），共 27 行（9 大关 x 3 小关）
-- `content_status.csv`：全局内容状态总表（`deck/sleeve/giftcard/playmat/card` 的实装、启用、商店启用）
-- `deck_catalog.csv`：卡组目录（名称、解锁引用、初始资源）
-- `deck_cards.csv`：卡组初始牌表（`deck_id,card_code,count`）
-- `deck_effects.json`：卡组特殊效果定义（当前均为空数组，预留扩展）
-- `card_catalog.csv`：额外卡牌目录（当前商店卡池 code、分组、资源渲染模式）
-- `shopdefinition.json`：商店生成规则（直购/奖励包权重、类型权重、价格规则）
+配置与定义分两层：
+- CSV 真源：`game-design/definition/`
+- TS 运行时读取：`ts/public/definition/`（CSV 由同步脚本从真源复制；JSON 为 TS 专属）
+
+当前 CSV 真源条目：
+- `levels_definition.csv`：关卡配置（`level,goal,reward`），共 27 行（9 大关 x 3 小关）
+- `deck_definition.csv`：卡组定义（一个表合并原 `deck_catalog.csv` + `deck_cards.csv`）
+  - 横轴表头为 `deck_id`
+  - 纵轴包含 `name/enabled/unlock_* / starting_*` 等元信息行，以及若干 `card_code` 行（单元格为该卡在该 deck 的数量）
+- `card_definition.csv`：卡牌定义（一个表合并原 `card_catalog.csv` + `cardasset.csv`），并补充商店相关字段
+  - `card_code,group,asset_mode,asset_path,enabled,shop_enabled,shop_ratio`
 - `sleeve_definition.csv`：卡套定义（仅 `validation/r = 1` 的行进入游戏；`ratio` 控制商店基础出现权重；`tag` 控制同组权重加成）
-- `giftcard_definition.csv`：礼品卡定义
-- `playmat_definition.csv`：Playmat 定义
-- `blockasset.csv` / `cardasset.csv`：资源映射表
+- `giftcard_definition.csv`：礼品卡定义（新增 `enabled` 列）
+- `playmat_definition.csv`：Playmat 定义（新增 `enabled` 列）
+- `block_definition.csv`：块资源映射（`symbol,asset_path`，路径以 `/Sketch/...` 为基准，运行时从 `ts/public/` 提供）
+
+说明：
+- TS 运行时目录只同步 `*_definition.csv`（由 `ts/tools/sync-definitions.cjs` 从真源复制）；历史 CSV 可能仍保留在真源目录用于过渡/参考，但运行时不再读取。
 
 ### 2.1 Card Code 规则
 `deck_cards.csv` / `card_catalog.csv` 中的 `code` 由 3 位字符组成（对应 1x3 卡牌的 3 个元素），映射如下：

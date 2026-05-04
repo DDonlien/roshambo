@@ -9,7 +9,10 @@
 - UI：原生 DOM（不引入 React/Vue/Svelte，除非用户明确要求）
 - 动画：GSAP（优先使用 transform/opacity 类属性，避免强制布局）
 - 构建：Vite（开发/构建脚本以 `ts/package.json` 为准）
-- 配置：`game-design/definition/` 为单一真源；`public/definition/` 为运行时加载镜像（从真源同步生成）
+- 配置：
+  - CSV 真源：`game-design/definition/`
+  - TS 专属 JSON：`public/definition/`
+  - 运行时读取：`public/definition/`（CSV 由同步脚本从真源复制）
 
 ## 代码结构（约定）
 - `src/logic.ts`：对冲/计分等核心规则

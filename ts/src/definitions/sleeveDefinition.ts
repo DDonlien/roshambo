@@ -1,5 +1,4 @@
 import { Card, ClashResult, RPS } from '../types';
-import { getContentStatus, loadContentStatuses } from './contentStatus';
 import { parseCsvWithHeader } from './csv';
 import {
   countCapturesByAttacker,
@@ -167,19 +166,13 @@ export interface SleeveClashBonus {
 
 export async function loadSleeveDefinitionFile(): Promise<SleeveDefinitionFile> {
   try {
-    const [response, statuses] = await Promise.all([
-      fetch('/definition/sleeve_definition.csv'),
-      loadContentStatuses()
-    ]);
+    const response = await fetch('/definition/sleeve_definition.csv');
     if (!response.ok) return DEFAULT_SLEEVE_DEFINITION;
     const sleeves = parseSleeveDefinitionCsv(await response.text());
     return {
       ...DEFAULT_SLEEVE_DEFINITION,
       version: 2,
-      sleeves: sleeves.filter((sleeve) => {
-        const status = getContentStatus(statuses, sleeve.id, 'sleeve');
-        return status.implemented && status.enabled;
-      })
+      sleeves
     };
   } catch {
     return DEFAULT_SLEEVE_DEFINITION;

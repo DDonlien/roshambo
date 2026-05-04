@@ -1,4 +1,3 @@
-import { getContentStatus, loadContentStatuses } from './contentStatus';
 import { parseCsvWithHeader } from './csv';
 
 export type GiftCardTiming = 'prepare_level';
@@ -53,6 +52,7 @@ function parseEffect(value: string | undefined): GiftCardEffectDefinition | null
 
 function parseGiftCardDefinitionCsv(text: string): GiftCardDefinition[] {
   return parseCsvWithHeader(text)
+    .filter((row) => (row.enabled ?? '1').trim() === '1')
     .map((row): GiftCardDefinition | null => {
       const effect = parseEffect(row.effect);
       if (!effect) return null;
@@ -90,19 +90,13 @@ function parseGiftCardDefinitionCsv(text: string): GiftCardDefinition[] {
 
 export async function loadGiftCardDefinitionFile(): Promise<GiftCardDefinitionFile> {
   try {
-    const [response, statuses] = await Promise.all([
-      fetch('/definition/giftcard_definition.csv'),
-      loadContentStatuses()
-    ]);
+    const response = await fetch('/definition/giftcard_definition.csv');
     if (!response.ok) return DEFAULT_GIFTCARD_DEFINITION;
     const giftcards = parseGiftCardDefinitionCsv(await response.text());
     return {
       ...DEFAULT_GIFTCARD_DEFINITION,
       version: 2,
-      giftcards: giftcards.filter((giftcard) => {
-        const status = getContentStatus(statuses, giftcard.id, 'giftcard');
-        return status.implemented && status.enabled;
-      })
+      giftcards
     };
   } catch {
     return DEFAULT_GIFTCARD_DEFINITION;

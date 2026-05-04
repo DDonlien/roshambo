@@ -1,5 +1,4 @@
 import { RPS } from '../types';
-import { getContentStatus, loadContentStatuses } from './contentStatus';
 import { parseCsvWithHeader } from './csv';
 
 export type LocalizedText = Partial<Record<'EN' | 'ZH' | 'ZH_TW' | 'JA', string>>;
@@ -53,6 +52,7 @@ function parseEffect(value: string | undefined): PlaymatEffectDefinition | null 
 
 function parsePlaymatDefinitionCsv(text: string): PlaymatDefinition[] {
   return parseCsvWithHeader(text)
+    .filter((row) => (row.enabled ?? '1').trim() === '1')
     .map((row): PlaymatDefinition | null => {
       const effect = parseEffect(row.effect);
       if (!effect) return null;
@@ -90,18 +90,12 @@ function parsePlaymatDefinitionCsv(text: string): PlaymatDefinition[] {
 
 export async function loadPlaymatDefinitionFile(): Promise<PlaymatDefinitionFile> {
   try {
-    const [response, statuses] = await Promise.all([
-      fetch('/definition/playmat_definition.csv'),
-      loadContentStatuses()
-    ]);
+    const response = await fetch('/definition/playmat_definition.csv');
     if (!response.ok) return DEFAULT_PLAYMAT_DEFINITION;
     const playmats = parsePlaymatDefinitionCsv(await response.text());
     return {
       ...DEFAULT_PLAYMAT_DEFINITION,
-      playmats: playmats.filter((playmat) => {
-        const status = getContentStatus(statuses, playmat.id, 'playmat');
-        return status.implemented && status.enabled;
-      })
+      playmats
     };
   } catch {
     return DEFAULT_PLAYMAT_DEFINITION;
