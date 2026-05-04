@@ -1,4 +1,5 @@
 import { getContentStatus, loadContentStatuses } from './contentStatus';
+import { parseCsvWithHeader } from './csv';
 
 export type GiftCardTiming = 'prepare_level';
 export type LocalizedText = Partial<Record<'EN' | 'ZH' | 'ZH_TW' | 'JA', string>>;
@@ -36,18 +37,69 @@ const DEFAULT_GIFTCARD_DEFINITION: GiftCardDefinitionFile = {
   giftcards: []
 };
 
+function toNumber(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseEffect(value: string | undefined): GiftCardEffectDefinition | null {
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as GiftCardEffectDefinition;
+  } catch {
+    return null;
+  }
+}
+
+function parseGiftCardDefinitionCsv(text: string): GiftCardDefinition[] {
+  return parseCsvWithHeader(text)
+    .map((row): GiftCardDefinition | null => {
+      const effect = parseEffect(row.effect);
+      if (!effect) return null;
+      return {
+        id: row.id ?? '',
+        name: row.name_en || row.name_zh || 'Unnamed Gift Card',
+        shortName: row.short_name_en || row.short_name_zh || row.name_en || row.name_zh || '',
+        nameI18n: {
+          EN: row.name_en,
+          ZH: row.name_zh,
+          ZH_TW: row.name_zh_tw,
+          JA: row.name_ja
+        },
+        shortNameI18n: {
+          EN: row.short_name_en,
+          ZH: row.short_name_zh,
+          ZH_TW: row.short_name_zh_tw,
+          JA: row.short_name_ja
+        },
+        timing: (row.timing || 'prepare_level') as GiftCardTiming,
+        cost: toNumber(row.cost, 0),
+        accent: row.accent || '#f4a261',
+        description: row.description_en || row.description_zh || '',
+        descriptionI18n: {
+          EN: row.description_en,
+          ZH: row.description_zh,
+          ZH_TW: row.description_zh_tw,
+          JA: row.description_ja
+        },
+        effect
+      };
+    })
+    .filter((giftcard): giftcard is GiftCardDefinition => Boolean(giftcard?.id));
+}
+
 export async function loadGiftCardDefinitionFile(): Promise<GiftCardDefinitionFile> {
   try {
     const [response, statuses] = await Promise.all([
-      fetch('/definition/giftcarddefinition.json'),
+      fetch('/definition/giftcard_definition.csv'),
       loadContentStatuses()
     ]);
     if (!response.ok) return DEFAULT_GIFTCARD_DEFINITION;
-    const parsed = (await response.json()) as GiftCardDefinitionFile;
-    if (!parsed || !Array.isArray(parsed.giftcards)) return DEFAULT_GIFTCARD_DEFINITION;
+    const giftcards = parseGiftCardDefinitionCsv(await response.text());
     return {
-      ...parsed,
-      giftcards: parsed.giftcards.filter((giftcard) => {
+      ...DEFAULT_GIFTCARD_DEFINITION,
+      version: 2,
+      giftcards: giftcards.filter((giftcard) => {
         const status = getContentStatus(statuses, giftcard.id, 'giftcard');
         return status.implemented && status.enabled;
       })

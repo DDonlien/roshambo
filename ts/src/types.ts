@@ -14,6 +14,7 @@ export type GameStatus =
   | 'HOME'
   | 'CHOOSE_DECK'
   | 'CHOOSE_SLEEVE'
+  | 'LEVEL_SELECTION'
   | 'PLAYING'
   | 'ROUND_REWARD'
   | 'SHOP'
@@ -39,6 +40,9 @@ export interface ClashResult {
   baseScoreDelta?: number;
   pierceCount?: number;
   pierceMultiplier?: number;
+  sleeveBaseScoreDelta?: number;
+  sleeveScoreDelta?: number;
+  sleeveBaseMultiplier?: number;
   penalty: number;
   laneScores: number[];
   replacedCells: { r: number; c: number }[];
@@ -47,6 +51,13 @@ export interface ClashResult {
   insertedCardId: string;
   attachmentOffset: number;
   captureEvents?: Array<{
+    attacker: RPS;
+    defender: RPS;
+    laneIndex: number;
+    r: number;
+    c: number;
+  }>;
+  tieEvents?: Array<{
     attacker: RPS;
     defender: RPS;
     laneIndex: number;
@@ -83,6 +94,7 @@ export interface RoundRewardSummary {
   levelName: string;
   goal: number;
   baseReward: number;
+  handReward: number;
   interestReward: number;
   totalReward: number;
   finalLevel: boolean;

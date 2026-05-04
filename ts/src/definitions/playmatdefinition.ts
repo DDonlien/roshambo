@@ -1,5 +1,6 @@
 import { RPS } from '../types';
 import { getContentStatus, loadContentStatuses } from './contentStatus';
+import { parseCsvWithHeader } from './csv';
 
 export type LocalizedText = Partial<Record<'EN' | 'ZH' | 'ZH_TW' | 'JA', string>>;
 export type PlaymatTiming = 'playing';
@@ -36,18 +37,68 @@ const DEFAULT_PLAYMAT_DEFINITION: PlaymatDefinitionFile = {
   playmats: []
 };
 
+function toNumber(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseEffect(value: string | undefined): PlaymatEffectDefinition | null {
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as PlaymatEffectDefinition;
+  } catch {
+    return null;
+  }
+}
+
+function parsePlaymatDefinitionCsv(text: string): PlaymatDefinition[] {
+  return parseCsvWithHeader(text)
+    .map((row): PlaymatDefinition | null => {
+      const effect = parseEffect(row.effect);
+      if (!effect) return null;
+      return {
+        id: row.id ?? '',
+        name: row.name_en || row.name_zh || 'Unnamed Playmat',
+        shortName: row.short_name_en || row.short_name_zh || row.name_en || row.name_zh || '',
+        nameI18n: {
+          EN: row.name_en,
+          ZH: row.name_zh,
+          ZH_TW: row.name_zh_tw,
+          JA: row.name_ja
+        },
+        shortNameI18n: {
+          EN: row.short_name_en,
+          ZH: row.short_name_zh,
+          ZH_TW: row.short_name_zh_tw,
+          JA: row.short_name_ja
+        },
+        timing: (row.timing || 'playing') as PlaymatTiming,
+        cost: toNumber(row.cost, 0),
+        accent: row.accent || '#9b5de5',
+        description: row.description_en || row.description_zh || '',
+        descriptionI18n: {
+          EN: row.description_en,
+          ZH: row.description_zh,
+          ZH_TW: row.description_zh_tw,
+          JA: row.description_ja
+        },
+        effect
+      };
+    })
+    .filter((playmat): playmat is PlaymatDefinition => Boolean(playmat?.id));
+}
+
 export async function loadPlaymatDefinitionFile(): Promise<PlaymatDefinitionFile> {
   try {
     const [response, statuses] = await Promise.all([
-      fetch('/definition/playmatdefinition.json'),
+      fetch('/definition/playmat_definition.csv'),
       loadContentStatuses()
     ]);
     if (!response.ok) return DEFAULT_PLAYMAT_DEFINITION;
-    const parsed = (await response.json()) as PlaymatDefinitionFile;
-    if (!parsed || !Array.isArray(parsed.playmats)) return DEFAULT_PLAYMAT_DEFINITION;
+    const playmats = parsePlaymatDefinitionCsv(await response.text());
     return {
-      ...parsed,
-      playmats: parsed.playmats.filter((playmat) => {
+      ...DEFAULT_PLAYMAT_DEFINITION,
+      playmats: playmats.filter((playmat) => {
         const status = getContentStatus(statuses, playmat.id, 'playmat');
         return status.implemented && status.enabled;
       })

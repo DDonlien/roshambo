@@ -34,7 +34,8 @@ skills-lock.json
 .vscode/
 node_modules/
 dist/
-test-results/
 ts/node_modules/
 ts/dist/
+ts/test-results/
+godot/test-results/
 ~$*.xlsx

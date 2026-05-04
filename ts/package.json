@@ -4,7 +4,9 @@
   "version": "0.0.2",
   "type": "module",
   "scripts": {
+    "predev": "node tools/sync-definitions.cjs",
     "dev": "vite",
+    "prebuild": "node tools/sync-definitions.cjs",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

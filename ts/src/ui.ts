@@ -1,5 +1,5 @@
 import { GameStore } from './state';
-import { CARD_LENGTH, Card, GameState, InsertEdge, LevelIcon, RPS } from './types';
+import { CARD_LENGTH, Card, GameState, InsertEdge, LevelConfig, LevelIcon, RPS, ShopOffer } from './types';
 import { gsap } from 'gsap';
 
 type Lang = 'EN' | 'ZH' | 'ZH_TW' | 'JA';
@@ -48,18 +48,22 @@ const I18N = {
     RUBIK: 'Rubik',
     MASTER: 'Master',
     CHOOSE_DECK: 'Choose your deck',
-    CHOOSE_SLEEVE: 'Choose your sleeve',
+    CHOOSE_SLEEVE: 'Pick an Initial Sleeve',
     LEVEL_WON: 'Round Cleared!',
     GAME_OVER: 'Game Over',
     WIN: 'You Win!',
     NEXT_LEVEL: 'Next Level',
     RESTART: 'Restart Game',
     ROUND_REWARD: 'Reward Summary',
+    CLAIM: 'Claim',
     ENTER_SHOP: 'Enter Shop',
     SHOP: 'Shop',
     CONTINUE: 'Continue',
     LEVEL_REWARD: 'Level Reward',
+    HAND_REWARD: 'Hand Reward',
     INTEREST_REWARD: 'Interest',
+    PERFECT_CLEAR: 'Perfect Clear',
+    TOTAL_EARNED: 'Total Earned',
     TOTAL_REWARD: 'Total',
     TARGET_SCORE: 'TARGET SCORE',
     TOTAL_SCORE: 'TOTAL SCORE',
@@ -80,7 +84,17 @@ const I18N = {
     SLEEVES: 'Sleeves',
     USE: 'Use',
     START_LEVEL: 'Start Level',
+    PICK_SLEEVE: 'Pick Sleeve',
     PREPARE_LEVEL: 'Prepare Level',
+    ENTER_STAGE: 'Enter Stage',
+    UPCOMING: 'Upcoming',
+    RUN_INFO: 'Run Info',
+    OPTIONS: 'Options',
+    ROUND: 'Round',
+    HANDS_LEFT: 'Hands Left',
+    DISCARD_PILE: 'Discard Pile',
+    CARD_STOCK: 'Card Stock',
+    CARD_SLEEVES: 'Card Sleeves',
     CHOOSE_ONE: 'Choose 1',
     SKIP: 'Skip',
     FINAL_RUN_CLEAR: 'You cleared all 9 stages and 27 levels!',
@@ -107,11 +121,15 @@ const I18N = {
     NEXT_LEVEL: '下一关',
     RESTART: '重新开始',
     ROUND_REWARD: '奖励结算',
+    CLAIM: '领取奖励',
     ENTER_SHOP: '进入商店',
     SHOP: '商店',
     CONTINUE: '继续',
     LEVEL_REWARD: '关卡奖励',
+    HAND_REWARD: '手牌奖励',
     INTEREST_REWARD: '利息奖励',
+    PERFECT_CLEAR: '完美清场',
+    TOTAL_EARNED: '总收入',
     TOTAL_REWARD: '总奖励',
     TARGET_SCORE: '目标分数',
     TOTAL_SCORE: '总分',
@@ -132,7 +150,17 @@ const I18N = {
     SLEEVES: '卡套',
     USE: '使用',
     START_LEVEL: '开始本关',
+    PICK_SLEEVE: '选择卡套',
     PREPARE_LEVEL: '关前准备',
+    ENTER_STAGE: '进入关卡',
+    UPCOMING: '即将开放',
+    RUN_INFO: '本局信息',
+    OPTIONS: '选项',
+    ROUND: '回合',
+    HANDS_LEFT: '剩余手牌',
+    DISCARD_PILE: '弃牌堆',
+    CARD_STOCK: '卡牌库存',
+    CARD_SLEEVES: '卡套',
     CHOOSE_ONE: '选择 1 个',
     SKIP: '跳过',
     FINAL_RUN_CLEAR: '你已通关全部 9 大关与 27 个关卡！',
@@ -159,11 +187,15 @@ const I18N = {
     NEXT_LEVEL: '下一關',
     RESTART: '重新開始',
     ROUND_REWARD: '獎勵結算',
+    CLAIM: '領取獎勵',
     ENTER_SHOP: '進入商店',
     SHOP: '商店',
     CONTINUE: '繼續',
     LEVEL_REWARD: '關卡獎勵',
+    HAND_REWARD: '手牌獎勵',
     INTEREST_REWARD: '利息獎勵',
+    PERFECT_CLEAR: '完美清場',
+    TOTAL_EARNED: '總收入',
     TOTAL_REWARD: '總獎勵',
     TARGET_SCORE: '目標分數',
     TOTAL_SCORE: '總分',
@@ -184,7 +216,17 @@ const I18N = {
     SLEEVES: '卡套',
     USE: '使用',
     START_LEVEL: '開始本關',
+    PICK_SLEEVE: '選擇卡套',
     PREPARE_LEVEL: '關前準備',
+    ENTER_STAGE: '進入關卡',
+    UPCOMING: '即將開放',
+    RUN_INFO: '本局資訊',
+    OPTIONS: '選項',
+    ROUND: '回合',
+    HANDS_LEFT: '剩餘手牌',
+    DISCARD_PILE: '棄牌堆',
+    CARD_STOCK: '卡牌庫存',
+    CARD_SLEEVES: '卡套',
     CHOOSE_ONE: '選擇 1 個',
     SKIP: '跳過',
     FINAL_RUN_CLEAR: '你已通關全部 9 大關與 27 個關卡！',
@@ -211,11 +253,15 @@ const I18N = {
     NEXT_LEVEL: '次のステージ',
     RESTART: 'リスタート',
     ROUND_REWARD: '報酬',
+    CLAIM: '受け取り',
     ENTER_SHOP: 'ショップへ',
     SHOP: 'ショップ',
     CONTINUE: '続ける',
     LEVEL_REWARD: 'ステージ報酬',
+    HAND_REWARD: '手札報酬',
     INTEREST_REWARD: '利息',
+    PERFECT_CLEAR: '完全クリア',
+    TOTAL_EARNED: '獲得合計',
     TOTAL_REWARD: '合計',
     TARGET_SCORE: '目標スコア',
     TOTAL_SCORE: '合計スコア',
@@ -236,7 +282,17 @@ const I18N = {
     SLEEVES: 'Sleeve',
     USE: '使用',
     START_LEVEL: 'この関を開始',
+    PICK_SLEEVE: 'スリーブ選択',
     PREPARE_LEVEL: '開始前準備',
+    ENTER_STAGE: 'ステージへ',
+    UPCOMING: '準備中',
+    RUN_INFO: 'ラン情報',
+    OPTIONS: 'オプション',
+    ROUND: 'ラウンド',
+    HANDS_LEFT: '手札残り',
+    DISCARD_PILE: '捨て札',
+    CARD_STOCK: 'カード在庫',
+    CARD_SLEEVES: 'スリーブ',
     CHOOSE_ONE: '1つ選ぶ',
     SKIP: 'スキップ',
     FINAL_RUN_CLEAR: '9 ステージ、27 レベルを制覇！',
@@ -413,90 +469,85 @@ function createSpecialCardMarkup(
   `;
 }
 
-const FALLBACK_TEXT_I18N: Record<string, Partial<Record<Lang, string>>> = {
-  Joker: { ZH: '小丑', ZH_TW: '小丑', JA: 'ジョーカー' },
-  Jkr: { ZH: '小丑', ZH_TW: '小丑', JA: 'Jkr' },
-  'Greedy Joker': { ZH: '贪婪小丑', ZH_TW: '貪婪小丑', JA: '欲張りジョーカー' },
-  Grd: { ZH: '贪婪', ZH_TW: '貪婪', JA: '欲張' },
-  'Lusty Joker': { ZH: '欲念小丑', ZH_TW: '慾念小丑', JA: '色欲ジョーカー' },
-  Lst: { ZH: '欲念', ZH_TW: '慾念', JA: '色欲' },
-  'Wrathful Joker': { ZH: '愤怒小丑', ZH_TW: '憤怒小丑', JA: '憤怒ジョーカー' },
-  Wrt: { ZH: '愤怒', ZH_TW: '憤怒', JA: '憤怒' },
-  'Gluttonous Joker': { ZH: '暴食小丑', ZH_TW: '暴食小丑', JA: '暴食ジョーカー' },
-  Glt: { ZH: '暴食', ZH_TW: '暴食', JA: '暴食' },
-  'Jolly Joker': { ZH: '快活小丑', ZH_TW: '快活小丑', JA: '陽気ジョーカー' },
-  Jly: { ZH: '快活', ZH_TW: '快活', JA: '陽気' },
-  'Zany Joker': { ZH: '古怪小丑', ZH_TW: '古怪小丑', JA: '奇妙ジョーカー' },
-  Zny: { ZH: '古怪', ZH_TW: '古怪', JA: '奇妙' },
-  'Crazy Joker': { ZH: '疯狂小丑', ZH_TW: '瘋狂小丑', JA: '狂気ジョーカー' },
-  Crz: { ZH: '疯狂', ZH_TW: '瘋狂', JA: '狂気' },
-  'Droll Joker': { ZH: '滑稽小丑', ZH_TW: '滑稽小丑', JA: 'おどけジョーカー' },
-  Drl: { ZH: '滑稽', ZH_TW: '滑稽', JA: '滑稽' },
-  'Sly Joker': { ZH: '狡黠小丑', ZH_TW: '狡黠小丑', JA: '狡猾ジョーカー' },
-  Sly: { ZH: '狡黠', ZH_TW: '狡黠', JA: '狡猾' },
-  'Wily Joker': { ZH: '机敏小丑', ZH_TW: '機敏小丑', JA: '策士ジョーカー' },
-  Wily: { ZH: '机敏', ZH_TW: '機敏', JA: '策士' },
-  Wly: { ZH: '机敏', ZH_TW: '機敏', JA: '策士' },
-  'Devious Joker': { ZH: '诡计小丑', ZH_TW: '詭計小丑', JA: '悪知恵ジョーカー' },
-  Dev: { ZH: '诡计', ZH_TW: '詭計', JA: '悪知' },
-  'Crafty Joker': { ZH: '巧手小丑', ZH_TW: '巧手小丑', JA: '技巧ジョーカー' },
-  Crf: { ZH: '巧手', ZH_TW: '巧手', JA: '技巧' },
-  'Half Joker': { ZH: '半张小丑', ZH_TW: '半張小丑', JA: 'ハーフジョーカー' },
-  Half: { ZH: '半张', ZH_TW: '半張', JA: '半分' },
-  'Joker Stencil': { ZH: '小丑模板', ZH_TW: '小丑模板', JA: 'ジョーカーステンシル' },
-  Stencil: { ZH: '模板', ZH_TW: '模板', JA: '型紙' },
-  Sten: { ZH: '模板', ZH_TW: '模板', JA: '型紙' },
-  Banner: { ZH: '旗帜', ZH_TW: '旗幟', JA: '旗印' },
-  Bnr: { ZH: '旗帜', ZH_TW: '旗幟', JA: '旗印' },
-  'Mystic Summit': { ZH: '神秘峰顶', ZH_TW: '神秘峰頂', JA: '神秘の頂' },
-  Summit: { ZH: '峰顶', ZH_TW: '峰頂', JA: '頂' },
-  'Loyalty Card': { ZH: '忠诚卡', ZH_TW: '忠誠卡', JA: 'ロイヤルティカード' },
-  Loyalty: { ZH: '忠诚', ZH_TW: '忠誠', JA: '忠誠' },
-  Loyal: { ZH: '忠诚', ZH_TW: '忠誠', JA: '忠誠' },
-  Misprint: { ZH: '错印', ZH_TW: '錯印', JA: 'ミスプリント' },
-  Rand: { ZH: '随机', ZH_TW: '隨機', JA: 'ランダム' },
-  Abstract: { ZH: '抽象', ZH_TW: '抽象', JA: '抽象' },
-  'Abstract Joker': { ZH: '抽象小丑', ZH_TW: '抽象小丑', JA: '抽象ジョーカー' },
-  Abs: { ZH: '抽象', ZH_TW: '抽象', JA: '抽象' },
-  Runner: { ZH: '跑者', ZH_TW: '跑者', JA: 'ランナー' },
-  Run: { ZH: '跑者', ZH_TW: '跑者', JA: '走者' },
-  'Blue Joker': { ZH: '蓝色小丑', ZH_TW: '藍色小丑', JA: '青ジョーカー' },
-  Blue: { ZH: '蓝色', ZH_TW: '藍色', JA: '青' },
-  Drunkard: { ZH: '醉汉', ZH_TW: '醉漢', JA: '酔いどれ' },
-  Drnk: { ZH: '醉汉', ZH_TW: '醉漢', JA: '酔い' },
-  'Golden Joker': { ZH: '黄金小丑', ZH_TW: '黃金小丑', JA: '黄金ジョーカー' },
-  Golden: { ZH: '黄金', ZH_TW: '黃金', JA: '黄金' },
-  Gold: { ZH: '黄金', ZH_TW: '黃金', JA: '黄金' },
-  Bull: { ZH: '公牛', ZH_TW: '公牛', JA: '雄牛' },
-  'To the Moon': { ZH: '奔向月球', ZH_TW: '奔向月球', JA: '月まで' },
-  Moon: { ZH: '月球', ZH_TW: '月球', JA: '月' },
-  Acrobat: { ZH: '杂技演员', ZH_TW: '雜技演員', JA: '曲芸師' },
-  Acro: { ZH: '杂技', ZH_TW: '雜技', JA: '曲芸' },
-  'Rough Gem': { ZH: '粗糙宝石', ZH_TW: '粗糙寶石', JA: '原石' },
-  Gem: { ZH: '宝石', ZH_TW: '寶石', JA: '宝石' },
-  Bloodstone: { ZH: '血石', ZH_TW: '血石', JA: '血石' },
-  Blood: { ZH: '血石', ZH_TW: '血石', JA: '血石' },
-  Arrowhead: { ZH: '箭头', ZH_TW: '箭頭', JA: '矢じり' },
-  Arrow: { ZH: '箭头', ZH_TW: '箭頭', JA: '矢' },
-  'Onyx Agate': { ZH: '缟玛瑙', ZH_TW: '縞瑪瑙', JA: 'オニキス' },
-  Onyx: { ZH: '缟玛瑙', ZH_TW: '縞瑪瑙', JA: 'オニキス' },
-  Agate: { ZH: '玛瑙', ZH_TW: '瑪瑙', JA: '瑪瑙' },
-  'Seeing Double': { ZH: '双重视野', ZH_TW: '雙重視野', JA: '二重視' },
-  Double: { ZH: '双重', ZH_TW: '雙重', JA: '二重' },
-  'The Duo': { ZH: '二重奏', ZH_TW: '二重奏', JA: 'デュオ' },
-  Duo: { ZH: '二重', ZH_TW: '二重', JA: 'デュオ' },
-  'The Trio': { ZH: '三重奏', ZH_TW: '三重奏', JA: 'トリオ' },
-  Trio: { ZH: '三重', ZH_TW: '三重', JA: 'トリオ' },
-  'The Order': { ZH: '秩序', ZH_TW: '秩序', JA: '秩序' },
-  Order: { ZH: '秩序', ZH_TW: '秩序', JA: '秩序' },
-  'The Tribe': { ZH: '部族', ZH_TW: '部族', JA: '部族' },
-  Tribe: { ZH: '部族', ZH_TW: '部族', JA: '部族' },
-  Bootstraps: { ZH: '鞋带', ZH_TW: '鞋帶', JA: 'ブートストラップ' },
-  Boot: { ZH: '鞋带', ZH_TW: '鞋帶', JA: 'ブート' }
-};
+function levelFlavor(level: LevelConfig): { title: string; copy: string; accent: string } {
+  const titles = ['Meadow Skirmish', 'Bandit Camp', 'Ancient Shrine'];
+  const copies = [
+    'Defeat the wild creatures raiding the meadows.',
+    'Drive the challengers from their woodland camp.',
+    'Face the guardian of the forgotten shrine.'
+  ];
+  const accents = ['green', 'gold', 'purple'];
+  const index = Math.max(0, (level.tier - 1) % 3);
+  return { title: titles[index], copy: copies[index], accent: accents[index] };
+}
+
+function createLevelCardMarkup(level: LevelConfig, index: number, active: boolean): string {
+  const flavor = levelFlavor(level);
+  const rewardBonus = Math.max(1, Math.floor(level.reward / 2));
+  return `
+    <article class="hp-level-card ${active ? 'is-active' : 'is-locked'}">
+      <div class="hp-level-lock">${active ? '◆' : 'LOCK'}</div>
+      <div class="hp-level-banner ${flavor.accent}">${flavor.title}</div>
+      <div class="hp-level-art hp-level-art-${index + 1}">
+        <img src="${iconAsset(level.icon)}" alt="">
+      </div>
+      <p>${flavor.copy}</p>
+      <div class="hp-divider"></div>
+      <span class="hp-small-label">Defeat at least</span>
+      <strong class="hp-level-goal">${level.goal}</strong>
+      <span class="hp-small-label">Reward</span>
+      <div class="hp-reward-line">
+        <span>R +${rewardBonus}</span>
+        <span>P +${rewardBonus}</span>
+        <span>S +${Math.max(1, rewardBonus - 1)}</span>
+        <span>◆ +${5 + index * 2}%</span>
+      </div>
+      <button class="hp-level-action ${active ? 'enter-level-btn' : ''}" ${active ? '' : 'disabled'}>
+        ${active ? I18N[currentLang].ENTER_STAGE : I18N[currentLang].UPCOMING}
+      </button>
+    </article>
+  `;
+}
+
+function createRunPanelMarkup(state: GameState, title: string, sleeves: string[] = []): string {
+  return `
+    <aside class="hp-run-panel">
+      <div class="hp-run-title">${title}</div>
+      <div class="hp-run-divider jewel"></div>
+      <div class="hp-run-score-box">
+        <span class="label">${I18N[currentLang].ROUND} ${I18N[currentLang].SCORE}</span>
+        <strong><span class="hp-score-chip" aria-hidden="true"></span>${state.currentScore.toLocaleString('en-US')}</strong>
+      </div>
+      <div class="hp-vs-score">
+        <span>${state.currentScore.toLocaleString('en-US')}</span>
+        <b>×</b>
+        <span>${state.levelGoal.toLocaleString('en-US')}</span>
+      </div>
+      <div class="hp-two-stat">
+        <span>${I18N[currentLang].HANDS_LEFT}<strong>${state.dealsLeft}</strong></span>
+        <span>${I18N[currentLang].DISCARD_PILE}<strong>${state.shufflesLeft}</strong></span>
+      </div>
+      <div class="hp-chip-box"><span>${I18N[currentLang].GOLD}</span><strong><span class="hp-gold-chip" aria-hidden="true"></span>${state.chips.toLocaleString('en-US')}</strong></div>
+      <div class="hp-side-button purple"><span>▣</span>${I18N[currentLang].RUN_INFO}</div>
+      <div class="hp-side-button teal"><span>⚙</span>${I18N[currentLang].OPTIONS}</div>
+      <div class="hp-two-stat compact">
+        <span>${I18N[currentLang].STAGE}<strong>${state.currentStage} / ${state.totalStages}</strong></span>
+        <span>${I18N[currentLang].ROUND}<strong>${state.currentTier - 1}</strong></span>
+      </div>
+      <div class="hp-run-sleeves" aria-label="${I18N[currentLang].SLEEVES}">
+        <span>${I18N[currentLang].SLEEVES}</span>
+        <div>
+          ${sleeves.length
+            ? sleeves.map((name) => `<b>${name}</b>`).join('')
+            : `<b>${I18N[currentLang].NONE}</b>`}
+        </div>
+      </div>
+    </aside>
+  `;
+}
 
 function localizeText(base: string, i18n?: Partial<Record<Lang, string>>): string {
-  return i18n?.[currentLang] ?? i18n?.EN ?? FALLBACK_TEXT_I18N[base]?.[currentLang] ?? base;
+  return i18n?.[currentLang] ?? i18n?.EN ?? base;
 }
 
 export class GameUI {
@@ -951,14 +1002,14 @@ export class GameUI {
 
       const { stride } = this.getCellMetrics(size);
       const clashTiming = {
-        vanish: 0.22,
-        shakeStep: 0.04,
-        impact: 0.42,
-        shift: 0.3,
-        scorePause: 300,
-        lanePause: 160,
-        failPause: 320,
-        settlePause: 180
+        vanish: 0.26,
+        shakeStep: 0.043,
+        impact: 0.51,
+        shift: 0.34,
+        scorePause: 425,
+        lanePause: 255,
+        failPause: 425,
+        settlePause: 255
       };
 
       let currentRoundBase = 0;
@@ -1005,13 +1056,13 @@ export class GameUI {
           const localDy = endRect.top - startRect.top;
 
           const tl = gsap.timeline();
-          await tl.to(attackerBlock, { x: localDx * 0.4, y: localDy * 0.4, duration: 0.1, ease: 'power2.out' })
-            .to(attackerBlock, { x: -localDx * 0.2, y: -localDy * 0.2, duration: 0.18, ease: 'elastic.out(1, 0.3)' });
+          await tl.to(attackerBlock, { x: localDx * 0.4, y: localDy * 0.4, duration: 0.13, ease: 'power2.out' })
+            .to(attackerBlock, { x: -localDx * 0.2, y: -localDy * 0.2, duration: 0.21, ease: 'elastic.out(1, 0.3)' });
 
           gsap.set(attackerBlock, { rotation: 0 });
           gsap.to(attackerBlock, { scale: 0, opacity: 0, rotation: (Math.random() - 0.5) * 180, duration: clashTiming.vanish, ease: 'power2.in' });
 
-          gsap.fromTo(firstCell, { filter: 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' }, { filter: 'none', duration: 0.34 });
+          gsap.fromTo(firstCell, { filter: 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' }, { filter: 'none', duration: 0.43 });
 
           const attackerType = selectedCard.symbols[cardIndex];
           const penaltyVal = Number(SCORE_WEIGHTS[attackerType]) || 0;
@@ -1075,7 +1126,7 @@ export class GameUI {
             } else {
               gsap.to(attackerBlock, { scale: 0, opacity: 0, duration: clashTiming.vanish, ease: 'power2.in' });
               gsap.fromTo(firstCell, { x: -4 }, { x: 4, duration: clashTiming.shakeStep, yoyo: true, repeat: 5, onComplete: () => { gsap.set(firstCell, { x: 0 }); } });
-              gsap.fromTo(firstCell, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.28 });
+              gsap.fromTo(firstCell, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.34 });
             }
             await new Promise((resolve) => setTimeout(resolve, clashTiming.scorePause));
           } else {
@@ -1105,7 +1156,7 @@ export class GameUI {
               const penaltyVal = Number(SCORE_WEIGHTS[attackerType]) || 0;
               
               if (penaltyVal > 0) {
-                gsap.fromTo(img, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.28 });
+                gsap.fromTo(img, { filter: 'brightness(1.5) hue-rotate(-30deg)' }, { filter: 'none', duration: 0.34 });
                 
                 const popupIndex = step > 0 ? laneIndices[step - 1] : index;
                 const popupTile = this.matrixElement?.children[popupIndex] as HTMLElement;
@@ -1191,6 +1242,17 @@ export class GameUI {
         await new Promise((resolve) => setTimeout(resolve, 180));
       }
 
+      const adjustedBaseScore = result.sleeveBaseScoreDelta ?? currentRoundBase;
+      if (adjustedBaseScore !== currentRoundBase || (result.sleeveBaseMultiplier ?? 1) !== 1) {
+        await this.animateSleeveSettlement(currentRoundBase, adjustedBaseScore);
+        currentRoundBase = adjustedBaseScore;
+      }
+
+      await this.animateRoundScoreMerge(currentRoundBase, currentPierce > 0 ? 2 ** currentPierce : 1);
+      const visualScoreFrom = state.currentScore || 0;
+      const visualScoreDelta = result.sleeveScoreDelta ?? (result.scoreDelta ?? 0);
+      const visualScoreTo = Math.max(0, visualScoreFrom + visualScoreDelta - (result.penalty || 0));
+      await this.animateTotalScore(visualScoreFrom, visualScoreTo);
       await new Promise((resolve) => setTimeout(resolve, clashTiming.settlePause));
     } finally {
       this.store.applyClashResult(result);
@@ -1201,7 +1263,7 @@ export class GameUI {
 
 
 
-  private showScorePopup(score: number, matrixIndex: number, isPenalty: boolean = false): void {
+  private showScorePopup(score: number, matrixIndex: number, isPenalty: boolean = false, winStreak: number = 1): void {
     const tile = this.matrixElement?.children[matrixIndex] as HTMLElement;
     const wrapper = this.matrixWrapperElement;
     if (!tile || !wrapper) return;
@@ -1209,6 +1271,8 @@ export class GameUI {
     const popup = document.createElement('div');
     popup.className = 'float';
     popup.textContent = score > 0 ? `+${score}` : `${score}`;
+    const streakBoost = Math.min(Math.max(winStreak - 1, 0), 4);
+    popup.style.fontSize = `${3.5 + streakBoost * 0.42}rem`;
     if (isPenalty) {
       popup.style.color = '#F44336';
       popup.style.textShadow = '0 4px 12px rgba(244, 67, 54, 0.9), 0 0 6px rgba(244, 67, 54, 0.6)';
@@ -1225,10 +1289,45 @@ export class GameUI {
       left: startX + (Math.random() * 2 - 1) * 30,
       top: startY - 60,
       opacity: 0,
-      scale: 1.5,
-      duration: 0.8,
+      scale: 1.42 + streakBoost * 0.08,
+      duration: 0.68,
       ease: "power3.out",
       onComplete: () => popup.remove()
+    });
+  }
+
+  private async showPierceMultiplierPopup(matrixIndex: number, toEl: HTMLElement, winStreak: number = 1): Promise<void> {
+    const tile = this.matrixElement?.children[matrixIndex] as HTMLElement;
+    if (!tile) return;
+
+    const tileRect = tile.getBoundingClientRect();
+    const targetRect = toEl.getBoundingClientRect();
+    const from = { x: tileRect.left + tileRect.width / 2, y: tileRect.top + tileRect.height / 2 };
+    const to = { x: targetRect.left + targetRect.width / 2, y: targetRect.top + targetRect.height / 2 };
+    const streakBoost = Math.min(Math.max(winStreak - 1, 0), 4);
+
+    const popup = document.createElement('div');
+    popup.className = 'pierce-fly';
+    popup.textContent = 'x2';
+    popup.style.left = `${from.x}px`;
+    popup.style.top = `${from.y}px`;
+    popup.style.fontSize = `${4.6 + streakBoost * 0.32}rem`;
+    document.body.appendChild(popup);
+
+    await new Promise<void>((resolve) => {
+      gsap.timeline({ onComplete: () => { popup.remove(); resolve(); } })
+        .fromTo(popup,
+          { xPercent: -50, yPercent: -50, opacity: 0, scale: 0.65, rotation: -5 },
+          { opacity: 1, scale: 1.18, rotation: 0, duration: 0.16, ease: 'back.out(2.4)' }
+        )
+        .to(popup, {
+          left: to.x,
+          top: to.y,
+          scale: 0.52,
+          opacity: 0.2,
+          duration: 0.36,
+          ease: 'power3.inOut'
+        }, '+=0.08');
     });
   }
 
@@ -1255,7 +1354,7 @@ export class GameUI {
         top: to.y + (Math.random() * 2 - 1) * 26,
         opacity: 0,
         scale: 0,
-        duration: 0.7,
+        duration: 0.6,
         delay: Math.random() * 0.1,
         ease: "power3.inOut",
         onComplete: () => p.remove()
@@ -1263,7 +1362,7 @@ export class GameUI {
     }
     
     // Wait for the average duration
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    await new Promise((resolve) => setTimeout(resolve, 600));
   }
 
   private animateAdd(from: number, to: number, el: HTMLElement, wrap: HTMLElement): void {
@@ -1272,7 +1371,7 @@ export class GameUI {
     // 1) 数字滚动
     gsap.to(state, {
       value: to,
-      duration: 0.55,
+      duration: 0.48,
       ease: "power3.out",
       overwrite: true,
       onUpdate: () => { el.textContent = Math.round(state.value).toLocaleString(); }
@@ -1290,7 +1389,8 @@ export class GameUI {
       ease: "power2.out",
       yoyo: true,
       repeat: 5,
-      repeatRefresh: true
+      repeatRefresh: true,
+      onComplete: () => { gsap.set(el, { x: 0, y: 0 }); }
     });
 
     // 4) 数字放大再回落
@@ -1299,8 +1399,151 @@ export class GameUI {
     const targetScale = Math.min(Math.max(1.14, currentScale + popBoost), 1 + popBoost * 3);
     gsap.killTweensOf(el, "scale");
     gsap.timeline()
-      .to(el, { scale: targetScale, duration: 0.18, ease: "power2.out" })
-      .to(el, { scale: 1, duration: 0.18 * 1.15, ease: "power3.out" });
+      .to(el, { scale: targetScale, y: 0, duration: 0.18, ease: "power2.out" })
+      .to(el, { scale: 1, x: 0, y: 0, duration: 0.18 * 1.15, ease: "power3.out", onComplete: () => { gsap.set(el, { x: 0, y: 0, scale: 1 }); } });
+  }
+
+  private async animateSleeveSettlement(fromBase: number, toBase: number): Promise<void> {
+    const sleeveCards = Array.from(document.querySelectorAll('.reward-slot-sleeves .special-card')) as HTMLElement[];
+    const baseEl = document.getElementById('ui-base-score') as HTMLElement | null;
+    const roundScoreBox = document.querySelector('.score-split-box') as HTMLElement | null;
+
+    if (sleeveCards.length > 0) {
+      await new Promise<void>((resolve) => {
+        gsap.timeline({ onComplete: resolve })
+          .to(sleeveCards, {
+            scale: 1.08,
+            y: -4,
+            filter: 'brightness(1.35)',
+            duration: 0.14,
+            stagger: 0.04,
+            ease: 'steps(3)'
+          })
+          .to(sleeveCards, {
+            scale: 1,
+            y: 0,
+            filter: 'brightness(1)',
+            duration: 0.16,
+            stagger: 0.03,
+            ease: 'steps(3)'
+          });
+      });
+    }
+
+    if (baseEl && roundScoreBox && fromBase !== toBase) {
+      this.animateAdd(fromBase, toBase, baseEl, roundScoreBox);
+      await new Promise((resolve) => setTimeout(resolve, 560));
+    }
+  }
+
+  private async animateRoundScoreMerge(base: number, multiplier: number): Promise<void> {
+    const wrap = document.querySelector('.score-split-box') as HTMLElement | null;
+    const leftEl = document.getElementById('ui-base-score') as HTMLElement | null;
+    const rightEl = document.getElementById('ui-score-multiplier') as HTMLElement | null;
+    const signEl = document.querySelector('.score-times') as HTMLElement | null;
+    const totalEl = document.getElementById('ui-score') as HTMLElement | null;
+    if (!wrap || !leftEl || !rightEl || !signEl || !totalEl) return;
+
+    const result = base * multiplier;
+    if (!Number.isFinite(result) || result === 0) {
+      leftEl.textContent = '0';
+      rightEl.textContent = '0';
+      gsap.set([leftEl, rightEl, signEl], { opacity: 1, scale: 1, x: 0, y: 0, rotation: 0, filter: 'brightness(1)' });
+      return;
+    }
+
+    const wrapRect = wrap.getBoundingClientRect();
+    const leftRect = leftEl.getBoundingClientRect();
+    const rightRect = rightEl.getBoundingClientRect();
+    const centerX = wrapRect.width / 2;
+    const leftCenterX = leftRect.left - wrapRect.left + leftRect.width / 2;
+    const rightCenterX = rightRect.left - wrapRect.left + rightRect.width / 2;
+
+    const resultEl = document.createElement('span');
+    resultEl.className = 'score-merge-result';
+    resultEl.textContent = Math.max(0, Math.floor(result)).toLocaleString('en-US');
+    wrap.appendChild(resultEl);
+
+    gsap.killTweensOf([leftEl, rightEl, signEl, resultEl]);
+    gsap.set([leftEl, rightEl, signEl], { opacity: 1, scale: 1, x: 0, y: 0, rotation: 0, filter: 'brightness(1)' });
+    gsap.set(resultEl, { opacity: 0, scale: 0.72, x: 0, y: 0, filter: 'brightness(1)' });
+
+    await new Promise<void>((resolve) => {
+      gsap.timeline({ onComplete: resolve })
+        .to(leftEl, {
+          x: centerX - leftCenterX,
+          scale: 0.84,
+          opacity: 0,
+          duration: 0.49,
+          ease: 'power3.in'
+        }, 0)
+        .to(rightEl, {
+          x: centerX - rightCenterX,
+          scale: 0.84,
+          opacity: 0,
+          duration: 0.49,
+          ease: 'power3.in'
+        }, 0)
+        .to(signEl, {
+          scale: 1.2,
+          rotation: 90,
+          opacity: 0,
+          duration: 0.315,
+          ease: 'power2.in'
+        }, 0.08)
+        .to(resultEl, {
+          opacity: 1,
+          scale: 1.7,
+          filter: 'brightness(1.25)',
+          duration: 0.364,
+          ease: 'back.out(1.4)'
+        }, 0.294)
+        .to(resultEl, {
+          scale: 1,
+          filter: 'brightness(1)',
+          duration: 0.266,
+          ease: 'power2.out'
+        });
+    });
+
+    await this.transferParticles(resultEl, totalEl);
+    resultEl.style.visibility = 'hidden';
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    resultEl.remove();
+    leftEl.textContent = '0';
+    rightEl.textContent = '0';
+    gsap.set([leftEl, rightEl, signEl], { opacity: 1, scale: 1, x: 0, y: 0, rotation: 0, filter: 'brightness(1)' });
+  }
+
+  private async animateTotalScore(from: number, to: number): Promise<void> {
+    const totalEl = document.getElementById('ui-score') as HTMLElement | null;
+    const panel = document.getElementById('ui-total-score-panel') as HTMLElement | null;
+    if (!totalEl || !panel) return;
+
+    const state = { value: from };
+    await new Promise<void>((resolve) => {
+      gsap.timeline({ onComplete: resolve })
+        .to(state, {
+          value: to,
+          duration: 0.38,
+          ease: 'power3.out',
+          onUpdate: () => {
+            totalEl.textContent = Math.round(state.value).toLocaleString('en-US');
+          }
+        }, 0)
+        .fromTo(panel,
+          { filter: 'brightness(1)' },
+          { filter: 'brightness(1.28)', duration: 0.1, yoyo: true, repeat: 3 },
+          0
+        )
+        .fromTo(totalEl,
+          { scale: 1, y: 0 },
+          { scale: 1.22, y: -2, duration: 0.12, yoyo: true, repeat: 1, ease: 'steps(4)' },
+          0.08
+        );
+    });
+    totalEl.textContent = Math.round(to).toLocaleString('en-US');
+    gsap.set([totalEl, panel], { clearProps: 'filter,scale,y' });
   }
 
   private updateHeldPosition(): void {
@@ -1485,6 +1728,10 @@ export class GameUI {
 
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay status-overlay';
+    const ownedSleeveNames = state.sleeves
+      .map((sleeve) => this.store.getSleeveDefinitions().find((definition) => definition.id === sleeve.definitionId))
+      .filter((definition): definition is NonNullable<typeof definition> => Boolean(definition))
+      .map((definition) => localizeText(definition.name, definition.nameI18n));
 
     if (state.status === 'HOME') {
       const decks = this.store.getDeckDefinitions();
@@ -1594,55 +1841,173 @@ export class GameUI {
     if (state.status === 'CHOOSE_SLEEVE') {
       const sleeveIds = state.sleeveChoices;
       const sleeves = sleeveIds.map(id => this.store.getSleeveDefinitions().find(s => s.id === id)).filter(Boolean);
+      const selectedSleeve = sleeves[0] ?? null;
 
       overlay.innerHTML = `
-        <div class="modal-content shop-card">
-          <h1 class="status-title gold">${I18N[currentLang].CHOOSE_SLEEVE}</h1>
-          <div class="pack-picker">
-            <div class="shop-grid">
-              ${sleeves.map((sleeve) => `
-                <div class="shop-offer" data-sleeve-id="${sleeve!.id}">
-                  <div class="shop-offer-kind">${I18N[currentLang].SLEEVES}</div>
-                  ${createSpecialCardMarkup(
-                    localizeText(sleeve!.name, sleeve!.nameI18n),
-                    localizeText(sleeve!.shortName, sleeve!.shortNameI18n),
-                    localizeText(sleeve!.description, sleeve!.descriptionI18n),
-                    sleeve!.accent
-                  )}
-                  <button class="status-button success select-sleeve-btn">${I18N[currentLang].USE}</button>
-                </div>
-              `).join('')}
-            </div>
+        <div class="hp-screen hp-sleeve-screen">
+          <div class="hp-stage">
+            <header class="hp-title-banner">${I18N[currentLang].CHOOSE_SLEEVE}</header>
+            <main class="hp-sleeve-layout">
+              <div class="hp-sleeve-choices">
+                ${sleeves.map((sleeve, index) => `
+                  <button class="hp-sleeve-choice ${index === 0 ? 'is-selected' : ''}" data-sleeve-id="${sleeve!.id}" type="button">
+                    <div class="hp-sleeve-stack">
+                      <div class="hp-sleeve-card" style="--sleeve-accent:${sleeve!.accent}">
+                        <div class="hp-sleeve-symbol">${index === 0 ? '=' : index === 1 ? 'X' : '◆'}</div>
+                      </div>
+                    </div>
+                    <span>${localizeText(sleeve!.name, sleeve!.nameI18n)}</span>
+                  </button>
+                `).join('')}
+              </div>
+              <aside class="hp-sleeve-detail">
+                ${selectedSleeve ? `
+                  <h2>${localizeText(selectedSleeve.name, selectedSleeve.nameI18n)}</h2>
+                  <div class="hp-divider jewel"></div>
+                  <p>${localizeText(selectedSleeve.description, selectedSleeve.descriptionI18n)}</p>
+                  <ul>
+                    <li><span>◎</span>${selectedSleeve.rarity}</li>
+                    <li><span>◆</span>${localizeText(selectedSleeve.shortName, selectedSleeve.shortNameI18n)}</li>
+                    <li><span>$</span>${selectedSleeve.cost} ${I18N[currentLang].CHIPS}</li>
+                  </ul>
+                ` : ''}
+              </aside>
+            </main>
+            <button id="pick-sleeve-btn" class="hp-primary-action" data-sleeve-id="${selectedSleeve?.id ?? ''}">
+              <span>×</span>${I18N[currentLang].PICK_SLEEVE}
+            </button>
           </div>
         </div>
       `;
       this.root.appendChild(overlay);
 
-      const btns = overlay.querySelectorAll('.select-sleeve-btn');
-      btns.forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          const choiceEl = (e.target as HTMLElement).closest('.shop-offer');
-          const sleeveId = choiceEl?.getAttribute('data-sleeve-id');
-          if (sleeveId) {
-            this.store.chooseSleeveById(sleeveId);
-            this.render();
+      overlay.querySelectorAll('.hp-sleeve-choice').forEach((choice) => {
+        choice.addEventListener('click', () => {
+          overlay.querySelectorAll('.hp-sleeve-choice').forEach((item) => item.classList.remove('is-selected'));
+          choice.classList.add('is-selected');
+          const sleeveId = choice.getAttribute('data-sleeve-id') ?? '';
+          const sleeve = this.store.getSleeveDefinitions().find((candidate) => candidate.id === sleeveId);
+          const detail = overlay.querySelector('.hp-sleeve-detail');
+          const action = overlay.querySelector('#pick-sleeve-btn');
+          if (action) action.setAttribute('data-sleeve-id', sleeveId);
+          if (detail && sleeve) {
+            detail.innerHTML = `
+              <h2>${localizeText(sleeve.name, sleeve.nameI18n)}</h2>
+              <div class="hp-divider jewel"></div>
+              <p>${localizeText(sleeve.description, sleeve.descriptionI18n)}</p>
+              <ul>
+                <li><span>◎</span>${sleeve.rarity}</li>
+                <li><span>◆</span>${localizeText(sleeve.shortName, sleeve.shortNameI18n)}</li>
+                <li><span>$</span>${sleeve.cost} ${I18N[currentLang].CHIPS}</li>
+              </ul>
+            `;
           }
         });
+      });
+      overlay.querySelector('#pick-sleeve-btn')?.addEventListener('click', (event) => {
+        const sleeveId = (event.currentTarget as HTMLElement).getAttribute('data-sleeve-id');
+        if (!sleeveId) return;
+        this.store.chooseSleeveById(sleeveId);
+        this.render();
+      });
+      return;
+    }
+
+    if (state.status === 'LEVEL_SELECTION') {
+      const options = this.store.getLevelSelectionOptions();
+      overlay.innerHTML = `
+        <div class="hp-screen hp-level-screen">
+          <div class="hp-stage hp-level-stage">
+            ${createRunPanelMarkup(state, 'Choose your next Stage', ownedSleeveNames)}
+            <section class="hp-level-main">
+              <header class="hp-title-banner compact">ROSHAMBO</header>
+              <div class="hp-level-options">
+                ${options.map((level, index) => createLevelCardMarkup(level, index, index === 0)).join('')}
+              </div>
+              <div class="hp-tip">i Tip: Higher stages grant better rewards but are more challenging!</div>
+            </section>
+            <div class="hp-next-deck" aria-hidden="true"></div>
+          </div>
+        </div>
+      `;
+      this.root.appendChild(overlay);
+      overlay.querySelector('.enter-level-btn')?.addEventListener('click', () => {
+        this.store.enterSelectedLevel();
+        this.render();
       });
       return;
     }
 
     if (state.status === 'ROUND_REWARD' && state.pendingReward) {
+      const perfectClearReward = 0;
+      const claimRows = [
+        { icon: '◎', label: I18N[currentLang].LEVEL_REWARD, value: state.pendingReward.baseReward },
+        { icon: `<img src="${blockAsset(RPS.PAPER)}" alt="">`, label: I18N[currentLang].HAND_REWARD, value: state.pendingReward.handReward },
+        { icon: '◆', label: I18N[currentLang].PERFECT_CLEAR, value: perfectClearReward },
+        { icon: '♠', label: I18N[currentLang].INTEREST_REWARD, value: state.pendingReward.interestReward }
+      ];
       overlay.innerHTML = `
-        <div class="modal-content status-card reward-card">
-          <h1 class="status-title success">${I18N[currentLang].ROUND_REWARD}</h1>
-          <p class="status-copy">${state.pendingReward.levelName} · ${I18N[currentLang].STAGE} ${state.pendingReward.stage}/${state.totalStages}</p>
-          <div class="reward-breakdown">
-            <div class="reward-row"><span>${I18N[currentLang].LEVEL_REWARD}</span><strong>+${state.pendingReward.baseReward}</strong></div>
-            <div class="reward-row"><span>${I18N[currentLang].INTEREST_REWARD}</span><strong>+${state.pendingReward.interestReward}</strong></div>
-            <div class="reward-row total"><span>${I18N[currentLang].TOTAL_REWARD}</span><strong>+${state.pendingReward.totalReward}</strong></div>
+        <div class="hp-screen hp-claim-screen">
+          <div class="hp-stage hp-claim-stage">
+            <aside class="hp-claim-sidebar">
+              <div class="hp-claim-logo">ROSHAMBO</div>
+              <div class="hp-claim-target">
+                <img src="${iconAsset(state.levelIcon)}" alt="">
+                <div>
+                  <span>${I18N[currentLang].TARGET_SCORE}</span>
+                  <strong>${state.levelGoal.toLocaleString()}</strong>
+                  <b>${state.pendingReward.levelName}</b>
+                </div>
+              </div>
+              <div class="hp-claim-score">
+                <span>${I18N[currentLang].TOTAL_SCORE}</span>
+                <strong>${state.currentScore.toLocaleString()}</strong>
+                <b>/</b>
+                <strong>${state.levelGoal.toLocaleString()}</strong>
+              </div>
+              <div class="hp-claim-score split">
+                <span>${I18N[currentLang].BASE_SCORE}</span>
+                <strong>${state.currentScore.toLocaleString()}</strong>
+                <b>X</b>
+                <span>${I18N[currentLang].MULTIPLIER}</span>
+                <strong>x${state.lastClash?.pierceMultiplier ?? 1}</strong>
+              </div>
+              <div class="hp-claim-gold">
+                <span>${I18N[currentLang].GOLD}</span>
+                <strong>◎ ${state.chips}</strong>
+              </div>
+              <div class="hp-claim-action-cards">
+                <div>RESHUFFLE<br><strong>2</strong></div>
+                <div>EXTRA CARD<br><strong>3</strong></div>
+              </div>
+            </aside>
+            <main class="hp-claim-main">
+              <div class="hp-claim-reward-strip">
+                <div><span>▣</span><span>▣</span><span>▣</span></div>
+                <div><span>✚</span><span>∞</span><span>Ω</span></div>
+                <div><span>×</span><span>◇</span><span>×</span></div>
+              </div>
+              <section class="hp-claim-board">
+                <h1>${I18N[currentLang].CLAIM}</h1>
+                <div class="hp-claim-list">
+                  ${claimRows.map((row) => `
+                    <div class="hp-claim-row">
+                      <span class="hp-claim-icon">${row.icon}</span>
+                      <span class="hp-claim-label">${row.label}</span>
+                      <span class="hp-claim-dots"></span>
+                      <strong>+$${row.value}</strong>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="hp-claim-total">
+                  <span class="hp-claim-chest">▣</span>
+                  <span>${I18N[currentLang].TOTAL_EARNED}</span>
+                  <strong>$${state.pendingReward.totalReward}</strong>
+                </div>
+              </section>
+              <button id="shop-btn" class="hp-claim-continue">${I18N[currentLang].ENTER_SHOP}</button>
+            </main>
           </div>
-          <button id="shop-btn" class="status-button success">${I18N[currentLang].ENTER_SHOP}</button>
         </div>
       `;
       this.root.appendChild(overlay);
@@ -1654,120 +2019,119 @@ export class GameUI {
     }
 
     if (state.status === 'SHOP') {
-      const offers = state.shopOffers.map((offer) => {
+      const cardFromCode = (offer: ShopOffer): Card | null => {
+        if (!offer.cardCode) return null;
+        return {
+          id: `shop-${offer.offerId}`,
+          symbols: offer.cardCode.toUpperCase().split('').map((digit) => ({ '0': RPS.BLANK, '1': RPS.PAPER, '3': RPS.SCISSORS, '4': RPS.ROCK, O: RPS.TRICOLOR, '7': RPS.TRICOLOR }[digit] ?? RPS.BLANK))
+        };
+      };
+
+      const renderBuyButton = (offer: ShopOffer) => `
+        <button
+          class="hp-price-button shop-buy-btn"
+          data-offer-id="${offer.offerId}"
+          ${offer.purchased || state.chips < offer.cost ? 'disabled' : ''}
+        >
+          ${offer.purchased ? I18N[currentLang].PURCHASED : `◎ ${offer.cost}`}
+        </button>
+      `;
+
+      const renderShopOffer = (offer: ShopOffer): string => {
+        if (offer.kind === 'card') {
+          const card = cardFromCode(offer);
+          if (!card) return '';
+          return `
+            <article class="hp-shop-item hp-shop-card-item ${offer.purchased ? 'purchased' : ''}">
+              <div class="hp-shop-card-art">${createCardMarkup(card)}</div>
+              <h3>${offer.cardCode}</h3>
+              <p>Adds this card to your run deck.</p>
+              ${renderBuyButton(offer)}
+            </article>
+          `;
+        }
         if (offer.kind === 'sleeve') {
           const definition = this.store.getSleeveDefinitions().find((candidate) => candidate.id === offer.definitionId);
-          return definition ? {
-            offer,
-            label: offer.form === 'pack' ? 'Sleeve Pack' : 'Sleeve',
-            description: localizeText(definition.description, definition.descriptionI18n),
-            accent: definition.accent,
-            name: localizeText(definition.name, definition.nameI18n),
-            shortName: localizeText(definition.shortName, definition.shortNameI18n)
-          } : null;
+          if (!definition) return '';
+          return `
+            <article class="hp-shop-item hp-shop-sleeve-item ${offer.purchased ? 'purchased' : ''}">
+              <div class="hp-shop-sleeve-art" style="--sleeve-accent:${definition.accent}"><span>◆</span></div>
+              <h3>${localizeText(definition.name, definition.nameI18n)}</h3>
+              <p>${localizeText(definition.shortName, definition.shortNameI18n)}</p>
+              <small>${definition.rarity}</small>
+              ${renderBuyButton(offer)}
+            </article>
+          `;
         }
         if (offer.kind === 'giftcard') {
           const definition = this.store.getGiftCardDefinitionById(offer.definitionId ?? '');
-          return definition ? {
-            offer,
-            label: offer.form === 'pack' ? 'Gift Pack' : 'Gift Card',
-            description: localizeText(definition.description, definition.descriptionI18n),
-            accent: definition.accent,
-            name: localizeText(definition.name, definition.nameI18n),
-            shortName: localizeText(definition.shortName, definition.shortNameI18n)
-          } : null;
+          if (!definition) return '';
+          return `
+            <article class="hp-shop-item hp-shop-utility-item ${offer.purchased ? 'purchased' : ''}">
+              <div class="hp-shop-token" style="--token-accent:${definition.accent}">GC</div>
+              <h3>${localizeText(definition.name, definition.nameI18n)}</h3>
+              <p>${localizeText(definition.shortName, definition.shortNameI18n)}</p>
+              <small>${I18N[currentLang].GIFT_CARD}</small>
+              ${renderBuyButton(offer)}
+            </article>
+          `;
         }
         if (offer.kind === 'playmat') {
           const definition = this.store.getPlaymatDefinitionById(offer.definitionId ?? '');
-          return definition ? {
-            offer,
-            label: offer.form === 'pack' ? 'Playmat Pack' : 'Playmat',
-            description: localizeText(definition.description, definition.descriptionI18n),
-            accent: definition.accent,
-            name: localizeText(definition.name, definition.nameI18n),
-            shortName: localizeText(definition.shortName, definition.shortNameI18n)
-          } : null;
+          if (!definition) return '';
+          return `
+            <article class="hp-shop-item hp-shop-utility-item ${offer.purchased ? 'purchased' : ''}">
+              <div class="hp-shop-playmat-art" style="--token-accent:${definition.accent}"></div>
+              <h3>${localizeText(definition.name, definition.nameI18n)}</h3>
+              <p>${localizeText(definition.shortName, definition.shortNameI18n)}</p>
+              <small>${I18N[currentLang].PLAYMAT}</small>
+              ${renderBuyButton(offer)}
+            </article>
+          `;
         }
-        const card = offer.cardCode ? { id: `shop-${offer.offerId}`, symbols: offer.cardCode.toUpperCase().split('').map((digit) => ({ '0': RPS.BLANK, '1': RPS.PAPER, '3': RPS.SCISSORS, '4': RPS.ROCK, O: RPS.TRICOLOR, '7': RPS.TRICOLOR }[digit] ?? RPS.BLANK)) } : null;
-        return card ? { offer, label: offer.form === 'pack' ? 'Card Pack' : 'Card', card, description: offer.form === 'pack' ? `${offer.choices?.length ?? 0} choices, pick 1` : `Adds ${offer.cardCode} to your run deck`, accent: '#90e0ef', name: offer.cardCode ?? 'Card', shortName: 'Card' } : null;
-      }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
-      const openedPack = state.openedPackOfferId ? state.shopOffers.find((offer) => offer.offerId === state.openedPackOfferId) ?? null : null;
+        return '';
+      };
+
+      const cardOffers = state.shopOffers.filter((offer) => offer.kind === 'card');
+      const sleeveOffers = state.shopOffers.filter((offer) => offer.kind === 'sleeve');
+      const utilityOffers = state.shopOffers.filter((offer) => offer.kind === 'giftcard' || offer.kind === 'playmat');
+
       overlay.innerHTML = `
-        <div class="modal-content status-card shop-card">
-          <h1 class="status-title gold">${I18N[currentLang].SHOP}</h1>
-          <p class="status-copy">${I18N[currentLang].CHIPS}: ${state.chips}</p>
-          <div class="shop-grid">
-            ${offers.map(({ offer, label, description, accent, name, shortName, card }) => `
-              <div class="shop-offer ${offer.purchased ? 'purchased' : ''}">
-                <div class="shop-offer-kind">${label}</div>
-                ${card ? `<div class="shop-card-preview">${createCardMarkup(card)}</div>` : createSpecialCardMarkup(name, shortName, description, accent)}
-                ${card ? `<div class="shop-card-caption">${description}</div>` : ''}
-                <button
-                  class="status-button primary shop-buy-btn"
-                  data-offer-id="${offer.offerId}"
-                  ${offer.purchased || state.chips < offer.cost ? 'disabled' : ''}
-                >
-                  ${offer.purchased ? I18N[currentLang].PURCHASED : `${I18N[currentLang].BUY} (${offer.cost})`}
-                </button>
-                ${offer.kind === 'giftcard' && offer.purchased && offer.definitionId ? `<button class="status-button shop-use-gift-btn" data-gift-definition-id="${offer.definitionId}">${I18N[currentLang].USE}</button>` : ''}
+        <div class="hp-screen hp-shop-screen">
+          <div class="hp-stage hp-shop-stage">
+            ${createRunPanelMarkup(state, 'Choose your next Blind', ownedSleeveNames)}
+            <main class="hp-shop-main">
+              <header class="hp-shop-header">
+                <div class="hp-shop-chips">◎ <strong>${state.chips}</strong><span>${I18N[currentLang].CHIPS}</span></div>
+                <div class="hp-title-banner shop-title">${I18N[currentLang].SHOP}</div>
+                <button class="hp-reroll-button" disabled>↻ Reroll<br><span>◎ 5</span></button>
+              </header>
+              <section class="hp-shop-section card-stock">
+                <h2>${I18N[currentLang].CARD_STOCK}</h2>
+                <p>Improve your deck with new cards.</p>
+                <div class="hp-shop-card-row">${cardOffers.map(renderShopOffer).join('')}</div>
+              </section>
+              <div class="hp-shop-lower">
+                <section class="hp-shop-section sleeve-stock">
+                  <h2>${I18N[currentLang].CARD_SLEEVES}</h2>
+                  <p>Protect your deck in style.</p>
+                  <div class="hp-shop-mini-row">${sleeveOffers.map(renderShopOffer).join('')}</div>
+                </section>
+                <section class="hp-shop-section utility-stock">
+                  <h2>${I18N[currentLang].PLAYMATS}</h2>
+                  <p>A new trick for your matches.</p>
+                  <div class="hp-shop-mini-row">${utilityOffers.map(renderShopOffer).join('')}</div>
+                </section>
               </div>
-            `).join('')}
+              <footer class="hp-shop-footer">
+                <button class="hp-footer-button red">Leave</button>
+                <button class="hp-footer-button purple" disabled>Skip Blind ◎ 10</button>
+                <button class="hp-footer-button buy" disabled>${I18N[currentLang].BUY}</button>
+                <button class="hp-footer-button blue" disabled>Reroll ◎ 5</button>
+                <button id="continue-btn" class="hp-footer-button green">${I18N[currentLang].CONTINUE}</button>
+              </footer>
+            </main>
           </div>
-          ${openedPack ? `
-              <div class="pack-picker">
-              <div class="pack-picker-title">${I18N[currentLang].CHOOSE_ONE}</div>
-              <div class="shop-grid">
-                ${(openedPack.choices ?? []).map((choice, index) => {
-                  if (choice.kind === 'card' && choice.cardCode) {
-                    const packCard: Card = { id: `pack-${index}`, symbols: choice.cardCode.toUpperCase().split('').map((digit) => ({ '0': RPS.BLANK, '1': RPS.PAPER, '3': RPS.SCISSORS, '4': RPS.ROCK, O: RPS.TRICOLOR, '7': RPS.TRICOLOR }[digit] ?? RPS.BLANK)) };
-                    return `
-                      <div class="shop-offer">
-                        <div class="shop-offer-kind">Card</div>
-                        <div class="shop-card-preview">${createCardMarkup(packCard)}</div>
-                        <button class="status-button primary pack-choice-btn" data-offer-id="${openedPack.offerId}" data-choice-index="${index}">Pick</button>
-                      </div>
-                    `;
-                  }
-                  if (choice.kind === 'sleeve' && choice.definitionId) {
-                    const definition = this.store.getSleeveDefinitions().find((candidate) => candidate.id === choice.definitionId);
-                    if (!definition) return '';
-                    return `
-                      <div class="shop-offer">
-                        <div class="shop-offer-kind">Sleeve</div>
-                        ${createSpecialCardMarkup(definition.name, definition.shortName, definition.description, definition.accent)}
-                        <button class="status-button primary pack-choice-btn" data-offer-id="${openedPack.offerId}" data-choice-index="${index}">Pick</button>
-                      </div>
-                    `;
-                  }
-                  if (choice.kind === 'giftcard' && choice.definitionId) {
-                    const definition = this.store.getGiftCardDefinitionById(choice.definitionId);
-                    if (!definition) return '';
-                    return `
-                      <div class="shop-offer">
-                        <div class="shop-offer-kind">Gift Card</div>
-                        ${createSpecialCardMarkup(localizeText(definition.name, definition.nameI18n), localizeText(definition.shortName, definition.shortNameI18n), localizeText(definition.description, definition.descriptionI18n), definition.accent)}
-                        <button class="status-button primary pack-choice-btn" data-offer-id="${openedPack.offerId}" data-choice-index="${index}">Pick</button>
-                      </div>
-                    `;
-                  }
-                  if (choice.kind === 'playmat' && choice.definitionId) {
-                    const definition = this.store.getPlaymatDefinitionById(choice.definitionId);
-                    if (!definition) return '';
-                    return `
-                      <div class="shop-offer">
-                        <div class="shop-offer-kind">Playmat</div>
-                        ${createSpecialCardMarkup(localizeText(definition.name, definition.nameI18n), localizeText(definition.shortName, definition.shortNameI18n), localizeText(definition.description, definition.descriptionI18n), definition.accent)}
-                        <button class="status-button primary pack-choice-btn" data-offer-id="${openedPack.offerId}" data-choice-index="${index}">Pick</button>
-                      </div>
-                    `;
-                  }
-                  return '';
-                }).join('')}
-              </div>
-              <button id="skip-pack-btn" class="status-button">${I18N[currentLang].SKIP}</button>
-            </div>
-          ` : ''}
-          <button id="continue-btn" class="status-button success">${I18N[currentLang].CONTINUE}</button>
         </div>
       `;
       this.root.appendChild(overlay);
@@ -1778,29 +2142,6 @@ export class GameUI {
           this.store.buyShopOffer(offerId);
           this.render();
         });
-      });
-      overlay.querySelectorAll('.shop-use-gift-btn').forEach((button) => {
-        button.addEventListener('click', () => {
-          const definitionId = button.getAttribute('data-gift-definition-id');
-          if (!definitionId) return;
-          const giftCard = state.giftCards.find((card) => card.definitionId === definitionId);
-          if (!giftCard) return;
-          this.store.useGiftCard(giftCard.instanceId);
-          this.render();
-        });
-      });
-      overlay.querySelectorAll('.pack-choice-btn').forEach((button) => {
-        button.addEventListener('click', () => {
-          const offerId = button.getAttribute('data-offer-id');
-          const choiceIndex = Number(button.getAttribute('data-choice-index'));
-          if (!offerId || !Number.isFinite(choiceIndex)) return;
-          this.store.choosePackChoice(offerId, choiceIndex);
-          this.render();
-        });
-      });
-      overlay.querySelector('#skip-pack-btn')?.addEventListener('click', () => {
-        this.store.skipOpenedPack();
-        this.render();
       });
       overlay.querySelector('#continue-btn')?.addEventListener('click', () => {
         this.store.continueAfterShop();
@@ -1853,10 +2194,10 @@ export class GameUI {
     const levelEl = document.getElementById('ui-level'); if (levelEl) levelEl.textContent = `${I18N[currentLang].STAGE} ${state.currentStage}/${state.totalStages}`;
     const levelNameEl = document.getElementById('ui-level-name'); if (levelNameEl) levelNameEl.textContent = state.levelName;
     const levelIconEl = document.getElementById('ui-level-icon') as HTMLImageElement | null; if (levelIconEl) levelIconEl.src = iconAsset(state.levelIcon);
-    const formatNumber = (value: number) => Math.max(0, Math.floor(value || 0)).toLocaleString('en-US');
-    const activeScoreSource = state.preview ?? state.lastClash;
+    const formatNumber = (value: number) => Math.floor(value || 0).toLocaleString('en-US');
+    const activeScoreSource = this.isAnimating ? state.preview : null;
     const baseScore = activeScoreSource?.baseScoreDelta ?? activeScoreSource?.scoreDelta ?? 0;
-    const multiplier = activeScoreSource?.pierceMultiplier ?? 1;
+    const multiplier = activeScoreSource?.pierceMultiplier ?? 0;
     const goalEl = document.getElementById('ui-goal'); if (goalEl) goalEl.textContent = formatNumber(state.levelGoal || 0);
     const goalInlineEl = document.getElementById('ui-goal-inline'); if (goalInlineEl) goalInlineEl.textContent = formatNumber(state.levelGoal || 0);
     const scoreEl = document.getElementById('ui-score'); if (scoreEl) scoreEl.textContent = formatNumber(state.currentScore || 0);

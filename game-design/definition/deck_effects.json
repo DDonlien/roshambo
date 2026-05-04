@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "decks": [
+    {
+      "deckId": "deck:pinpoint",
+      "effects": []
+    },
+    {
+      "deckId": "deck:multihit",
+      "effects": []
+    },
+    {
+      "deckId": "deck:allin",
+      "effects": []
+    },
+    {
+      "deckId": "deck:no-paper",
+      "effects": []
+    },
+    {
+      "deckId": "deck:no-scissors",
+      "effects": []
+    },
+    {
+      "deckId": "deck:no-rock",
+      "effects": []
+    },
+    {
+      "deckId": "deck:wild",
+      "effects": []
+    },
+    {
+      "deckId": "deck:tricolor",
+      "effects": []
+    }
+  ]
+}

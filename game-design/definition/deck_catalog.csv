@@ -1,0 +1,9 @@
+deck_id,name,unlock_ref,unlock_title,unlock_description,starting_chips,starting_interest_rate,starting_deals,starting_shuffles
+deck:pinpoint,Pinpoint,unlock:starter,Starter,Default unlocked.,10,0.2,4,4
+deck:multihit,Multi-hit,unlock:starter,Starter,Default unlocked.,10,0.2,3,3
+deck:allin,All In,unlock:starter,Starter,Default unlocked.,10,0.2,2,2
+deck:no-paper,No Paper,unlock:starter,Starter,Default unlocked.,10,0.2,2,2
+deck:no-scissors,No Scissors,unlock:starter,Starter,Default unlocked.,10,0.2,2,2
+deck:no-rock,No Rock,unlock:starter,Starter,Default unlocked.,10,0.2,2,2
+deck:wild,Wild Mix,unlock:starter,Starter,Default unlocked.,10,0.2,2,2
+deck:tricolor,Tricolor,unlock:starter,Starter,Default unlocked.,10,0.2,2,2

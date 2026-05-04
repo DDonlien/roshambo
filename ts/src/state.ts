@@ -153,6 +153,19 @@ function weightedPick<T extends string>(weights: Record<T, number>): T {
   return entries[0][0];
 }
 
+function weightedPickItem<T>(items: T[], getWeight: (item: T) => number): T | null {
+  if (items.length === 0) return null;
+  const total = items.reduce((sum, item) => sum + Math.max(0, getWeight(item)), 0);
+  if (total <= 0) return items[Math.floor(Math.random() * items.length)];
+
+  let roll = Math.random() * total;
+  for (const item of items) {
+    roll -= Math.max(0, getWeight(item));
+    if (roll <= 0) return item;
+  }
+  return items[items.length - 1];
+}
+
 function shuffleInPlace<T>(items: T[]): T[] {
   for (let index = items.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(Math.random() * (index + 1));
@@ -251,6 +264,27 @@ export class GameStore {
       .filter((definition): definition is SleeveDefinition => definition !== null);
   }
 
+  private getOwnedSleeveTagCounts(): Map<string, number> {
+    const counts = new Map<string, number>();
+    this.getOwnedSleeveDefinitions().forEach((definition) => {
+      definition.comboTags.forEach((tag) => {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      });
+    });
+    return counts;
+  }
+
+  private getSleeveShopWeight(definition: SleeveDefinition, ownedTagCounts = this.getOwnedSleeveTagCounts()): number {
+    const comboBonus = definition.comboTags.reduce((sum, tag) => sum + (ownedTagCounts.get(tag) ?? 0), 0);
+    return Math.max(0, definition.shopRatio + comboBonus);
+  }
+
+  private pickShopSleeve(excludedIds: Set<string>): SleeveDefinition | null {
+    const candidates = this.getSleeveDefinitions().filter((definition) => !excludedIds.has(definition.id));
+    const ownedTagCounts = this.getOwnedSleeveTagCounts();
+    return weightedPickItem(candidates, (definition) => this.getSleeveShopWeight(definition, ownedTagCounts));
+  }
+
   getGiftCardDefinitionById(definitionId: string): GiftCardDefinition | null {
     return this.getGiftCardDefinitions().find((definition) => definition.id === definitionId) ?? null;
   }
@@ -332,7 +366,7 @@ export class GameStore {
 
   private applyShopChoice(choice: ShopOfferChoice): boolean {
     if (choice.kind === 'sleeve' && choice.definitionId) {
-      if (this.state.sleeves.length >= (this.sleeveDefinitionFile?.slotLimit ?? 2)) return false;
+      if (this.state.sleeves.length >= (this.sleeveDefinitionFile?.slotLimit ?? 5)) return false;
       this.state.sleeves.push({ instanceId: randomId(), definitionId: choice.definitionId });
       return true;
     }
@@ -428,9 +462,13 @@ export class GameStore {
       baseScoreDelta: result.baseScoreDelta ?? result.scoreDelta,
       pierceCount: result.pierceCount ?? 0,
       pierceMultiplier: result.pierceMultiplier ?? 1,
+      sleeveBaseScoreDelta: result.sleeveBaseScoreDelta,
+      sleeveScoreDelta: result.sleeveScoreDelta,
+      sleeveBaseMultiplier: result.sleeveBaseMultiplier,
       laneScores: [...result.laneScores],
       replacedCells: result.replacedCells.map((cell) => ({ ...cell })),
       captureEvents: result.captureEvents?.map((event) => ({ ...event })) ?? [],
+      tieEvents: result.tieEvents?.map((event) => ({ ...event })) ?? [],
       shiftedLanes: result.shiftedLanes?.map((lane) => ({ ...lane })) ?? []
     };
   }
@@ -441,6 +479,15 @@ export class GameStore {
 
   getCurrentLevelConfig(): LevelConfig {
     return { ...this.getCurrentLevelConfigInternal() };
+  }
+
+  getLevelSelectionOptions(): LevelConfig[] {
+    const startIndex = Math.max(0, this.state.currentLevel - 1);
+    const options = this.levelConfigs.slice(startIndex, startIndex + 3);
+    while (options.length < 3 && this.levelConfigs.length > 0) {
+      options.push(this.levelConfigs[this.levelConfigs.length - 1]);
+    }
+    return options.map((level) => ({ ...level }));
   }
 
   getLastPreviewEdge(): InsertEdge | null {
@@ -516,7 +563,7 @@ export class GameStore {
   private addRandomSleeves(count: number): void {
     const ownedIds = new Set(this.state.sleeves.map((sleeve) => sleeve.definitionId));
     const available = shuffleInPlace(this.getSleeveDefinitions().filter((definition) => !ownedIds.has(definition.id)));
-    while (count > 0 && available.length > 0 && this.state.sleeves.length < (this.sleeveDefinitionFile?.slotLimit ?? 2)) {
+    while (count > 0 && available.length > 0 && this.state.sleeves.length < (this.sleeveDefinitionFile?.slotLimit ?? 5)) {
       const definition = available.shift();
       if (!definition) break;
       this.state.sleeves.push({ instanceId: randomId(), definitionId: definition.id });
@@ -524,7 +571,7 @@ export class GameStore {
     }
   }
 
-  private getSleeveClashBonus(card: Card, result: ClashResult): { scoreDelta: number; chipsDelta: number } {
+  private getSleeveClashBonus(card: Card, result: ClashResult): { baseScoreDelta: number; scoreDelta: number; pierceMultiplier: number; baseMultiplier: number; chipsDelta: number } {
     const ownedSleeves = this.getOwnedSleeveDefinitions();
     let flatScore = 0;
     let multiplier = 1;
@@ -535,7 +582,7 @@ export class GameStore {
         card,
         result,
         ownedSleeveCount: ownedSleeves.length,
-        emptySleeveSlots: Math.max(0, (this.sleeveDefinitionFile?.slotLimit ?? 2) - ownedSleeves.length),
+        emptySleeveSlots: Math.max(0, (this.sleeveDefinitionFile?.slotLimit ?? 5) - ownedSleeves.length),
         dealsLeft: this.state.dealsLeft,
         remainingDeckCount: this.state.deck.length,
         currentChips: this.state.chips,
@@ -548,9 +595,14 @@ export class GameStore {
       chipsDelta += applied.chipsDelta;
     });
 
-    const adjustedScore = Math.max(0, Math.floor((result.scoreDelta + flatScore) * multiplier));
+    const baseScore = result.baseScoreDelta ?? result.scoreDelta;
+    const adjustedBaseScore = Math.floor((baseScore + flatScore) * multiplier);
+    const pierceMultiplier = result.pierceMultiplier ?? 1;
     return {
-      scoreDelta: adjustedScore,
+      baseScoreDelta: adjustedBaseScore,
+      scoreDelta: adjustedBaseScore * pierceMultiplier,
+      pierceMultiplier,
+      baseMultiplier: multiplier,
       chipsDelta
     };
   }
@@ -673,9 +725,7 @@ export class GameStore {
     if (sleeveDefId) {
       this.state.sleeves = [{ instanceId: randomId(), definitionId: sleeveDefId }];
     }
-    this.refillRoundResources();
-    this.buildDeckForCurrentLevel();
-    this.state.status = 'PLAYING';
+    this.prepareLevelSelection(1);
   }
 
   selectCard(cardId: string | null): void {
@@ -740,7 +790,13 @@ export class GameStore {
     }
     const res = executeLaneClash(this.state.matrix.grid, edge, selectedCard, this.lastPreviewOffset);
     const sleeveBonus = this.getSleeveClashBonus(selectedCard, { ...res, insertedCardId: selectedCard.id });
-    this.state.preview = { ...res, insertedCardId: selectedCard.id, scoreDelta: sleeveBonus.scoreDelta };
+    this.state.preview = {
+      ...res,
+      insertedCardId: selectedCard.id,
+      sleeveBaseScoreDelta: sleeveBonus.baseScoreDelta,
+      sleeveScoreDelta: sleeveBonus.scoreDelta,
+      sleeveBaseMultiplier: sleeveBonus.baseMultiplier
+    };
   }
 
   playSelectedToEdge(edge: InsertEdge): ClashResult | null {
@@ -750,23 +806,44 @@ export class GameStore {
     if (!selectedCard) return null;
     const res = executeLaneClash(this.state.matrix.grid, edge, selectedCard, this.lastPreviewOffset);
     const sleeveBonus = this.getSleeveClashBonus(selectedCard, { ...res, insertedCardId: selectedCard.id });
-    return { ...res, insertedCardId: selectedCard.id, scoreDelta: sleeveBonus.scoreDelta };
+    return {
+      ...res,
+      insertedCardId: selectedCard.id,
+      sleeveBaseScoreDelta: sleeveBonus.baseScoreDelta,
+      sleeveScoreDelta: sleeveBonus.scoreDelta,
+      sleeveBaseMultiplier: sleeveBonus.baseMultiplier
+    };
   }
 
   applyClashResult(result: ClashResult): void {
     const playedCard = this.state.hand.find((item) => item.id === result.insertedCardId) ?? null;
-    const sleeveBonus = playedCard ? this.getSleeveClashBonus(playedCard, result) : { scoreDelta: result.scoreDelta, chipsDelta: 0 };
+    const sleeveBonus = playedCard
+      ? this.getSleeveClashBonus(playedCard, result)
+      : {
+          baseScoreDelta: result.baseScoreDelta ?? result.scoreDelta,
+          scoreDelta: result.scoreDelta,
+          pierceMultiplier: result.pierceMultiplier ?? 1,
+          baseMultiplier: 1,
+          chipsDelta: 0
+        };
     this.state.matrix = {
       size: result.newGrid.length,
       grid: result.newGrid.map((row) => [...row])
     };
     this.state.currentScore += sleeveBonus.scoreDelta;
     this.state.currentScore -= (result.penalty || 0);
-    this.state.lastClash = this.cloneClashResult({ ...result, scoreDelta: sleeveBonus.scoreDelta });
+    this.state.lastClash = this.cloneClashResult({
+      ...result,
+      baseScoreDelta: sleeveBonus.baseScoreDelta,
+      scoreDelta: sleeveBonus.scoreDelta,
+      pierceMultiplier: sleeveBonus.pierceMultiplier,
+      sleeveBaseScoreDelta: sleeveBonus.baseScoreDelta,
+      sleeveScoreDelta: sleeveBonus.scoreDelta,
+      sleeveBaseMultiplier: sleeveBonus.baseMultiplier
+    });
     const card = playedCard;
     if (card) this.state.discardPile.push(card);
     this.state.hand = this.state.hand.filter((item) => item.id !== result.insertedCardId);
-    this.state.chips += this.state.hand.length;
     this.state.chips += sleeveBonus.chipsDelta;
     this.state.handsPlayedThisRun += 1;
     this.state.handsPlayedThisLevel += 1;
@@ -785,12 +862,13 @@ export class GameStore {
       const currentLevelConfig = this.getCurrentLevelConfigInternal();
       const interestEarned = this.getProjectedInterest();
       const levelReward = currentLevelConfig.reward;
+      const handReward = this.state.hand.length;
       const sleeveReward = this.getOwnedSleeveDefinitions().reduce((sum, sleeve) => {
         return sum + sleeve.effects.reduce((effectSum, effect) => {
           return effect.type === 'chips_end_level' ? effectSum + effect.value : effectSum;
         }, 0);
       }, 0);
-      const totalReward = interestEarned + levelReward + sleeveReward;
+      const totalReward = interestEarned + levelReward + handReward + sleeveReward;
 
       this.state.chips += totalReward;
       this.state.lastInterestEarned = interestEarned;
@@ -801,6 +879,7 @@ export class GameStore {
         levelName: currentLevelConfig.name,
         goal: currentLevelConfig.goal,
         baseReward: levelReward,
+        handReward,
         interestReward: interestEarned + sleeveReward,
         totalReward,
         finalLevel: this.state.currentLevel >= this.levelConfigs.length
@@ -819,6 +898,64 @@ export class GameStore {
 
   openShop(): void {
     if (this.state.status !== 'ROUND_REWARD') return;
+    const ownedSleeveIds = new Set(this.state.sleeves.map((card) => card.definitionId));
+    const cardPool = shuffleInPlace(this.getShopCardCodePool());
+    const utilityKinds: Array<'giftcard' | 'playmat'> = ['giftcard', 'playmat'];
+
+    const buildDirectOffer = (forcedKind?: 'sleeve' | 'giftcard' | 'playmat' | 'card'): ShopOffer | null => {
+      const kind = forcedKind ?? weightedPick(this.getShopDefinition().directTypeWeights as Record<'sleeve' | 'giftcard' | 'playmat' | 'card', number>);
+      if (kind === 'sleeve') {
+        if (this.state.sleeves.length >= (this.sleeveDefinitionFile?.slotLimit ?? 5)) return null;
+        const sleeve = this.pickShopSleeve(ownedSleeveIds);
+        if (!sleeve) return null;
+        ownedSleeveIds.add(sleeve.id);
+        return { offerId: randomId(), form: 'direct', kind, definitionId: sleeve.id, cost: sleeve.cost, purchased: false };
+      }
+      if (kind === 'giftcard') {
+        if (this.state.giftCards.length >= this.getGiftCardInventoryLimit()) return null;
+        const gift = shuffleInPlace([...this.getGiftCardDefinitions()])[0];
+        if (!gift) return null;
+        return { offerId: randomId(), form: 'direct', kind, definitionId: gift.id, cost: gift.cost, purchased: false };
+      }
+      if (kind === 'playmat') {
+        if (this.state.playmats.length >= this.getPlaymatInventoryLimit()) return null;
+        const playmat = shuffleInPlace([...this.getPlaymatDefinitions()])[0];
+        if (!playmat) return null;
+        return { offerId: randomId(), form: 'direct', kind, definitionId: playmat.id, cost: playmat.cost, purchased: false };
+      }
+      const code = cardPool.pop();
+      if (!code) return null;
+      return { offerId: randomId(), form: 'direct', kind, cardCode: code, cost: this.estimateShopCardCost(code), purchased: false };
+    };
+
+    const offers: ShopOffer[] = [];
+    while (offers.filter((offer) => offer.kind === 'card').length < 6) {
+      const nextOffer = buildDirectOffer('card');
+      if (!nextOffer) break;
+      offers.push(nextOffer);
+    }
+
+    while (offers.filter((offer) => offer.kind === 'sleeve').length < 3) {
+      const nextOffer = buildDirectOffer('sleeve');
+      if (!nextOffer) break;
+      offers.push(nextOffer);
+    }
+
+    while (offers.filter((offer) => offer.kind === 'giftcard' || offer.kind === 'playmat').length < 3) {
+      const kind = utilityKinds[Math.floor(Math.random() * utilityKinds.length)];
+      const nextOffer = buildDirectOffer(kind);
+      if (!nextOffer) break;
+      offers.push(nextOffer);
+    }
+
+    this.state.shopOffers = offers;
+    this.state.openedPackOfferId = null;
+    this.state.activePlaymatDefinitionId = null;
+    this.state.status = 'SHOP';
+  }
+
+  openRandomShop(): void {
+    if (this.state.status !== 'ROUND_REWARD') return;
     const shopDefinition = this.getShopDefinition();
     const ownedSleeveIds = new Set(this.state.sleeves.map((card) => card.definitionId));
     const cardPool = shuffleInPlace(this.getShopCardCodePool());
@@ -826,8 +963,8 @@ export class GameStore {
     const buildDirectOffer = (): ShopOffer | null => {
       const kind = weightedPick(shopDefinition.directTypeWeights as Record<'sleeve' | 'giftcard' | 'playmat' | 'card', number>);
       if (kind === 'sleeve') {
-        if (this.state.sleeves.length >= (this.sleeveDefinitionFile?.slotLimit ?? 2)) return null;
-        const sleeve = shuffleInPlace(this.getSleeveDefinitions().filter((definition) => !ownedSleeveIds.has(definition.id)))[0];
+        if (this.state.sleeves.length >= (this.sleeveDefinitionFile?.slotLimit ?? 5)) return null;
+        const sleeve = this.pickShopSleeve(ownedSleeveIds);
         if (!sleeve) return null;
         ownedSleeveIds.add(sleeve.id);
         return { offerId: randomId(), form: 'direct', kind, definitionId: sleeve.id, cost: sleeve.cost, purchased: false };
@@ -855,8 +992,13 @@ export class GameStore {
       const choices: ShopOfferChoice[] = [];
 
       if (kind === 'sleeve') {
-        const candidates = shuffleInPlace(this.getSleeveDefinitions().filter((definition) => !ownedSleeveIds.has(definition.id))).slice(0, choiceCount);
-        candidates.forEach((definition) => choices.push({ kind, definitionId: definition.id }));
+        const packExcludedIds = new Set(ownedSleeveIds);
+        while (choices.length < choiceCount) {
+          const sleeve = this.pickShopSleeve(packExcludedIds);
+          if (!sleeve) break;
+          packExcludedIds.add(sleeve.id);
+          choices.push({ kind, definitionId: sleeve.id });
+        }
       } else if (kind === 'giftcard') {
         shuffleInPlace([...this.getGiftCardDefinitions()]).slice(0, choiceCount).forEach((definition) => {
           choices.push({ kind, definitionId: definition.id });
@@ -948,17 +1090,16 @@ export class GameStore {
       return;
     }
 
-    this.nextLevel();
+    this.prepareLevelSelection(this.state.currentLevel + 1);
   }
 
-  nextLevel(): void {
-    if (this.state.status !== 'SHOP' && this.state.status !== 'ROUND_REWARD') return;
-    this.applyLevelConfig(this.state.currentLevel + 1);
+  private prepareLevelSelection(level: number): void {
+    this.applyLevelConfig(level);
     this.state.currentScore = 0;
 
     this.refillRoundResources();
 
-    this.state.status = 'PLAYING';
+    this.state.status = 'LEVEL_SELECTION';
     this.state.selectedCardIds = [];
     this.state.preview = null;
     this.state.lastClash = null;
@@ -972,7 +1113,23 @@ export class GameStore {
     this.lastPreviewEdge = null;
     this.lastPreviewOffset = 0;
     this.lastPreviewPointerRatio = 0.5;
+  }
+
+  enterSelectedLevel(): void {
+    if (this.state.status !== 'LEVEL_SELECTION') return;
     this.buildDeckForCurrentLevel();
+    this.state.status = 'PLAYING';
+  }
+
+  nextLevel(): void {
+    if (this.state.status !== 'SHOP' && this.state.status !== 'ROUND_REWARD' && this.state.status !== 'LEVEL_SELECTION') return;
+    const next = this.state.status === 'LEVEL_SELECTION' ? this.state.currentLevel : this.state.currentLevel + 1;
+    if (next > this.levelConfigs.length) {
+      this.state.status = 'WIN';
+      return;
+    }
+    this.prepareLevelSelection(next);
+    this.enterSelectedLevel();
   }
 
   shuffleMatrix(): void {

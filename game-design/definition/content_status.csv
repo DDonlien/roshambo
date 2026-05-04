@@ -1,0 +1,185 @@
+id,type,implemented,enabled,shop_enabled,notes
+deck:pinpoint,deck,true,true,false,selectable deck
+deck:multihit,deck,true,true,false,selectable deck
+deck:allin,deck,true,true,false,selectable deck
+deck:no-paper,deck,true,true,false,selectable deck
+deck:no-scissors,deck,true,true,false,selectable deck
+deck:no-rock,deck,true,true,false,selectable deck
+deck:wild,deck,true,true,false,selectable deck
+deck:tricolor,deck,true,true,false,selectable deck
+sleeve:joker,sleeve,true,true,true,
+sleeve:greedy,sleeve,true,true,true,
+sleeve:lusty,sleeve,true,true,true,
+sleeve:wrathful,sleeve,true,true,true,
+sleeve:gluttonous,sleeve,true,true,true,
+sleeve:jolly,sleeve,true,true,true,
+sleeve:zany,sleeve,true,true,true,
+sleeve:crazy,sleeve,true,true,true,
+sleeve:droll,sleeve,true,true,true,
+sleeve:sly,sleeve,true,true,true,
+sleeve:wily,sleeve,true,true,true,
+sleeve:devious,sleeve,true,true,true,
+sleeve:crafty,sleeve,true,true,true,
+sleeve:half,sleeve,true,true,true,
+sleeve:stencil,sleeve,true,true,true,
+sleeve:banner,sleeve,true,true,true,
+sleeve:mystic-summit,sleeve,true,true,true,
+sleeve:loyalty-card,sleeve,true,true,true,
+sleeve:misprint,sleeve,true,true,true,
+sleeve:abstract,sleeve,true,true,true,
+sleeve:runner,sleeve,true,true,true,
+sleeve:blue,sleeve,true,true,true,
+sleeve:drunkard,sleeve,true,true,true,
+sleeve:golden,sleeve,true,true,true,
+sleeve:bull,sleeve,true,true,true,
+sleeve:to-the-moon,sleeve,true,true,true,
+sleeve:acrobat,sleeve,true,true,true,
+sleeve:rough-gem,sleeve,true,true,true,
+sleeve:bloodstone,sleeve,true,true,true,
+sleeve:arrowhead,sleeve,true,true,true,
+sleeve:onyx-agate,sleeve,true,true,true,
+sleeve:seeing-double,sleeve,true,true,true,
+sleeve:duo,sleeve,true,true,true,
+sleeve:trio,sleeve,true,true,true,
+sleeve:order,sleeve,true,true,true,
+sleeve:tribe,sleeve,true,true,true,
+sleeve:bootstraps,sleeve,true,true,true,
+gift:fool,giftcard,true,true,true,
+gift:priestess,giftcard,true,true,true,
+gift:emperor,giftcard,true,true,true,
+gift:hermit,giftcard,true,true,true,
+gift:judgement,giftcard,true,true,true,
+playmat:magician,playmat,true,true,true,
+playmat:strength,playmat,true,true,true,
+playmat:hanged-man,playmat,true,true,true,
+playmat:death,playmat,true,true,true,
+playmat:tower,playmat,true,true,true,
+playmat:star,playmat,true,true,true,
+playmat:moon,playmat,true,true,true,
+playmat:sun,playmat,true,true,true,
+playmat:world,playmat,true,true,true,
+card:000,card,true,true,true,basic shop card
+card:001,card,true,true,true,basic shop card
+card:003,card,true,true,true,basic shop card
+card:004,card,true,true,true,basic shop card
+card:00O,card,true,true,true,tricolor shop card
+card:010,card,true,true,true,basic shop card
+card:011,card,true,true,true,basic shop card
+card:013,card,true,true,true,basic shop card
+card:014,card,true,true,true,basic shop card
+card:01O,card,true,true,true,tricolor shop card
+card:030,card,true,true,true,basic shop card
+card:031,card,true,true,true,basic shop card
+card:033,card,true,true,true,basic shop card
+card:034,card,true,true,true,basic shop card
+card:03O,card,true,true,true,tricolor shop card
+card:040,card,true,true,true,basic shop card
+card:041,card,true,true,true,basic shop card
+card:043,card,true,true,true,basic shop card
+card:044,card,true,true,true,basic shop card
+card:04O,card,true,true,true,tricolor shop card
+card:0O0,card,true,true,true,tricolor shop card
+card:0O1,card,true,true,true,tricolor shop card
+card:0O3,card,true,true,true,tricolor shop card
+card:0O4,card,true,true,true,tricolor shop card
+card:0OO,card,true,true,true,tricolor shop card
+card:100,card,true,true,true,basic shop card
+card:101,card,true,true,true,basic shop card
+card:103,card,true,true,true,basic shop card
+card:104,card,true,true,true,basic shop card
+card:10O,card,true,true,true,tricolor shop card
+card:110,card,true,true,true,basic shop card
+card:111,card,true,true,true,basic shop card
+card:113,card,true,true,true,basic shop card
+card:114,card,true,true,true,basic shop card
+card:11O,card,true,true,true,tricolor shop card
+card:130,card,true,true,true,basic shop card
+card:131,card,true,true,true,basic shop card
+card:133,card,true,true,true,basic shop card
+card:134,card,true,true,true,basic shop card
+card:13O,card,true,true,true,tricolor shop card
+card:140,card,true,true,true,basic shop card
+card:141,card,true,true,true,basic shop card
+card:143,card,true,true,true,basic shop card
+card:144,card,true,true,true,basic shop card
+card:14O,card,true,true,true,tricolor shop card
+card:1O0,card,true,true,true,tricolor shop card
+card:1O1,card,true,true,true,tricolor shop card
+card:1O3,card,true,true,true,tricolor shop card
+card:1O4,card,true,true,true,tricolor shop card
+card:1OO,card,true,true,true,tricolor shop card
+card:300,card,true,true,true,basic shop card
+card:301,card,true,true,true,basic shop card
+card:303,card,true,true,true,basic shop card
+card:304,card,true,true,true,basic shop card
+card:30O,card,true,true,true,tricolor shop card
+card:310,card,true,true,true,basic shop card
+card:311,card,true,true,true,basic shop card
+card:313,card,true,true,true,basic shop card
+card:314,card,true,true,true,basic shop card
+card:31O,card,true,true,true,tricolor shop card
+card:330,card,true,true,true,basic shop card
+card:331,card,true,true,true,basic shop card
+card:333,card,true,true,true,basic shop card
+card:334,card,true,true,true,basic shop card
+card:33O,card,true,true,true,tricolor shop card
+card:340,card,true,true,true,basic shop card
+card:341,card,true,true,true,basic shop card
+card:343,card,true,true,true,basic shop card
+card:344,card,true,true,true,basic shop card
+card:34O,card,true,true,true,tricolor shop card
+card:3O0,card,true,true,true,tricolor shop card
+card:3O1,card,true,true,true,tricolor shop card
+card:3O3,card,true,true,true,tricolor shop card
+card:3O4,card,true,true,true,tricolor shop card
+card:3OO,card,true,true,true,tricolor shop card
+card:400,card,true,true,true,basic shop card
+card:401,card,true,true,true,basic shop card
+card:403,card,true,true,true,basic shop card
+card:404,card,true,true,true,basic shop card
+card:40O,card,true,true,true,tricolor shop card
+card:410,card,true,true,true,basic shop card
+card:411,card,true,true,true,basic shop card
+card:413,card,true,true,true,basic shop card
+card:414,card,true,true,true,basic shop card
+card:41O,card,true,true,true,tricolor shop card
+card:430,card,true,true,true,basic shop card
+card:431,card,true,true,true,basic shop card
+card:433,card,true,true,true,basic shop card
+card:434,card,true,true,true,basic shop card
+card:43O,card,true,true,true,tricolor shop card
+card:440,card,true,true,true,basic shop card
+card:441,card,true,true,true,basic shop card
+card:443,card,true,true,true,basic shop card
+card:444,card,true,true,true,basic shop card
+card:44O,card,true,true,true,tricolor shop card
+card:4O0,card,true,true,true,tricolor shop card
+card:4O1,card,true,true,true,tricolor shop card
+card:4O3,card,true,true,true,tricolor shop card
+card:4O4,card,true,true,true,tricolor shop card
+card:4OO,card,true,true,true,tricolor shop card
+card:O00,card,true,true,true,tricolor shop card
+card:O01,card,true,true,true,tricolor shop card
+card:O03,card,true,true,true,tricolor shop card
+card:O04,card,true,true,true,tricolor shop card
+card:O0O,card,true,true,true,tricolor shop card
+card:O10,card,true,true,true,tricolor shop card
+card:O11,card,true,true,true,tricolor shop card
+card:O13,card,true,true,true,tricolor shop card
+card:O14,card,true,true,true,tricolor shop card
+card:O1O,card,true,true,true,tricolor shop card
+card:O30,card,true,true,true,tricolor shop card
+card:O31,card,true,true,true,tricolor shop card
+card:O33,card,true,true,true,tricolor shop card
+card:O34,card,true,true,true,tricolor shop card
+card:O3O,card,true,true,true,tricolor shop card
+card:O40,card,true,true,true,tricolor shop card
+card:O41,card,true,true,true,tricolor shop card
+card:O43,card,true,true,true,tricolor shop card
+card:O44,card,true,true,true,tricolor shop card
+card:O4O,card,true,true,true,tricolor shop card
+card:OO0,card,true,true,true,tricolor shop card
+card:OO1,card,true,true,true,tricolor shop card
+card:OO3,card,true,true,true,tricolor shop card
+card:OO4,card,true,true,true,tricolor shop card
+card:OOO,card,true,true,true,tricolor shop card

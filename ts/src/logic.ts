@@ -26,6 +26,7 @@ export interface LaneResult {
   laneScores: number[];
   replacedCells: { r: number; c: number }[];
   captureEvents?: Array<{ attacker: RPS; defender: RPS; laneIndex: number; r: number; c: number }>;
+  tieEvents?: Array<{ attacker: RPS; defender: RPS; laneIndex: number; r: number; c: number }>;
   failedCells?: { r: number; c: number }[];
   tieCells?: { r: number; c: number }[];
   attachmentOffset: number;
@@ -116,6 +117,7 @@ export function executeLaneClash(
   const laneScores: number[] = Array.from({ length: card.symbols.length }, () => 0);
   const replacedCells: { r: number; c: number }[] = [];
   const captureEvents: Array<{ attacker: RPS; defender: RPS; laneIndex: number; r: number; c: number }> = [];
+  const tieEvents: Array<{ attacker: RPS; defender: RPS; laneIndex: number; r: number; c: number }> = [];
   const failedCells: { r: number; c: number }[] = [];
   const tieCells: { r: number; c: number }[] = [];
   const shiftedLanes: { index: number; type: 'row' | 'col'; direction: 1 | -1 }[] = [];
@@ -195,6 +197,13 @@ export function executeLaneClash(
             }
           } else if (resolved.defender === resolved.attacker) {
             tieCells.push({ r, c });
+            tieEvents.push({
+              attacker: resolved.attacker,
+              defender: resolved.defender,
+              laneIndex,
+              r,
+              c
+            });
             if (currentDefender === RPS.TRICOLOR) {
               newGrid[r][c] = resolved.defender;
             }
@@ -222,6 +231,7 @@ export function executeLaneClash(
     laneScores, 
     replacedCells, 
     captureEvents,
+    tieEvents,
     failedCells,
     tieCells,
     attachmentOffset,

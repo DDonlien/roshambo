@@ -1,3 +1,5 @@
+import { parseCsvRows } from './csv';
+
 export interface ContentStatusRow {
   id: string;
   type: string;
@@ -17,15 +19,6 @@ function parseBoolean(value: string | undefined, fallback: boolean): boolean {
   return fallback;
 }
 
-function parseCsvRows(text: string): string[][] {
-  return text
-    .trim()
-    .split('\n')
-    .slice(1)
-    .filter(Boolean)
-    .map((line) => line.split(',').map((part) => part.trim()));
-}
-
 export async function loadContentStatuses(): Promise<ContentStatusRow[]> {
   if (cachedStatusesPromise) return cachedStatusesPromise;
 
@@ -34,7 +27,7 @@ export async function loadContentStatuses(): Promise<ContentStatusRow[]> {
       const response = await fetch('/definition/content_status.csv');
       if (!response.ok) return [];
       const text = await response.text();
-      return parseCsvRows(text).map((row) => ({
+      return parseCsvRows(text).slice(1).map((row) => ({
         id: row[0] ?? '',
         type: row[1] ?? '',
         implemented: parseBoolean(row[2], true),

@@ -1,5 +1,6 @@
 import { Card, ClashResult, RPS } from '../types';
 import { getContentStatus, loadContentStatuses } from './contentStatus';
+import { parseCsvWithHeader } from './csv';
 import {
   countCapturesByAttacker,
   isFlush,
@@ -16,10 +17,14 @@ export type SleevePattern = 'pair' | 'three_kind' | 'four_kind' | 'straight' | '
 
 export type SleeveEffectDefinition =
   | { type: 'score_flat'; value: number }
+  | { type: 'score_mult'; value: number }
   | { type: 'score_flat_random'; min: number; max: number }
   | { type: 'score_flat_per_attacker_symbol_win'; symbol: RPS; value: number }
+  | { type: 'score_flat_per_blank_tie_or_win'; value: number }
+  | { type: 'score_flat_per_chained_win'; value: number }
   | { type: 'score_flat_if_pattern'; pattern: SleevePattern; value: number }
   | { type: 'score_mult_if_pattern'; pattern: SleevePattern; value: number }
+  | { type: 'score_mult_per_symbol_in_card'; symbol: RPS; value: number }
   | { type: 'score_mult_per_empty_sleeve_slot'; value: number }
   | { type: 'score_flat_per_owned_sleeve'; value: number }
   | { type: 'score_flat_per_remaining_deal'; value: number }
@@ -27,6 +32,7 @@ export type SleeveEffectDefinition =
   | { type: 'score_mult_every_n_hands'; interval: number; value: number }
   | { type: 'score_flat_per_remaining_deck_card'; value: number }
   | { type: 'score_flat_per_chips'; value: number; step?: number }
+  | { type: 'score_mult_per_chips'; value: number; step?: number }
   | { type: 'score_mult_if_final_hand'; value: number }
   | { type: 'chips_end_level'; value: number }
   | { type: 'chips_interest_per_5'; value: number }
@@ -45,6 +51,8 @@ export interface SleeveDefinition {
   accent: string;
   description: string;
   descriptionI18n?: LocalizedText;
+  shopRatio: number;
+  comboTags: string[];
   effects: SleeveEffectDefinition[];
 }
 
@@ -56,9 +64,85 @@ export interface SleeveDefinitionFile {
 
 const DEFAULT_SLEEVE_DEFINITION: SleeveDefinitionFile = {
   version: 1,
-  slotLimit: 2,
+  slotLimit: 5,
   sleeves: []
 };
+
+function toNumber(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseEffects(value: string | undefined): SleeveEffectDefinition[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value) as SleeveEffectDefinition[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function rowValue(row: Record<string, string>, ...keys: string[]): string {
+  for (const key of keys) {
+    const value = row[key];
+    if (value) return value;
+  }
+  return '';
+}
+
+function isValidationEnabled(row: Record<string, string>): boolean {
+  if (!('validation' in row) && !('r' in row)) return true;
+  return rowValue(row, 'validation', 'r') === '1';
+}
+
+function parseTags(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
+
+function parseSleeveDefinitionCsv(text: string): SleeveDefinition[] {
+  return parseCsvWithHeader(text)
+    .filter(isValidationEnabled)
+    .map((row) => {
+      const nameZh = rowValue(row, 'n', 'name_zh');
+      const descriptionZh = rowValue(row, 'd', 'description_zh');
+      return {
+        id: row.id ?? '',
+        name: row.name_en || nameZh || 'Unnamed Sleeve',
+        shortName: row.short_name_en || row.short_name_zh || row.name_en || nameZh || '',
+        nameI18n: {
+          EN: row.name_en,
+          ZH: nameZh,
+          ZH_TW: row.name_zh_tw,
+          JA: row.name_ja
+        },
+        shortNameI18n: {
+          EN: row.short_name_en,
+          ZH: row.short_name_zh || nameZh,
+          ZH_TW: row.short_name_zh_tw,
+          JA: row.short_name_ja
+        },
+        rarity: (row.rarity || 'common') as SleeveRarity,
+        cost: toNumber(row.cost, 0),
+        accent: row.accent || '#ffd166',
+        description: row.description_en || descriptionZh || '',
+        descriptionI18n: {
+          EN: row.description_en,
+          ZH: descriptionZh,
+          ZH_TW: row.description_zh_tw,
+          JA: row.description_ja
+        },
+        shopRatio: Math.max(0, toNumber(rowValue(row, 'ratio'), 1)),
+        comboTags: parseTags(rowValue(row, 'tag')),
+        effects: parseEffects(row.effects)
+      };
+    })
+    .filter((sleeve) => sleeve.id && sleeve.effects.length > 0);
+}
 
 export interface SleeveRuntimeContext {
   card: Card;
@@ -84,15 +168,15 @@ export interface SleeveClashBonus {
 export async function loadSleeveDefinitionFile(): Promise<SleeveDefinitionFile> {
   try {
     const [response, statuses] = await Promise.all([
-      fetch('/definition/sleevedefinition.json'),
+      fetch('/definition/sleeve_definition.csv'),
       loadContentStatuses()
     ]);
     if (!response.ok) return DEFAULT_SLEEVE_DEFINITION;
-    const parsed = (await response.json()) as SleeveDefinitionFile;
-    if (!parsed || !Array.isArray(parsed.sleeves)) return DEFAULT_SLEEVE_DEFINITION;
+    const sleeves = parseSleeveDefinitionCsv(await response.text());
     return {
-      ...parsed,
-      sleeves: parsed.sleeves.filter((sleeve) => {
+      ...DEFAULT_SLEEVE_DEFINITION,
+      version: 2,
+      sleeves: sleeves.filter((sleeve) => {
         const status = getContentStatus(statuses, sleeve.id, 'sleeve');
         return status.implemented && status.enabled;
       })
@@ -124,18 +208,46 @@ export function applySleeveEffects(definition: SleeveDefinition, context: Sleeve
       case 'score_flat':
         bonus.flatScore += effect.value;
         break;
+      case 'score_mult':
+        bonus.multiplier *= effect.value;
+        break;
       case 'score_flat_random':
         bonus.flatScore += Math.floor(context.random() * (effect.max - effect.min + 1)) + effect.min;
         break;
       case 'score_flat_per_attacker_symbol_win':
         bonus.flatScore += countCapturesByAttacker(context.result, effect.symbol) * effect.value;
         break;
+      case 'score_flat_per_blank_tie_or_win': {
+        const blankWins = (context.result.captureEvents ?? []).filter((event) => event.defender === RPS.BLANK).length;
+        const blankTies = (context.result.tieEvents ?? []).filter((event) => {
+          return event.attacker === RPS.BLANK || event.defender === RPS.BLANK;
+        }).length;
+        bonus.flatScore += (blankWins + blankTies) * effect.value;
+        break;
+      }
+      case 'score_flat_per_chained_win': {
+        const winsByLane = new Map<number, number>();
+        (context.result.captureEvents ?? []).forEach((event) => {
+          winsByLane.set(event.laneIndex, (winsByLane.get(event.laneIndex) ?? 0) + 1);
+        });
+        let chainedWins = 0;
+        winsByLane.forEach((count) => {
+          chainedWins += Math.max(0, count - 1);
+        });
+        bonus.flatScore += chainedWins * effect.value;
+        break;
+      }
       case 'score_flat_if_pattern':
         if (matchesPattern(context.card, effect.pattern)) bonus.flatScore += effect.value;
         break;
       case 'score_mult_if_pattern':
         if (matchesPattern(context.card, effect.pattern)) bonus.multiplier *= effect.value;
         break;
+      case 'score_mult_per_symbol_in_card': {
+        const count = context.card.symbols.filter((symbol) => symbol === effect.symbol).length;
+        bonus.multiplier *= effect.value ** count;
+        break;
+      }
       case 'score_mult_per_empty_sleeve_slot': {
         const factor = Math.max(1, context.emptySleeveSlots * effect.value);
         bonus.multiplier *= factor;
@@ -159,6 +271,12 @@ export function applySleeveEffects(definition: SleeveDefinition, context: Sleeve
       case 'score_flat_per_chips': {
         const divisor = effect.step ?? 1;
         bonus.flatScore += Math.floor(context.currentChips / divisor) * effect.value;
+        break;
+      }
+      case 'score_mult_per_chips': {
+        const divisor = effect.step ?? 1;
+        const count = Math.floor(context.currentChips / divisor);
+        bonus.multiplier *= effect.value ** count;
         break;
       }
       case 'score_mult_if_final_hand':
