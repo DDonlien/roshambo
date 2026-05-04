@@ -1,6 +1,6 @@
 # Balatro Items Coverage
 
-本文档记录 `game-design/reference/Balatro_Items_Reference_Roshambo.xlsx` 中“卡套 / 礼品卡”在当前 `ts/` 子工程里的落地情况。
+本文档记录 `game-design/reference/Balatro_Items_Reference_Roshambo.csv` 中“卡套 / 礼品卡”在当前 `ts/` 子工程里的落地情况。
 
 ## 已实装卡套
 - Joker

@@ -476,8 +476,12 @@ export class GameStore {
       sleeveBaseScoreDelta: result.sleeveBaseScoreDelta,
       sleeveScoreDelta: result.sleeveScoreDelta,
       sleeveBaseMultiplier: result.sleeveBaseMultiplier,
+      sleeveChipsDelta: result.sleeveChipsDelta,
+      sleeveTriggers: result.sleeveTriggers?.map((trigger) => ({ ...trigger })) ?? [],
       laneScores: [...result.laneScores],
       replacedCells: result.replacedCells.map((cell) => ({ ...cell })),
+      failedCells: result.failedCells?.map((cell) => ({ ...cell })) ?? [],
+      tieCells: result.tieCells?.map((cell) => ({ ...cell })) ?? [],
       captureEvents: result.captureEvents?.map((event) => ({ ...event })) ?? [],
       tieEvents: result.tieEvents?.map((event) => ({ ...event })) ?? [],
       shiftedLanes: result.shiftedLanes?.map((lane) => ({ ...lane })) ?? []
@@ -493,7 +497,7 @@ export class GameStore {
   }
 
   getLevelSelectionOptions(): LevelConfig[] {
-    const startIndex = Math.max(0, this.state.currentLevel - 1);
+    const startIndex = Math.floor(Math.max(0, this.state.currentLevel - 1) / LEVELS_PER_STAGE) * LEVELS_PER_STAGE;
     const options = this.levelConfigs.slice(startIndex, startIndex + 3);
     while (options.length < 3 && this.levelConfigs.length > 0) {
       options.push(this.levelConfigs[this.levelConfigs.length - 1]);
@@ -582,11 +586,12 @@ export class GameStore {
     }
   }
 
-  private getSleeveClashBonus(card: Card, result: ClashResult): { baseScoreDelta: number; scoreDelta: number; pierceMultiplier: number; baseMultiplier: number; chipsDelta: number } {
+  private getSleeveClashBonus(card: Card, result: ClashResult): { baseScoreDelta: number; scoreDelta: number; pierceMultiplier: number; baseMultiplier: number; chipsDelta: number; triggers: NonNullable<ClashResult['sleeveTriggers']> } {
     const ownedSleeves = this.getOwnedSleeveDefinitions();
     let flatScore = 0;
     let multiplier = 1;
     let chipsDelta = 0;
+    const triggers: NonNullable<ClashResult['sleeveTriggers']> = [];
 
     ownedSleeves.forEach((definition) => {
       const applied = applySleeveEffects(definition, {
@@ -604,6 +609,7 @@ export class GameStore {
       flatScore += applied.flatScore;
       multiplier *= applied.multiplier;
       chipsDelta += applied.chipsDelta;
+      triggers.push(...applied.triggers);
     });
 
     const baseScore = result.baseScoreDelta ?? result.scoreDelta;
@@ -614,7 +620,8 @@ export class GameStore {
       scoreDelta: adjustedBaseScore * pierceMultiplier,
       pierceMultiplier,
       baseMultiplier: multiplier,
-      chipsDelta
+      chipsDelta,
+      triggers
     };
   }
 
@@ -687,7 +694,7 @@ export class GameStore {
         }));
       }
     } catch (error) {
-      console.warn('Could not load levels.csv, using defaults', error);
+      console.warn('Could not load levels_definition.csv, using defaults', error);
     }
   }
 
@@ -806,7 +813,9 @@ export class GameStore {
       insertedCardId: selectedCard.id,
       sleeveBaseScoreDelta: sleeveBonus.baseScoreDelta,
       sleeveScoreDelta: sleeveBonus.scoreDelta,
-      sleeveBaseMultiplier: sleeveBonus.baseMultiplier
+      sleeveBaseMultiplier: sleeveBonus.baseMultiplier,
+      sleeveChipsDelta: sleeveBonus.chipsDelta,
+      sleeveTriggers: sleeveBonus.triggers
     };
   }
 
@@ -822,20 +831,32 @@ export class GameStore {
       insertedCardId: selectedCard.id,
       sleeveBaseScoreDelta: sleeveBonus.baseScoreDelta,
       sleeveScoreDelta: sleeveBonus.scoreDelta,
-      sleeveBaseMultiplier: sleeveBonus.baseMultiplier
+      sleeveBaseMultiplier: sleeveBonus.baseMultiplier,
+      sleeveChipsDelta: sleeveBonus.chipsDelta,
+      sleeveTriggers: sleeveBonus.triggers
     };
   }
 
   applyClashResult(result: ClashResult): void {
     const playedCard = this.state.hand.find((item) => item.id === result.insertedCardId) ?? null;
-    const sleeveBonus = playedCard
+    const sleeveBonus = result.sleeveScoreDelta !== undefined
+      ? {
+          baseScoreDelta: result.sleeveBaseScoreDelta ?? result.baseScoreDelta ?? result.scoreDelta,
+          scoreDelta: result.sleeveScoreDelta,
+          pierceMultiplier: result.pierceMultiplier ?? 1,
+          baseMultiplier: result.sleeveBaseMultiplier ?? 1,
+          chipsDelta: result.sleeveChipsDelta ?? 0,
+          triggers: result.sleeveTriggers ?? []
+        }
+      : playedCard
       ? this.getSleeveClashBonus(playedCard, result)
       : {
           baseScoreDelta: result.baseScoreDelta ?? result.scoreDelta,
           scoreDelta: result.scoreDelta,
           pierceMultiplier: result.pierceMultiplier ?? 1,
           baseMultiplier: 1,
-          chipsDelta: 0
+          chipsDelta: 0,
+          triggers: []
         };
     this.state.matrix = {
       size: result.newGrid.length,
@@ -850,7 +871,9 @@ export class GameStore {
       pierceMultiplier: sleeveBonus.pierceMultiplier,
       sleeveBaseScoreDelta: sleeveBonus.baseScoreDelta,
       sleeveScoreDelta: sleeveBonus.scoreDelta,
-      sleeveBaseMultiplier: sleeveBonus.baseMultiplier
+      sleeveBaseMultiplier: sleeveBonus.baseMultiplier,
+      sleeveChipsDelta: sleeveBonus.chipsDelta,
+      sleeveTriggers: sleeveBonus.triggers
     });
     const card = playedCard;
     if (card) this.state.discardPile.push(card);
@@ -1091,6 +1114,38 @@ export class GameStore {
     this.state.openedPackOfferId = null;
   }
 
+  private grantSkipReward(levelConfig: LevelConfig): void {
+    if (levelConfig.tier === 1) {
+      const pool = this.getShopCardCodePool();
+      const code = pool[Math.floor(Math.random() * pool.length)];
+      if (code) this.runDeckTemplate.push(createCardFromCode(code));
+      return;
+    }
+
+    if (levelConfig.tier === 2) {
+      if (this.state.giftCards.length < this.getGiftCardInventoryLimit()) {
+        this.addRandomGiftCards(1);
+        return;
+      }
+      const pool = this.getShopCardCodePool();
+      const code = pool[Math.floor(Math.random() * pool.length)];
+      if (code) this.runDeckTemplate.push(createCardFromCode(code));
+      return;
+    }
+
+    if (this.state.sleeves.length < (this.sleeveDefinitionFile?.slotLimit ?? 5)) {
+      this.addRandomSleeves(1);
+      return;
+    }
+    if (this.state.playmats.length < this.getPlaymatInventoryLimit()) {
+      this.addRandomPlaymats(1);
+      return;
+    }
+    const pool = this.getShopCardCodePool();
+    const code = pool[Math.floor(Math.random() * pool.length)];
+    if (code) this.runDeckTemplate.push(createCardFromCode(code));
+  }
+
   continueAfterShop(): void {
     if (this.state.status !== 'SHOP') return;
 
@@ -1102,6 +1157,20 @@ export class GameStore {
     }
 
     this.prepareLevelSelection(this.state.currentLevel + 1);
+  }
+
+  skipSelectedLevel(): void {
+    if (this.state.status !== 'LEVEL_SELECTION') return;
+    const skippedLevel = this.getCurrentLevelConfigInternal();
+    this.grantSkipReward(skippedLevel);
+    const nextLevel = this.state.currentLevel + 1;
+    if (nextLevel > this.levelConfigs.length) {
+      this.state.status = 'WIN';
+      this.state.pendingReward = null;
+      this.state.shopOffers = [];
+      return;
+    }
+    this.prepareLevelSelection(nextLevel);
   }
 
   private prepareLevelSelection(level: number): void {

@@ -88,6 +88,10 @@ const I18N = {
     PICK_SLEEVE: 'Pick Sleeve',
     PREPARE_LEVEL: 'Prepare Level',
     ENTER_STAGE: 'Enter Stage',
+    SKIP_STAGE: 'Skip Stage',
+    CLEARED: 'Cleared',
+    CURRENT: 'Current',
+    SKIP_REWARD: 'Skip Reward',
     UPCOMING: 'Upcoming',
     RUN_INFO: 'Run Info',
     OPTIONS: 'Options',
@@ -154,6 +158,10 @@ const I18N = {
     PICK_SLEEVE: '选择卡套',
     PREPARE_LEVEL: '关前准备',
     ENTER_STAGE: '进入关卡',
+    SKIP_STAGE: '跳过关卡',
+    CLEARED: '已完成',
+    CURRENT: '当前',
+    SKIP_REWARD: '跳关奖励',
     UPCOMING: '即将开放',
     RUN_INFO: '本局信息',
     OPTIONS: '选项',
@@ -220,6 +228,10 @@ const I18N = {
     PICK_SLEEVE: '選擇卡套',
     PREPARE_LEVEL: '關前準備',
     ENTER_STAGE: '進入關卡',
+    SKIP_STAGE: '跳過關卡',
+    CLEARED: '已完成',
+    CURRENT: '目前',
+    SKIP_REWARD: '跳關獎勵',
     UPCOMING: '即將開放',
     RUN_INFO: '本局資訊',
     OPTIONS: '選項',
@@ -286,6 +298,10 @@ const I18N = {
     PICK_SLEEVE: 'スリーブ選択',
     PREPARE_LEVEL: '開始前準備',
     ENTER_STAGE: 'ステージへ',
+    SKIP_STAGE: 'スキップ',
+    CLEARED: 'クリア済み',
+    CURRENT: '現在',
+    SKIP_REWARD: 'スキップ報酬',
     UPCOMING: '準備中',
     RUN_INFO: 'ラン情報',
     OPTIONS: 'オプション',
@@ -461,10 +477,11 @@ function createSpecialCardMarkup(
   shortName: string,
   description: string,
   accent: string,
-  extraClass = ''
+  extraClass = '',
+  attributes = ''
 ): string {
   return `
-    <div class="special-card ${extraClass}" style="--special-accent:${accent}">
+    <div class="special-card ${extraClass}" style="--special-accent:${accent}" ${attributes}>
       <div class="special-card-name">${name}</div>
       <div class="special-card-short">${shortName}</div>
       <div class="special-card-desc">${description}</div>
@@ -484,12 +501,15 @@ function levelFlavor(level: LevelConfig): { title: string; copy: string; accent:
   return { title: titles[index], copy: copies[index], accent: accents[index] };
 }
 
-function createLevelCardMarkup(level: LevelConfig, index: number, active: boolean): string {
+function createLevelCardMarkup(level: LevelConfig, index: number, state: GameState): string {
   const flavor = levelFlavor(level);
   const rewardBonus = Math.max(1, Math.floor(level.reward / 2));
+  const active = level.level === state.currentLevel;
+  const cleared = level.level < state.currentLevel;
+  const skipReward = level.tier === 1 ? 'Card' : level.tier === 2 ? I18N[currentLang].GIFT_CARD : I18N[currentLang].SLEEVE;
   return `
-    <article class="hp-level-card ${active ? 'is-active' : 'is-locked'}">
-      <div class="hp-level-lock">${active ? '◆' : 'LOCK'}</div>
+    <article class="hp-level-card ${active ? 'is-active' : cleared ? 'is-cleared' : 'is-locked'}">
+      <div class="hp-level-lock">${active ? I18N[currentLang].CURRENT : cleared ? I18N[currentLang].CLEARED : 'LOCK'}</div>
       <div class="hp-level-banner ${flavor.accent}">${flavor.title}</div>
       <div class="hp-level-art hp-level-art-${index + 1}">
         <img src="${iconAsset(level.icon)}" alt="">
@@ -505,9 +525,15 @@ function createLevelCardMarkup(level: LevelConfig, index: number, active: boolea
         <span>S +${Math.max(1, rewardBonus - 1)}</span>
         <span>◆ +${5 + index * 2}%</span>
       </div>
-      <button class="hp-level-action ${active ? 'enter-level-btn' : ''}" ${active ? '' : 'disabled'}>
-        ${active ? I18N[currentLang].ENTER_STAGE : I18N[currentLang].UPCOMING}
-      </button>
+      <div class="hp-skip-reward">${I18N[currentLang].SKIP_REWARD}: ${skipReward}</div>
+      <div class="hp-level-actions">
+        <button class="hp-level-action ${active ? 'enter-level-btn' : ''}" ${active ? '' : 'disabled'}>
+          ${active ? I18N[currentLang].ENTER_STAGE : cleared ? I18N[currentLang].CLEARED : I18N[currentLang].UPCOMING}
+        </button>
+        <button class="hp-level-action skip ${active ? 'skip-level-btn' : ''}" ${active ? '' : 'disabled'}>
+          ${I18N[currentLang].SKIP_STAGE}
+        </button>
+      </div>
     </article>
   `;
 }
@@ -1179,6 +1205,22 @@ export class GameUI {
                 }
               }
             }
+            if (isTie && baseEl && roundScoreBox) {
+              const scoreTriggers = (result.sleeveTriggers ?? []).filter((trigger) => {
+                return trigger.kind === 'score' && trigger.r === cellPos.r && trigger.c === cellPos.c;
+              });
+              for (const trigger of scoreTriggers) {
+                await this.animateSleeveTrigger(trigger.sleeveDefinitionId, `+${trigger.value}`, img);
+                const oldBase = currentRoundBase;
+                currentRoundBase += trigger.value;
+                if (isFirstScore) {
+                  baseEl.textContent = currentRoundBase.toString();
+                  isFirstScore = false;
+                } else {
+                  this.animateAdd(oldBase, currentRoundBase, baseEl, roundScoreBox);
+                }
+              }
+            }
             await new Promise((resolve) => setTimeout(resolve, clashTiming.failPause));
             break;
           }
@@ -1203,6 +1245,24 @@ export class GameUI {
                 await this.transferParticles(img, baseEl);
                 const oldBase = currentRoundBase;
                 currentRoundBase += gain;
+                if (isFirstScore) {
+                  baseEl.textContent = currentRoundBase.toString();
+                  isFirstScore = false;
+                } else {
+                  this.animateAdd(oldBase, currentRoundBase, baseEl, roundScoreBox);
+                }
+              }
+            }
+
+            const cellTriggers = (result.sleeveTriggers ?? []).filter((trigger) => {
+              return trigger.r === cellPos.r && trigger.c === cellPos.c;
+            });
+            for (const trigger of cellTriggers) {
+              const label = trigger.kind === 'multiplier' ? `x${trigger.value}` : `+${trigger.value}`;
+              await this.animateSleeveTrigger(trigger.sleeveDefinitionId, label, img);
+              if (trigger.kind === 'score' && baseEl && roundScoreBox) {
+                const oldBase = currentRoundBase;
+                currentRoundBase += trigger.value;
                 if (isFirstScore) {
                   baseEl.textContent = currentRoundBase.toString();
                   isFirstScore = false;
@@ -1404,6 +1464,56 @@ export class GameUI {
     gsap.timeline()
       .to(el, { scale: targetScale, y: 0, duration: 0.18, ease: "power2.out" })
       .to(el, { scale: 1, x: 0, y: 0, duration: 0.18 * 1.15, ease: "power3.out", onComplete: () => { gsap.set(el, { x: 0, y: 0, scale: 1 }); } });
+  }
+
+  private async animateSleeveTrigger(sleeveDefinitionId: string, label: string, sourceEl: HTMLElement): Promise<void> {
+    const sleeveEl = document.querySelector(`[data-sleeve-definition-id="${sleeveDefinitionId}"]`) as HTMLElement | null;
+    if (!sleeveEl) return;
+
+    const sourceRect = sourceEl.getBoundingClientRect();
+    const sleeveRect = sleeveEl.getBoundingClientRect();
+    const popup = document.createElement('div');
+    popup.className = 'sleeve-trigger-popup';
+    popup.textContent = label;
+    popup.style.left = `${sourceRect.left + sourceRect.width / 2}px`;
+    popup.style.top = `${sourceRect.top + sourceRect.height / 2}px`;
+    document.body.appendChild(popup);
+
+    await new Promise<void>((resolve) => {
+      gsap.timeline({ onComplete: () => {
+        popup.remove();
+        gsap.set(sleeveEl, { scale: 1, y: 0, filter: 'brightness(1)' });
+        resolve();
+      }})
+        .to(sleeveEl, {
+          scale: 1.1,
+          y: -5,
+          filter: 'brightness(1.35)',
+          duration: 0.12,
+          ease: 'steps(3)'
+        }, 0)
+        .to(popup, {
+          left: sleeveRect.left + sleeveRect.width / 2,
+          top: sleeveRect.top + sleeveRect.height / 2,
+          scale: 1.25,
+          opacity: 1,
+          duration: 0.22,
+          ease: 'power2.out'
+        }, 0)
+        .to(sleeveEl, {
+          scale: 1,
+          y: 0,
+          filter: 'brightness(1)',
+          duration: 0.16,
+          ease: 'steps(3)'
+        }, 0.14)
+        .to(popup, {
+          scale: 0.82,
+          opacity: 0,
+          duration: 0.14,
+          ease: 'power2.in'
+        }, 0.22);
+    });
   }
 
   private async animateSleeveSettlement(fromBase: number, toBase: number): Promise<void> {
@@ -1662,7 +1772,8 @@ export class GameUI {
             localizeText(card.definition.shortName, card.definition.shortNameI18n),
             localizeText(card.definition.description, card.definition.descriptionI18n),
             card.definition.accent,
-            'special-card-mini'
+            'special-card-mini',
+            `data-sleeve-definition-id="${card.definition.id}"`
           )).join('') || `<div class="special-card-empty mini">${I18N[currentLang].NONE}</div>`}
         </div>
       </div>
@@ -1925,7 +2036,7 @@ export class GameUI {
             <section class="hp-level-main">
               <header class="hp-title-banner compact">ROSHAMBO</header>
               <div class="hp-level-options">
-                ${options.map((level, index) => createLevelCardMarkup(level, index, index === 0)).join('')}
+                ${options.map((level, index) => createLevelCardMarkup(level, index, state)).join('')}
               </div>
               <div class="hp-tip">i Tip: Higher stages grant better rewards but are more challenging!</div>
             </section>
@@ -1936,6 +2047,10 @@ export class GameUI {
       this.root.appendChild(overlay);
       overlay.querySelector('.enter-level-btn')?.addEventListener('click', () => {
         this.store.enterSelectedLevel();
+        this.render();
+      });
+      overlay.querySelector('.skip-level-btn')?.addEventListener('click', () => {
+        this.store.skipSelectedLevel();
         this.render();
       });
       return;

@@ -1,0 +1,272 @@
+sheet,seq,name_zh,name_en,rarity,cost,effect_zh,effect_en,roshambo_name,roshambo_function,dev_status,legacy_category,legacy_effect
+Sleeves-Jokers,1,小丑,Joker,Common,$4,+4 倍率,+4 Mult,卡套·卡套,卡套效果(持续)：本次对冲额外+4分,已开发未测试,,
+Sleeves-Jokers,2,Greedy 小丑,Greedy Joker,Common,$4,打出的牌 with 方块 suit give +4 倍率 计分时,Played cards with Diamond suit give +4 Mult when scored,卡套·贪婪 卡套,卡套效果(持续)：本次对冲中，【石头】符号每次击败格子额外 +4 分,已开发未测试,,
+Sleeves-Jokers,3,Lusty 小丑,Lusty Joker,Common,$5,打出的牌 with 红桃 suit give +4 倍率 计分时,Played cards with Heart suit give +4 Mult when scored,卡套·色欲 卡套,卡套效果(持续)：本次对冲中，【剪刀】符号每次击败格子额外 +4 分,已开发未测试,,
+Sleeves-Jokers,4,Wrathful 小丑,Wrathful Joker,Common,$4,打出的牌 with 黑桃 suit give +4 倍率 计分时,Played cards with Spade suit give +4 Mult when scored,卡套·暴怒 卡套,卡套效果(持续)：本次对冲中，【布】符号每次击败格子额外 +4 分,已开发未测试,,
+Sleeves-Jokers,5,Gluttonous 小丑,Gluttonous Joker,Common,$4,打出的牌 with 梅花 suit give +4 倍率 计分时,Played cards with Club suit give +4 Mult when scored,卡套·暴食 卡套,卡套效果(持续)：本次对冲中，【空白】符号每次击败格子额外 +4 分,已开发未测试,,
+Sleeves-Jokers,6,Jolly 小丑,Jolly Joker,Common,$4,+8 倍率 if played hand contains a 一对,+8 Mult if played hand contains a Pair,卡套·欢乐 卡套,卡套效果(持续)：若本次推入卡牌满足对子(3格中≥2格相同)，则本次对冲额外 +8 分,已开发未测试,,
+Sleeves-Jokers,7,Zany 小丑,Zany Joker,Common,$4,+12 倍率 if played hand contains a 三条,+12 Mult if played hand contains a Three of a Kind,卡套·滑稽 卡套,卡套效果(持续)：若本次推入卡牌满足Three 的 Kind，则本次对冲额外 +12 分,已开发未测试,,
+Sleeves-Jokers,8,Mad 小丑,Mad Joker,Common,$4,+20 倍率 if played hand contains a 四条,+20 Mult if played hand contains a Four of a Kind,卡套·疯狂 卡套,卡套效果(持续)：若本次推入卡牌满足Four 的 Kind，则本次对冲额外 +20 分,未开发,,
+Sleeves-Jokers,9,Crazy 小丑,Crazy Joker,Common,$4,+12 倍率 if played hand contains a 顺子,+12 Mult if played hand contains a Straight,卡套·癫狂 卡套,卡套效果(持续)：若本次推入卡牌满足顺序(3格均非空且互不相同)，则本次对冲额外 +12 分,已开发未测试,,
+Sleeves-Jokers,10,Droll 小丑,Droll Joker,Common,$4,+10 倍率 if played hand contains a 同花,+10 Mult if played hand contains a Flush,卡套·逗趣 卡套,卡套效果(持续)：若本次推入卡牌满足同色(3格全为同一元素)，则本次对冲额外 +10 分,已开发未测试,,
+Sleeves-Jokers,11,Sly 小丑,Sly Joker,,$4,+50 筹码 if played hand contains a 一对,+50 Chips if played hand contains a Pair,卡套·狡黠 卡套,卡套效果(持续)：若本次推入卡牌满足对子(3格中≥2格相同)，则本次对冲额外 +50 分,已开发未测试,,
+Sleeves-Jokers,12,Wily 小丑,Wily Joker,,$4,+100 筹码 if played hand contains a 三条,+100 Chips if played hand contains a Three of a Kind,卡套·诡计 卡套,卡套效果(持续)：若本次推入卡牌满足Three 的 Kind，则本次对冲额外 +100 分,已开发未测试,,
+Sleeves-Jokers,13,Clever 小丑,Clever Joker,,$4,+150 筹码 if played hand contains a 四条,+150 Chips if played hand contains a Four of a Kind,卡套·机智 卡套,卡套效果(持续)：若本次推入卡牌满足Four 的 Kind，则本次对冲额外 +150 分,未开发,,
+Sleeves-Jokers,14,Devious 小丑,Devious Joker,,$4,+100 筹码 if played hand contains a 顺子,+100 Chips if played hand contains a Straight,卡套·阴险 卡套,卡套效果(持续)：若本次推入卡牌满足顺序(3格均非空且互不相同)，则本次对冲额外 +100 分,已开发未测试,,
+Sleeves-Jokers,15,Crafty 小丑,Crafty Joker,,$4,+80 筹码 if played hand contains a 同花,+80 Chips if played hand contains a Flush,卡套·狡猾 卡套,卡套效果(持续)：若本次推入卡牌满足同色(3格全为同一元素)，则本次对冲额外 +80 分,已开发未测试,,
+Sleeves-Jokers,16,Half 小丑,Half Joker,Common,$4,+20 倍率 if played hand contains 3 or fewer cards,+20 Mult if played hand contains 3 or fewer cards,卡套·半数 卡套,卡套效果(持续)：若本次推入卡牌满足3 or fewer 卡牌，则本次对冲额外 +20 分,已开发未测试,,
+Sleeves-Jokers,17,小丑 Stencil,Joker Stencil,Uncommon,$8,X1 倍率 for each empty Joker slot,X1 Mult for each empty Joker slot,卡套·卡套 Stencil,卡套效果(持续)：本次对冲得分×1 对于 每 empty 特殊牌栏位,已开发未测试,,
+Sleeves-Jokers,18,Four Fingers,Four Fingers,Uncommon,$6,All 同花es and 顺子s can be made with 4 cards,All Flushes and Straights can be made with 4 cards,卡套·Four Fingers,卡套效果(持续)：所有同色(3格全为同一元素)es and 顺序(3格均非空且互不相同)s can be made 包含 4 卡牌,未开发,,
+Sleeves-Jokers,19,Mime,Mime,Uncommon,$4,Retrigger all card 手牌中 abilities,Retrigger all card held in hand abilities,卡套·Mime,卡套效果(持续)：再次触发 所有 卡牌 手牌中 效果,未开发,,
+Sleeves-Jokers,20,Credit Card,Credit Card,Common,$1,Go up to -20$ in debt,Go up to -$20 in debt,卡套·信用 卡,卡套效果(持续)：Go 最多 -20 筹码 in debt,未开发,,
+Sleeves-Jokers,21,Ceremonial Dagger,Ceremonial Dagger,Uncommon,$8,"When 盲注 is selected, 摧毁 card to the right and 永久 add double its sell value to this 倍率","When Blind is selected, destroy card to the right and permanently add double its sell value to this Mult",卡套·Ceremonial Dagger,"卡套效果(持续)：当进入关卡时, 摧毁 卡牌 到 right and 永久ly add 两倍 its sell value 到 this 分",未开发,,
+Sleeves-Jokers,22,Banner,Banner,Common,$6,+40 筹码 for each remaining 弃牌,+40 Chips for each remaining Discard,卡套·Banner,卡套效果(持续)：本次对冲额外+40分 对于 每 remaining 替换手牌(丢弃),已开发未测试,,
+Sleeves-Jokers,23,Mystic Summit,Mystic Summit,Common,$5,+15 倍率 when 0 弃牌s remaining,+15 Mult when 0 Discards remaining,卡套·Mystic Summit,卡套效果(持续)：本次对冲额外+15分 when 0 替换手牌(丢弃)s remaining,已开发未测试,,
+Sleeves-Jokers,24,Marble 小丑,Marble Joker,Uncommon,$6,Adds one Stone card to deck at the start of every 回合,Adds one Stone card to deck at the start of every round,卡套·Marble 卡套,卡套效果(持续)：增加 one Stone 卡牌 到 deck 在每关开始时,未开发,,
+Sleeves-Jokers,25,Loyalty Card,Loyalty Card,Uncommon,$6,X4 倍率 every 6 hands played,X4 Mult every 6 hands played,卡套·Loyalty 卡,卡套效果(持续)：本次对冲得分×4 每 6 hands played,已开发未测试,,
+Sleeves-Jokers,26,8-Ball,8-Ball,Common,,生成 a Planet card if played hand contains 2 or more 8s,Create a Planet card if played hand contains 2 or more 8s,卡套·8-Ball,卡套效果(持续)：生成 1 张行星牌 若 本次对冲 满足 2 or 更 8s,未开发,,
+Sleeves-Jokers,27,Misprint,Misprint,Common,$4,+[Random] 倍率,+[Random] Mult,卡套·Misprint,卡套效果(持续)：+[Random] 分,已开发未测试,,
+Sleeves-Jokers,28,Dusk,Dusk,Uncommon,,Retrigger all 打出的牌 in final hand of 回合,Retrigger all played cards in final hand of round,卡套·Dusk,卡套效果(持续)：再次触发 所有 本次推入的卡牌中的符号 in final hand 的 本关,未开发,,
+Sleeves-Jokers,29,Raised Fist,Raised Fist,Common,,Adds double the rank of lowest card 手牌中 to 倍率,Adds double the rank of lowest card held in hand to Mult,卡套·Raised Fist,卡套效果(持续)：增加 两倍 权重 的 最低 卡牌 手牌中 到 分,未开发,,
+Sleeves-Jokers,30,Chaos the Clown,Chaos the Clown,Common,$5,1 free 重掷 per 商店,1 free Reroll per Shop,卡套·混沌 the Clown,卡套效果(持续)：1 free 刷新 per 商店,未开发,,
+Sleeves-Jokers,31,Fibonacci,Fibonacci,Uncommon,,"Each played A, 2, 3, 5, or 8 gives +8 倍率 计分时","Each played Ace, 2, 3, 5, or 8 gives +8 Mult when scored",卡套·Fibonacci,"卡套效果(持续)：Each played Ace, 2, 3, 5, or 8 获得 本次对冲额外+8分 在击败格子时",未开发,,
+Sleeves-Jokers,32,Steel 小丑,Steel Joker,Uncommon,$6,This Joker gains X0.25 倍率 for each Steel Card in your full deck,This Joker gains X0.25 Mult for each Steel Card in your full deck,卡套·钢铁 卡套,卡套效果(持续)：This 特殊牌 gains 本次对冲得分×0.25 对于 每 Steel Card in your full deck,未开发,,
+Sleeves-Jokers,33,Scary Face,Scary Face,Common,$4,Played 人头牌 give +30 筹码 计分时,Played Face cards give +30 Chips when scored,卡套·Scary Face,卡套效果(持续)：Played Face 卡牌 获得 本次对冲额外+30分 在击败格子时,未开发,,
+Sleeves-Jokers,34,Abstract 小丑,Abstract Joker,Common,$4,+3 倍率 for each Joker card,+3 Mult for each Joker card,卡套·Abstract 卡套,卡套效果(持续)：本次对冲额外+3分 对于 每 特殊牌 卡牌,已开发未测试,,
+Sleeves-Jokers,35,Delayed Gratification,Delayed Gratification,Common,$4,获得2$ per 弃牌 if no 弃牌s are used by end of the 回合,Gain $2 per discard if no discards are used by end of the round,卡套·Delayed Gratification,卡套效果(持续)：获得 2 筹码 per 替换手牌(丢弃) 若 no 替换手牌(丢弃)s used by end 的 本关,未开发,,
+Sleeves-Jokers,36,Hack,Hack,Uncommon,,"Retrigger each played 2, 3, 4, or 5","Retrigger each played 2, 3, 4, or 5",卡套·Hack,"卡套效果(持续)：再次触发 每 played 2, 3, 4, or 5",未开发,,
+Sleeves-Jokers,37,Pareidolia,Pareidolia,Uncommon,,All cards are considered 人头牌,All cards are considered Face cards,卡套·Pareidolia,卡套效果(持续)：所有卡牌 considered Face 卡牌,未开发,,
+Sleeves-Jokers,38,Gros Michel,Gros Michel,Common,$5,+15 倍率 1 in 4 chance this card is 摧毁ed at end of 回合,+15 Mult 1 in 4 chance this card is destroyed at end of round,卡套·Gros Michel,卡套效果(持续)：本次对冲额外+15分 1 in 4 chance this 卡牌 摧毁ed 在本关结束时,未开发,,
+Sleeves-Jokers,39,Even Steven,Even Steven,Common,$4,打出的牌 with even rank give +4 倍率 计分时,Played cards with even rank give +4 Mult when scored,卡套·Even Steven,卡套效果(持续)：本次推入的卡牌中的符号 包含 even 权重 获得 本次对冲额外+4分 在击败格子时,未开发,,
+Sleeves-Jokers,40,Odd Todd,Odd Todd,Common,$4,打出的牌 with even rank give +30 chips 计分时,Played cards with even rank give +30 chips when scored,卡套·Odd Todd,卡套效果(持续)：本次推入的卡牌中的符号 包含 even 权重 获得 +30 chips 在击败格子时,未开发,,
+Sleeves-Jokers,41,Scholar,Scholar,Common,$5,Played As each give extra +20 筹码 and +4 倍率 计分时,Played Aces each give extra +20 Chips and +4 Mult when scored,卡套·Scholar,卡套效果(持续)：Played Aces 每 获得 extra 本次对冲额外+20分 and 本次对冲额外+4分 在击败格子时,未开发,,
+Sleeves-Jokers,42,Business Card,Business Card,Common,$4,Played face cards have a 1 in 2 chance to give 2$ 计分时,Played face cards have a 1 in 2 chance to give $2 when scored,卡套·Business 卡,卡套效果(持续)：Played face 卡牌 have 1 in 2 chance 到 获得 2 筹码 在击败格子时,未开发,,
+Sleeves-Jokers,43,Supernova,Supernova,Common,$5,Adds the number of times poker hand has been played to 倍率,Adds the number of times poker hand has been played to Mult,卡套·Supernova,卡套效果(持续)：增加 number 的 times poker hand has been played 到 分,未开发,,
+Sleeves-Jokers,44,Ride the Bus,Ride the Bus,Common,$5,+1 倍率 per consecutive hand played without a scoring face card,+1 Mult per consecutive hand played without a scoring face card,卡套·Ride the Bus,卡套效果(持续)：本次对冲额外+1分 per consecutive hand played without scoring face 卡牌,未开发,,
+Sleeves-Jokers,45,Space 小丑,Space Joker,Uncommon,,1 in 4 chance to upgrade level of played poker hand,1 in 4 chance to upgrade level of played poker hand,卡套·Space 卡套,卡套效果(持续)：1 in 4 chance 到 升级 等级 的 played poker hand,未开发,,
+Sleeves-Jokers,46,Egg,Egg,Common,$4,获得3$ sell value at end of 回合,Gains $3 sell value at end of round,卡套·Egg,卡套效果(持续)：获得 3 筹码 sell value 在本关结束时,未开发,,
+Sleeves-Jokers,47,Burglar,Burglar,Uncommon,,"When 盲注 is chosen, gain +3 Hands and lose all 弃牌s","When Blind is chosen, gain +3 Hands and lose all discards",卡套·Burglar,"卡套效果(持续)：当进入关卡时, gain +3 Hands and lose 所有 替换手牌(丢弃)s",未开发,,
+Sleeves-Jokers,48,Blackboard,Blackboard,Uncommon,$8,X3 倍率 if all cards 手牌中 are 黑桃s or 梅花s,X3 Mult if all cards held in hand are Spades or Clubs,卡套·Blackboard,卡套效果(持续)：本次对冲得分×3 若 所有 卡牌 手牌中 Spades or Clubs,未开发,,
+Sleeves-Jokers,49,Runner,Runner,Common,$6,+20 筹码 获得+10 筹码 if played hand contains a 顺子,+20 Chips Gains +10 Chips if played hand contains a Straight,卡套·Runner,卡套效果(持续)：本次对冲额外+20分 获得 若本次推入卡牌满足顺序(3格均非空且互不相同)，则本次对冲额外 +10 分,已开发未测试,,
+Sleeves-Jokers,50,Ice Cream,Ice Cream,Common,$5,+100 筹码 -5 筹码 for every hand played,+100 Chips -5 Chips for every hand played,卡套·Ice Cream,卡套效果(持续)：本次对冲额外+100分 -5 分 对于 每 hand played,未开发,,
+Sleeves-Jokers,51,DNA,DNA,Rare,,"If first hand of 回合 has only 1 card, add a permanent copy to deck and draw it to hand","If first hand of round has only 1 card, add a permanent copy to deck and draw it to hand",卡套·DNA,"卡套效果(持续)：若 first hand 的 本关 has only 1 卡牌, add 永久 copy 到 deck and draw it 到 hand",未开发,,
+Sleeves-Jokers,52,Splash,Splash,Common,,Every played card counts in scoring,Every played card counts in scoring,卡套·Splash,卡套效果(持续)：每played 卡牌 counts in scoring,未开发,,
+Sleeves-Jokers,53,Blue 小丑,Blue Joker,Common,,+2 筹码 for each remaining card in deck,+2 Chips for each remaining card in deck,卡套·蓝色 卡套,卡套效果(持续)：本次对冲额外+2分 对于 每 remaining 卡牌 in deck,已开发未测试,,
+Sleeves-Jokers,54,Sixth Sense,Sixth Sense,Rare,,"In first hand of 回合 is a single 6, 摧毁 it and 生成 a Spectral card","In first hand of round is a single 6, destroy it and create a Spectral card",卡套·Sixth Sense,"卡套效果(持续)：In first hand 的 本关 single 6, 摧毁 it and create 异象牌",未开发,,
+Sleeves-Jokers,55,Constellation,Constellation,Uncommon,$6,获得X0.1 倍率 per Planet card used,Gains X0.1 Mult per Planet card used,卡套·Constellation,卡套效果(持续)：获得 本次对冲得分×0.1 per 行星牌 used,未开发,,
+Sleeves-Jokers,56,Hiker,Hiker,Uncommon,$6,Every played card 永久 gains +4 筹码 计分时,Every played card permanently gains +4 Chips when scored,卡套·Hiker,卡套效果(持续)：每played 卡牌 永久ly gains 本次对冲额外+4分 在击败格子时,未开发,,
+Sleeves-Jokers,57,Faceless 小丑,Faceless Joker,Common,$5,获得5$ if 3 or more face cards are 弃牌ed at the same time,Earn 5$ if 3 or more face cards are discarded at the same time,卡套·Faceless 卡套,卡套效果(持续)：获得 5$ 若 3 or 更 face 卡牌 替换手牌(丢弃)ed at same time,未开发,,
+Sleeves-Jokers,58,Green 小丑,Green Joker,Common,$5,+1 倍率 per hand played -1 倍率 per 弃牌,+1 Mult per hand played -1 Mult per discard,卡套·绿色 卡套,卡套效果(持续)：本次对冲额外+1分 per hand played -1 分 per 替换手牌(丢弃),未开发,,
+Sleeves-Jokers,59,Superposition,Superposition,Common,$5,生成 a Tarot card if poker hand contains an A and a 顺子,Create a Tarot card if poker hand contains an Ace and a Straight,卡套·Superposition,卡套效果(持续)：生成 1 张塔罗牌 若 poker hand 满足 Ace and 顺序(3格均非空且互不相同),未开发,,
+Sleeves-Jokers,60,To Do List,To Do List,Common,$5,"获得4$ if poker hand is a [Hand Type], poker hand changes every payout","Gain $4 if poker hand is a [Hand Type], poker hand changes every payout",卡套·To Do List,"卡套效果(持续)：获得 4 筹码 若 poker hand [Hand Type], poker hand changes 每 payout",未开发,,
+Sleeves-Jokers,61,Cavendish,Cavendish,Common,$5,X3 倍率 1 in 1000 chance this card is 摧毁ed at end of 回合,X3 Mult 1 in 1000 chance this card is destroyed at end of round,卡套·Cavendish,卡套效果(持续)：本次对冲得分×3 1 in 1000 chance this 卡牌 摧毁ed 在本关结束时,未开发,,
+Sleeves-Jokers,62,Card Sharp,Card Sharp,Uncommon,$5,X3 倍率 if played in poker hand has already been played this 回合,X3 Mult if played in poker hand has already been played this round,卡套·卡 Sharp,卡套效果(持续)：本次对冲得分×3 若 played in poker hand has already been played this 本关,未开发,,
+Sleeves-Jokers,63,Red Card,Red Card,Common,$5,获得+3 倍率 when any Booster Pack is skipped,Gains +3 Mult when any Booster Pack is skipped,卡套·红色 卡,卡套效果(持续)：获得 本次对冲额外+3分 when any 补给包 skipped,未开发,,
+Sleeves-Jokers,64,Madness,Madness,Uncommon,$5,"When 盲注 is selected, gain X0.5 倍率 and 摧毁 a random Joker","When Blind is selected, gain X0.5 Mult and destroy a random Joker",卡套·Madness,"卡套效果(持续)：当进入关卡时, gain 本次对冲得分×0.5 and 摧毁 随机 特殊牌",未开发,,
+Sleeves-Jokers,65,Square 小丑,Square Joker,Common,$,获得+4 筹码 if played hand has exactly 4 cards,Gains +4 Chips if played hand has exactly 4 cards,卡套·方形 卡套,卡套效果(持续)：获得 本次对冲额外+4分 若 本次对冲 has exactly 4 卡牌,未开发,,
+Sleeves-Jokers,66,Séance,Séance,Rare,,"If poker hand is a 同花顺, 生成 a random Spectral card","If poker hand is a Straight Flush, create a random Spectral card",卡套·Séance,"卡套效果(持续)：若 poker hand 完美穿透(顺序+同色), create 随机 异象牌",未开发,,
+Sleeves-Jokers,67,Riff-raff,Riff-raff,Common,$,"When 盲注 is selected, 生成 2 Common Jokers","When Blind is selected, create 2 Common Jokers",卡套·Riff-raff,"卡套效果(持续)：当进入关卡时, create 2 Common 特殊牌s",未开发,,
+Sleeves-Jokers,68,Vampire,Vampire,Uncommon,$5,"获得X0.2 倍率 per Enhanced card played, removed card Enhancement","Gains X0.2 Mult per Enhanced card played, removed card Enhancement",卡套·Vampire,"卡套效果(持续)：获得 本次对冲得分×0.2 per 强化d 卡牌 played, removed 卡牌 强化ment",未开发,,
+Sleeves-Jokers,69,Shortcut,Shortcut,Uncommon,$5,Allows 顺子s to be made with gaps of 1 rank,Allows Straights to be made with gaps of 1 rank,卡套·Shortcut,卡套效果(持续)：Allows 顺序(3格均非空且互不相同)s 到 be made 包含 gaps 的 1 权重,未开发,,
+Sleeves-Jokers,70,Hologram,Hologram,Uncommon,$5,获得0.25X 倍率 per playing card added to your deck,Gains 0.25X Mult per playing card added to your deck,卡套·Hologram,卡套效果(持续)：获得 0.25X 分 per playing 卡牌 added 到 your deck,未开发,,
+Sleeves-Jokers,71,Vagabond,Vagabond,Uncommon,$5,生成 a Tarot card if hand is played with 3$ or less,Create a Tarot card if hand is played with $3 or less,卡套·Vagabond,卡套效果(持续)：生成 1 张塔罗牌 若 hand played 包含 3 筹码 or less,未开发,,
+Sleeves-Jokers,72,Baron,Baron,Rare,,Each King 手牌中 gives X1.5 倍率,Each King held in hand gives X1.5 Mult,卡套·Baron,卡套效果(持续)：Each King 手牌中 获得 本次对冲得分×1.5,未开发,,
+Sleeves-Jokers,73,Cloud 9,Cloud 9,Uncommon,$5,获得1$ for each 9 in your full deck at end of 回合,Earn $1 for each 9 in your full deck at end of round,卡套·Cloud 9,卡套效果(持续)：获得 1 筹码 对于 每 9 in your full deck 在本关结束时,未开发,,
+Sleeves-Jokers,74,Rocket,Rocket,Uncommon,$5,获得1$ at end of 回合. 获得2$ when Boss 盲注 is defeated,Earn $1 at end of round. Gains $2 when Boss Blind is defeated,卡套·Rocket,卡套效果(持续)：获得 1 筹码 在本关结束时. 获得 2 筹码 when Boss 关卡 defeated,未开发,,
+Sleeves-Jokers,75,Obelisk,Obelisk,Rare,,0.2X 倍率 per consecutive hand played without playing your most played Poker Hand,0.2X Mult per consecutive hand played without playing your most played Poker Hand,卡套·Obelisk,卡套效果(持续)：0.2X 分 per consecutive hand played without playing your most played Poker Hand,未开发,,
+Sleeves-Jokers,76,Midas Mask,Midas Mask,Uncommon,$5,All 人头牌 become Gold cards when played,All Face cards become Gold cards when played,卡套·Midas Mask,卡套效果(持续)：所有Face 卡牌 become Gold 卡牌 when played,未开发,,
+Sleeves-Jokers,77,Luchador,Luchador,Uncommon,$5,Sell this card to disable the current Boss 盲注,Sell this card to disable the current Boss Blind,卡套·Luchador,卡套效果(持续)：Sell this 卡牌 到 disable current Boss 关卡,未开发,,
+Sleeves-Jokers,78,Photograph,Photograph,Common,$4,First played face card gives X2 倍率 计分时,First played face card gives X2 Mult when scored,卡套·Photograph,卡套效果(持续)：First played face 卡牌 获得 本次对冲得分×2 在击败格子时,未开发,,
+Sleeves-Jokers,79,Gift Card,Gift Card,Uncommon,$5,Add 1$ of sell value to every Joker and Consumable card at end of 回合,Add $1 of sell value to every Joker and Consumable card at end of round,卡套·Gift 卡,卡套效果(持续)：增加 1 筹码 的 sell value 到 每 特殊牌 and Consumable 卡牌 在本关结束时,未开发,,
+Sleeves-Jokers,80,Turtle Bean,Turtle Bean,Uncommon,$5,"+5 hand size, reduces by 1 every 回合","+5 hand size, reduces by 1 every round",卡套·Turtle Bean,"卡套效果(持续)：+5 hand size, reduces by 1 每 本关",未开发,,
+Sleeves-Jokers,81,Erosion,Erosion,Uncommon,$5,+4 倍率 for each card below 52 in your full deck,+4 Mult for each card below 52 in your full deck,卡套·Erosion,卡套效果(持续)：本次对冲额外+4分 对于 每 卡牌 below 52 in your full deck,未开发,,
+Sleeves-Jokers,82,Reserved Parking,Reserved Parking,Uncommon,$5,Each face card 手牌中 has a 1 in 2 chance to give 1$,Each face card held in hand has a 1 in 2 chance to give $1,卡套·Reserved Parking,卡套效果(持续)：Each face 卡牌 手牌中 has 1 in 2 chance 到 获得 1 筹码,未开发,,
+Sleeves-Jokers,83,Mail-In Rebate,Mail-In Rebate,Common,,"获得3$ for each 弃牌ed A, rank changes every 回合","Earn $3 for each discarded Ace, rank changes every round",卡套·Mail-In Rebate,"卡套效果(持续)：获得 3 筹码 对于 每 替换手牌(丢弃)ed Ace, 权重 changes 每 本关",未开发,,
+Sleeves-Jokers,84,To the Moon,To the Moon,Uncommon,,Each an extra 1$ of interest for every 5$ you have at end of 回合,Each an extra $1 of interest for every $5 you have at end of round,卡套·To the Moon,卡套效果(持续)：Each extra 1 筹码 的 interest 对于 每 5 筹码 you have 在本关结束时,已开发未测试,,
+Sleeves-Jokers,85,Hallucination,Hallucination,Common,,1 in 2 chance to 生成 a Tarot card when any Booster Pack is opened,1 in 2 chance to create a Tarot card when any Booster Pack is opened,卡套·Hallucination,卡套效果(持续)：1 in 2 chance 到 create 塔罗牌 when any 补给包 opened,未开发,,
+Sleeves-Jokers,86,Fortune Teller,Fortune Teller,Common,$4,+1 倍率 per Tarot card used this run,+1 Mult per Tarot card used this run,卡套·Fortune Teller,卡套效果(持续)：本次对冲额外+1分 per 塔罗牌 used 本局,未开发,,
+Sleeves-Jokers,87,Juggler,Juggler,Common,$4,+1 hand size,+1 hand size,卡套·Juggler,卡套效果(持续)：+1 hand size,未开发,,
+Sleeves-Jokers,88,Drunkard,Drunkard,Common,$4,+1 弃牌,+1 discard,卡套·Drunkard,卡套效果(持续)：+1 替换手牌(丢弃),已开发未测试,,
+Sleeves-Jokers,89,Stone 小丑,Stone Joker,Uncommon,$4,This Joker gains +25 筹码 for each Stone Card in your full deck,This Joker gains +25 Chips for each Stone Card in your full deck,卡套·Stone 卡套,卡套效果(持续)：This 特殊牌 gains 本次对冲额外+25分 对于 每 Stone Card in your full deck,未开发,,
+Sleeves-Jokers,90,Golden 小丑,Golden Joker,Common,$6,获得4$ at the end of 回合,Earn $4 at the end of round,卡套·Golden 卡套,卡套效果(持续)：获得 4 筹码 at end 的 本关,已开发未测试,,
+Sleeves-Jokers,91,Lucky Cat,Lucky Cat,Uncommon,$4,获得X0.2 倍率 each time a Lucky card successfully triggers,Gains X0.2 Mult each time a Lucky card successfully triggers,卡套·Lucky Cat,卡套效果(持续)：获得 本次对冲得分×0.2 每 time Lucky 卡牌 successfully triggers,未开发,,
+Sleeves-Jokers,92,Baseball Card,Baseball Card,Rare,,Uncommon Jokers each give X1.5 倍率,Uncommon Jokers each give X1.5 Mult,卡套·Baseball 卡,卡套效果(持续)：Uncommon 特殊牌s 每 获得 本次对冲得分×1.5,未开发,,
+Sleeves-Jokers,93,Bull,Bull,Uncommon,$5,+2 筹码 for each dollar you have,+2 Chips for each dollar you have,卡套·Bull,卡套效果(持续)：本次对冲额外+2分 对于 每 dollar you have,已开发未测试,,
+Sleeves-Jokers,94,Diet Cola,Diet Cola,Uncommon,$5,Sell this card to 生成 a free Double Tag,Sell this card to create a free Double Tag,卡套·Diet Cola,卡套效果(持续)：Sell this 卡牌 到 create free Double Tag,未开发,,
+Sleeves-Jokers,95,Trading Card,Trading Card,Uncommon,$5,"If first 弃牌 of 回合 has only 1 card, 摧毁 it and earn 3$","If first discard of round has only 1 card, destroy it and earn $3",卡套·Trading 卡,"卡套效果(持续)：若 first 替换手牌(丢弃) 的 本关 has only 1 卡牌, 摧毁 it and earn 3 筹码",未开发,,
+Sleeves-Jokers,96,Flash Card,Flash Card,Uncommon,$5,+2 倍率 per reroll in the shop,+2 Mult per reroll in the shop,卡套·Flash 卡,卡套效果(持续)：本次对冲额外+2分 per 刷新 在商店中,未开发,,
+Sleeves-Jokers,97,Popcorn,Popcorn,Common,,+20 倍率 -4 倍率 per 回合 played,+20 Mult -4 Mult per round played,卡套·Popcorn,卡套效果(持续)：本次对冲额外+20分 -4 分 per 本关 played,未开发,,
+Sleeves-Jokers,98,Spare Trousers,Spare Trousers,Uncommon,$5,获得+2 倍率 if played hand contains a Two 一对,Gains +2 Mult if played hand contains a Two Pair,卡套·Spare Trousers,卡套效果(持续)：获得 若本次推入卡牌满足Two 对子(3格中≥2格相同)，则本次对冲额外 +2 分,未开发,,
+Sleeves-Jokers,99,Ancient 小丑,Ancient Joker,Rare,,Each played card with suit Suit gives X1.5 倍率 计分时,Each played card with suit Suit gives X1.5 Mult when scored,卡套·Ancient 卡套,卡套效果(持续)：Each played 卡牌 包含 元素 Suit 获得 本次对冲得分×1.5 在击败格子时,未开发,,
+Sleeves-Jokers,100,Ramen,Ramen,Uncommon,$5,"X2 倍率, loses X0.01 倍率 per card 弃牌ed","X2 Mult, loses X0.01 Mult per card discarded",卡套·Ramen,"卡套效果(持续)：本次对冲得分×2, loses 本次对冲得分×0.01 per 卡牌 替换手牌(丢弃)ed",未开发,,
+Sleeves-Jokers,101,Walkie Talkie,Walkie Talkie,Common,,Each played 10 or 4 gives +10 筹码 and +4 倍率,Each played 10 or 4 gives +10 Chips and +4 Mult,卡套·Walkie Talkie,卡套效果(持续)：Each played 10 or 4 获得 本次对冲额外+10分 and 本次对冲额外+4分,未开发,,
+Sleeves-Jokers,102,Seltzer,Seltzer,Uncommon,$5,Retrigger all cards played for the next 10 hands,Retrigger all cards played for the next 10 hands,卡套·Seltzer,卡套效果(持续)：再次触发 所有 卡牌 played 对于 next 10 hands,未开发,,
+Sleeves-Jokers,103,Castle,Castle,Uncommon,$5,"This Joker gains +3 筹码 per 弃牌ed (suit)黑桃 card, suit changes every 回合","This Joker gains +3 Chips per discarded (suit)Spade card, suit changes every round",卡套·Castle,"卡套效果(持续)：This 特殊牌 gains 本次对冲额外+3分 per 替换手牌(丢弃)ed (元素)布 卡牌, 元素 changes 每 本关",未开发,,
+Sleeves-Jokers,104,Smiley Face,Smiley Face,Common,,Played face cards give +4 倍率 计分时,Played face cards give +4 Mult when scored,卡套·Smiley Face,卡套效果(持续)：Played face 卡牌 获得 本次对冲额外+4分 在击败格子时,未开发,,
+Sleeves-Jokers,105,Campfire,Campfire,Rare,,"This Joker gains X0.5 倍率 for each card sold, resets when Boss 盲注 is defeated","This Joker gains X0.5 Mult for each card sold, resets when Boss Blind is defeated",卡套·Campfire,"卡套效果(持续)：This 特殊牌 gains 本次对冲得分×0.5 对于 每 卡牌 sold, resets when Boss 关卡 defeated",未开发,,
+Sleeves-Jokers,106,Golden Ticket,Golden Ticket,Common,$5,Played Gold cards earn 3$ 计分时,Played Gold cards earn $3 when scored,卡套·Golden Ticket,卡套效果(持续)：Played Gold 卡牌 earn 3 筹码 在击败格子时,未开发,,
+Sleeves-Jokers,107,Mr. Bones,Mr. Bones,Uncommon,$5,Prevents Death if chips scored are at least 25% of required chips,Prevents Death if chips scored are at least 25% of required chips,卡套·Mr. Bones,卡套效果(持续)：Prevents Death 若 chips scored at least 25% 的 required chips,未开发,,
+Sleeves-Jokers,108,Acrobat,Acrobat,Uncommon,$5,X3 倍率 on final hand of 回合,X3 Mult on final hand of round,卡套·Acrobat,卡套效果(持续)：本次对冲得分×3 on final hand 的 本关,已开发未测试,,
+Sleeves-Jokers,109,Sock and Buskin,Sock and Buskin,Uncommon,$6,Retrigger all played face cards,Retrigger all played face cards,卡套·Sock and Buskin,卡套效果(持续)：再次触发 所有 played face 卡牌,未开发,,
+Sleeves-Jokers,110,Swashbuckler,Swashbuckler,Common,$5,Adds the sell value of all owned Jokers left of this card to 倍率,Adds the sell value of all owned Jokers left of this card to Mult,卡套·Swashbuckler,卡套效果(持续)：增加 sell value 的 所有 owned 特殊牌s left 的 this 卡牌 到 分,未开发,,
+Sleeves-Jokers,111,Troubadour,Troubadour,Uncommon,$5,"+2 hand size, -1 hands per 回合","+2 hand size, -1 hands per round",卡套·Troubadour,"卡套效果(持续)：+2 hand size, -1 hands per 本关",未开发,,
+Sleeves-Jokers,112,Certificate,Certificate,Uncommon,$5,"When 回合 begins, add a random playing card with a random seal to your hand","When round begins, add a random playing card with a random seal to your hand",卡套·Certificate,"卡套效果(持续)：When 本关 begins, add 随机 playing 卡牌 包含 随机 seal 到 your hand",未开发,,
+Sleeves-Jokers,113,Smeared 小丑,Smeared Joker,Uncommon,$5,"红桃s and 方块s count as the same suit, 黑桃s and 梅花s count as the same suit.","Hearts and Diamonds count as the same suit, Spades and Clubs count as the same suit.",卡套·Smeared 卡套,"卡套效果(持续)：Hearts and Diamonds count as same 元素, Spades and Clubs count as same 元素.",未开发,,
+Sleeves-Jokers,114,Throwback,Throwback,Uncommon,$6,X0.25 倍率 for each 盲注 skipped this run,X0.25 Mult for each Blind skipped this run,卡套·Throwback,卡套效果(持续)：本次对冲得分×0.25 对于 每 关卡 skipped 本局,未开发,,
+Sleeves-Jokers,115,Hanging Chad,Hanging Chad,Common,$5,Retrigger first card used in scoring,Retrigger first card used in scoring,卡套·Hanging Chad,卡套效果(持续)：再次触发 first 卡牌 used in scoring,未开发,,
+Sleeves-Jokers,116,Rough Gem,Rough Gem,Uncommon,$9,打出的牌 with 方块 suit earn 1$ 计分时,Played cards with Diamond suit earn $1 when scored,卡套·Rough Gem,卡套效果(持续)：本次推入的卡牌中的符号 包含 石头 元素 earn 1 筹码 在击败格子时,已开发未测试,,
+Sleeves-Jokers,117,Bloodstone,Bloodstone,Uncommon,$9,1 in 3 chance for 打出的牌 with 红桃 suit to give X2 倍率 计分时,1 in 3 chance for played cards with Heart suit to give X2 Mult when scored,卡套·Bloodstone,卡套效果(持续)：1 in 3 chance 对于 本次推入的卡牌中的符号 包含 剪刀 元素 到 获得 本次对冲得分×2 在击败格子时,已开发未测试,,
+Sleeves-Jokers,118,Arrowhead,Arrowhead,Uncommon,$9,打出的牌 with 黑桃 suit give +50 筹码 计分时,Played cards with Spade suit give +50 Chips when scored,卡套·Arrowhead,卡套效果(持续)：本次对冲中，【布】符号每次击败格子额外 +50 分,已开发未测试,,
+Sleeves-Jokers,119,Onyx Agate,Onyx Agate,Uncommon,$9,打出的牌 with 梅花 suit give +8 倍率 计分时,Played cards with Club suit give +8 Mult when scored,卡套·Onyx Agate,卡套效果(持续)：本次对冲中，【空白】符号每次击败格子额外 +8 分,已开发未测试,,
+Sleeves-Jokers,120,Glass 小丑,Glass Joker,Uncommon,$6,获得X0.5 倍率 for every Glass Card that is 摧毁ed,Gains X0.5 Mult for every Glass Card that is destroyed,卡套·Glass 卡套,卡套效果(持续)：获得 本次对冲得分×0.5 对于 每 Glass Card that 摧毁ed,未开发,,
+Sleeves-Jokers,121,Showman,Showman,Uncommon,$6,"Joker, Tarot, Planet, and Spectral cards may appear multiple times","Joker, Tarot, Planet, and Spectral cards may appear multiple times",卡套·Showman,"卡套效果(持续)：特殊牌, 塔罗, 行星, and 异象牌s may appear multiple times",未开发,,
+Sleeves-Jokers,122,Flower Pot,Flower Pot,Uncommon,$8,"X3 倍率 if played hand has a scoring 方块 card, 梅花 card, 红桃 card, and 黑桃 card","X3 Mult if played hand has a scoring Diamond card, Club card, Heart card, and Spade card",卡套·Flower Pot,"卡套效果(持续)：本次对冲得分×3 若 本次对冲 has scoring 石头 卡牌, 空白 卡牌, 剪刀 卡牌, and 布 卡牌",未开发,,
+Sleeves-Jokers,123,Blueprint,Blueprint,Rare,,Copies ability of Joker to the right,Copies ability of Joker to the right,卡套·Blueprint,卡套效果(持续)：Copies 效果 的 特殊牌 到 right,未开发,,
+Sleeves-Jokers,124,Wee 小丑,Wee Joker,Rare,,This Joker gains +8 筹码 when each played 2 is scored,This Joker gains +8 Chips when each played 2 is scored,卡套·Wee 卡套,卡套效果(持续)：This 特殊牌 gains 本次对冲额外+8分 when 每 played 2 scored,未开发,,
+Sleeves-Jokers,125,Merry Andy,Merry Andy,Uncommon,$6,"+3 弃牌s, -1 hand size","+3 discards, -1 hand size",卡套·Merry Andy,"卡套效果(持续)：+3 替换手牌(丢弃)s, -1 hand size",未开发,,
+Sleeves-Jokers,126,Oops! All 6s,Oops! All 6s,Uncommon,$6,Doubles all probabilities,Doubles all probabilities,卡套·Oops! All 6s,卡套效果(持续)：Doubles 所有 prob效果,未开发,,
+Sleeves-Jokers,127,The Idol,The Idol,Uncommon,$6,"X2 倍率 for each [Card] 计分时, Card changes every 回合","X2 Mult for each [Card] when scored, Card changes every round",卡套·The Idol,"卡套效果(持续)：本次对冲得分×2 对于 每 [Card] 在击败格子时, Card changes 每 本关",未开发,,
+Sleeves-Jokers,128,Seeing Double,Seeing Double,Uncommon,$6,X2 倍率 if played hand has a scoring 梅花 card and a scoring card of any other suit,X2 Mult if played hand has a scoring Club card and a scoring card of any other suit,卡套·Seeing Double,卡套效果(持续)：本次对冲得分×2 若 本次对冲 has scoring 空白 卡牌 and scoring 卡牌 的 any other 元素,已开发未测试,,
+Sleeves-Jokers,129,Matador,Matador,Uncommon,$6,获得8$ if played hand triggers the Boss 盲注 ability,Earn $8 if played hand triggers the Boss Blind ability,卡套·Matador,卡套效果(持续)：获得 8 筹码 若 本次对冲 triggers Boss 关卡 效果,未开发,,
+Sleeves-Jokers,130,Hit the Road,Hit the Road,Rare,,获得X0.5 倍率 per 弃牌ed Jack this 回合,Gains X0.5 Mult per discarded Jack this round,卡套·Hit the Road,卡套效果(持续)：获得 本次对冲得分×0.5 per 替换手牌(丢弃)ed Jack this 本关,未开发,,
+Sleeves-Jokers,131,The Duo,The Duo,Rare,,X2 倍率 if the played hand contains a 一对,X2 Mult if the played hand contains a Pair,卡套·The Duo,卡套效果(持续)：本次对冲得分×2 若 本次对冲 满足 对子(3格中≥2格相同),已开发未测试,,
+Sleeves-Jokers,132,The Trio,The Trio,Rare,,X3 倍率 if played hand contains a 三条,X3 Mult if played hand contains a Three of a Kind,卡套·The Trio,卡套效果(持续)：本次对冲得分×3 若 本次对冲 满足 Three 的 Kind,已开发未测试,,
+Sleeves-Jokers,133,The Family,The Family,Rare,,X4 倍率 if played hand contains a 四条,X4 Mult if played hand contains a Four of a Kind,卡套·The Family,卡套效果(持续)：本次对冲得分×4 若 本次对冲 满足 Four 的 Kind,未开发,,
+Sleeves-Jokers,134,The Order,The Order,Rare,,X3 倍率 if played hand contains a 顺子,X3 Mult if played hand contains a Straight,卡套·The Order,卡套效果(持续)：本次对冲得分×3 若 本次对冲 满足 顺序(3格均非空且互不相同),已开发未测试,,
+Sleeves-Jokers,135,The Tribe,The Tribe,Rare,,X2 倍率 if played hand contains a 同花,X2 Mult if played hand contains a Flush,卡套·The Tribe,卡套效果(持续)：本次对冲得分×2 若 本次对冲 满足 同色(3格全为同一元素),已开发未测试,,
+Sleeves-Jokers,136,Stuntman,Stuntman,Uncommon,$6,"+300 筹码, -2 hand size","+300 Chips, -2 hand size",卡套·Stuntman,"卡套效果(持续)：本次对冲额外+300分, -2 hand size",未开发,,
+Sleeves-Jokers,137,Invisible 小丑,Invisible Joker,Rare,,"After 3 回合s, sell this card to Duplicate a random Joker","After 3 rounds, sell this card to Duplicate a random Joker",卡套·Invisible 卡套,"卡套效果(持续)：After 3 本关s, sell this 卡牌 到 Duplicate 随机 特殊牌",未开发,,
+Sleeves-Jokers,138,Brainstorm,Brainstorm,Rare,,Copies ability of leftmost Joker,Copies ability of leftmost Joker,卡套·Brainstorm,卡套效果(持续)：Copies 效果 的 leftmost 特殊牌,未开发,,
+Sleeves-Jokers,139,Satellite,Satellite,Uncommon,$6,获得1$ at the end of 回合 per unique Planet card used this run,Earn $1 at the end of round per unique Planet card used this run,卡套·Satellite,卡套效果(持续)：获得 1 筹码 at end 的 本关 per unique 行星牌 used 本局,未开发,,
+Sleeves-Jokers,140,Shoot the Moon,Shoot the Moon,Common,$5,+13 倍率 for each Queen 手牌中,+13 Mult for each Queen held in hand,卡套·Shoot the Moon,卡套效果(持续)：本次对冲额外+13分 对于 每 Queen 手牌中,未开发,,
+Sleeves-Jokers,141,Driver's License,Driver's License,Rare,,X3 倍率 if deck has at least 16 Enhanced cards,X3 Mult if deck has at least 16 Enhanced cards,卡套·Driver's License,卡套效果(持续)：本次对冲得分×3 若 deck has at least 16 强化d 卡牌,未开发,,
+Sleeves-Jokers,142,Cartomancer,Cartomancer,Uncommon,$6,生成 a Tarot card when 盲注 is selected,Create a Tarot card when Blind is selected,卡套·Cartomancer,卡套效果(持续)：生成 1 张塔罗牌 when 关卡 选中的,未开发,,
+Sleeves-Jokers,143,Astronomer,Astronomer,Uncommon,$8,All Planet cards and Celstial Packs in the shop are free,All Planet cards and Celstial Packs in the shop are free,卡套·Astronomer,卡套效果(持续)：所有行星牌s and Celstial Packs 在商店中 free,未开发,,
+Sleeves-Jokers,144,Burnt 小丑,Burnt Joker,Uncommon,$8,Upgrade the level of the first 弃牌ed poker hand each 回合,Upgrade the level of the first Discarded poker hand each round,卡套·Burnt 卡套,卡套效果(持续)：Upgrade 等级 的 first 替换手牌(丢弃)ed poker hand 每 本关,未开发,,
+Sleeves-Jokers,145,Bootstraps,Bootstraps,Uncommon,$10,+2 倍率 for every 5$ you have,+2 Mult for every $5 you have,卡套·Bootstraps,卡套效果(持续)：本次对冲额外+2分 对于 每 5 筹码 you have,已开发未测试,,
+Sleeves-Jokers,146,Canio,Canio,Legendary,N/A,获得X1 倍率 when a face card is 摧毁ed,Gain X1 Mult when a face card is destroyed,卡套·Canio,卡套效果(持续)：获得 本次对冲得分×1 when face 卡牌 摧毁ed,未开发,,
+Sleeves-Jokers,147,Triboulet,Triboulet,Legendary,N/A,Played Kings and Queens each give X2 倍率 计分时,Played Kings and Queens each give X2 Mult when scored,卡套·Triboulet,卡套效果(持续)：Played Kings and Queens 每 获得 本次对冲得分×2 在击败格子时,未开发,,
+Sleeves-Jokers,148,Yorick,Yorick,Legendary,N/A,X5 倍率 only after using 23 弃牌s,X5 Mult only after using 23 Discards,卡套·Yorick,卡套效果(持续)：本次对冲得分×5 only after using 23 替换手牌(丢弃)s,未开发,,
+Sleeves-Jokers,149,Chicot,Chicot,Legendary,N/A,Disables effect of every Boss 盲注,Disables effect of every Boss Blind,卡套·Chicot,卡套效果(持续)：Disables effect 的 每 Boss 关卡,未开发,,
+Sleeves-Jokers,150,Perkeo,Perkeo,Legendary,N/A,生成s a Negative copy of 1 random consumable card in your posession at the end of the shop,Creates a Negative copy of 1 random consumable card in your posession at the end of the shop,卡套·Perkeo,卡套效果(持续)：生成 1 张Negative copy 的 1 随机 consumable 卡牌 in your posession at end 的 shop,未开发,,
+GiftCards-Tarots,1,愚者,The Fool,,,"Spawns the last Tarot or Planet card used during this run, Excludes The Fool","Spawns the last Tarot or Planet card used during this run, Excludes The Fool",礼品卡·愚者,礼品卡(本回合一次性)：复制本局上一次使用的战术指令（不包括本指令）,已开发未测试,,
+GiftCards-Tarots,2,魔术师,The Magician,,,Enhances 1 selected card into a Lucky Card,Enhances 1 selected card into a Lucky Card,礼品卡·魔术师,礼品卡(本回合一次性)：将 1 张选中的手牌替换为【三色(TRICOLOR)】牌,已开发未测试,,
+GiftCards-Tarots,3,女祭司,The High Priestess,,,"Spawns up to 2 random Planet cards , Must have room","Spawns up to 2 random Planet cards , Must have room",礼品卡·女祭司,礼品卡(本回合一次性)：生成最多 2 张随机增益牌（需要有空位）,已开发未测试,,
+GiftCards-Tarots,4,皇后,The Empress,,,Enhances up to 2 selected cards to 倍率 Cards,Enhances up to 2 selected cards to Mult Cards,礼品卡·皇后,礼品卡(本回合一次性)：将最多 2 张选中的手牌强化为【高权重】牌（击败石头更赚分）,未开发,,
+GiftCards-Tarots,5,皇帝,The Emperor,,,"生成s up to 2 random Tarot cards , Must have room","Creates up to 2 random Tarot cards , Must have room",礼品卡·皇帝,"礼品卡(本回合一次性)：生成 最多 2 随机 塔罗牌s , 需要有空位",已开发未测试,,
+GiftCards-Tarots,6,教皇,The Hierophant,,,Enhances up to 2 selected cards to Bonus Cards,Enhances up to 2 selected cards to Bonus Cards,礼品卡·教皇,礼品卡(本回合一次性)：强化 最多 2 选中的 卡牌 到 Bonus Cards,未开发,,
+GiftCards-Tarots,7,恋人,The Lovers,,,Enhances 1 selected card into a Wild Card,Enhances 1 selected card into a Wild Card,礼品卡·恋人,礼品卡(本回合一次性)：强化 1 选中的 卡牌 into Wild Card,未开发,,
+GiftCards-Tarots,8,战车,The Chariot,,,Enhances 1 selected card into a Steel Card,Enhances 1 selected card into a Steel Card,礼品卡·战车,礼品卡(本回合一次性)：强化 1 选中的 卡牌 into Steel Card,未开发,,
+GiftCards-Tarots,9,正义,Justice,,,Enhances 1 selected card into a Glass Card,Enhances 1 selected card into a Glass Card,礼品卡·正义,礼品卡(本回合一次性)：强化 1 选中的 卡牌 into Glass Card,未开发,,
+GiftCards-Tarots,10,隐者,The Hermit,,,"Doubles money, Max of 20$","Doubles money, Max of $20",礼品卡·隐者,"礼品卡(本回合一次性)：Doubles money, Max 的 20 筹码",已开发未测试,,
+GiftCards-Tarots,11,The Wheel of Fortune,The Wheel of Fortune,,,"1 in 4 chance to add Foil, Holographic, or Polychrome edition to a random Joker","1 in 4 chance to add Foil, Holographic, or Polychrome edition to a random Joker",礼品卡·The Wheel of Fortune,"礼品卡(本回合一次性)：1 in 4 chance 到 add Foil, Holographic, or Polychrome edition 到 随机 特殊牌",未开发,,
+GiftCards-Tarots,12,力量,Strength,,,Increases rank of up to 2 selected cards by 1,Increases rank of up to 2 selected cards by 1,礼品卡·力量,礼品卡(本回合一次性)：Increases 权重 的 最多 2 选中的 卡牌 by 1,已开发未测试,,
+GiftCards-Tarots,13,倒吊人,The Hanged Man,,,摧毁s up to 2 selected cards,Destroys up to 2 selected cards,礼品卡·倒吊人,礼品卡(本回合一次性)：摧毁s 最多 2 选中的 卡牌,已开发未测试,,
+GiftCards-Tarots,14,死神,Death,,,"Select 2 cards, convert the left card into the right cardDrag to rearrange","Select 2 cards, convert the left card into the right cardDrag to rearrange",礼品卡·死神,"礼品卡(本回合一次性)：Select 2 卡牌, convert left 卡牌 into right 卡牌Drag 到 rearrange",已开发未测试,,
+GiftCards-Tarots,15,节制,Temperance,,,"Gives the total sell value of all current Jokers , Max of 50$","Gives the total sell value of all current Jokers , Max of $50",礼品卡·节制,"礼品卡(本回合一次性)：Gives total sell value 的 所有 current 特殊牌s , Max 的 50 筹码",未开发,,
+GiftCards-Tarots,16,恶魔,The Devil,,,Enhances 1 selected card into a Gold Card,Enhances 1 selected card into a Gold Card,礼品卡·恶魔,礼品卡(本回合一次性)：强化 1 选中的 卡牌 into Gold Card,未开发,,
+GiftCards-Tarots,17,高塔,The Tower,,,Enhances 1 selected card into a Stone Card,Enhances 1 selected card into a Stone Card,礼品卡·高塔,礼品卡(本回合一次性)：强化 1 选中的 卡牌 into Stone Card,已开发未测试,,
+GiftCards-Tarots,18,星星,The Star,,,Converts up to 3 selected cards to 方块s,Converts up to 3 selected cards to Diamonds,礼品卡·星星,礼品卡(本回合一次性)：Converts 最多 3 选中的 卡牌 到 Diamonds,已开发未测试,,
+GiftCards-Tarots,19,月亮,The Moon,,,Converts up to 3 selected cards to 梅花s,Converts up to 3 selected cards to Clubs,礼品卡·月亮,礼品卡(本回合一次性)：Converts 最多 3 选中的 卡牌 到 Clubs,已开发未测试,,
+GiftCards-Tarots,20,太阳,The Sun,,,Converts up to 3 selected cards to 红桃s,Converts up to 3 selected cards to Hearts,礼品卡·太阳,礼品卡(本回合一次性)：Converts 最多 3 选中的 卡牌 到 Hearts,已开发未测试,,
+GiftCards-Tarots,21,审判,Judgement,,,"Spawns a random Joker card , Must have room","Spawns a random Joker card , Must have room",礼品卡·审判,"礼品卡(本回合一次性)：生成 随机 特殊牌 卡牌 , 需要有空位",已开发未测试,,
+GiftCards-Tarots,22,世界,The World,,,Converts up to 3 selected cards to 黑桃s,Converts up to 3 selected cards to Spades,礼品卡·世界,礼品卡(本回合一次性)：Converts 最多 3 选中的 卡牌 到 Spades,已开发未测试,,
+Vouchers-Balatro,1,扩充库存,Overstock,,,+1 card slot available in shop,+1 card slot available in shop,,,未开发,,
+Vouchers-Balatro,2,清仓 促销,Clearance Sale,,,All cards and packs in shop are 25% off,All cards and packs in shop are 25% off,,,未开发,,
+Vouchers-Balatro,3,Hone,Hone,,,"Foil, Holographic, and Polychrome cards appear 2X more often","Foil, Holographic, and Polychrome cards appear 2X more often",,,未开发,,
+Vouchers-Balatro,4,重掷 Surplus,Reroll Surplus,,,重掷s cost 2$ less,Rerolls cost $2 less,,,未开发,,
+Vouchers-Balatro,5,Crystal Ball,Crystal Ball,,,+1 consumable slot,+1 consumable slot,,,未开发,,
+Vouchers-Balatro,6,Telescope,Telescope,,,Celestial Packs always contain the Planet card for your most played Poker Hand,Celestial Packs always contain the Planet card for your most played Poker Hand,,,未开发,,
+Vouchers-Balatro,7,Grabber,Grabber,,,永久 gain +1 hand per 回合,Permanently gain +1 hand per round,,,未开发,,
+Vouchers-Balatro,8,Wasteful,Wasteful,,,永久 gain +1 弃牌 per 回合,Permanently gain +1 discard per round,,,未开发,,
+Vouchers-Balatro,9,塔罗 商人,Tarot Merchant,,,Tarot cards appear 2X more frequently in the shop,Tarot cards appear 2X more frequently in the shop,,,未开发,,
+Vouchers-Balatro,10,行星 商人,Planet Merchant,,,Planet cards appear 2X more frequently in the shop,Planet cards appear 2X more frequently in the shop,,,未开发,,
+Vouchers-Balatro,11,Seed Money,Seed Money,,,Raise the cap on interest earned per 回合 to 10$,Raise the cap on interest earned per round to $10,,,未开发,,
+Vouchers-Balatro,12,Blank,Blank,,,Does nothing? sic,Does nothing? sic,,,未开发,,
+Vouchers-Balatro,13,Magic Trick,Magic Trick,,,Playing cards can be purchased from the 商店,Playing cards can be purchased from the Shop,,,未开发,,
+Vouchers-Balatro,14,Hieroglyph,Hieroglyph,,,"-1 Ante, -1 hand per 回合","-1 Ante, -1 hand per round",,,未开发,,
+Vouchers-Balatro,15,Director’s Cut,Director’s Cut,,,重掷 Boss 盲注 1 time per Ante. 10$ per roll,Reroll Boss Blind 1 time per Ante. $10 per roll,,,未开发,,
+Vouchers-Balatro,16,Paint Brush,Paint Brush,,,+1 hand size,+1 hand size,,,未开发,,
+Vouchers-Balatro,17,Name,Name,,,Effect,Effect,,,未开发,,
+Vouchers-Balatro,18,扩充库存 加强,Overstock Plus,,,+1 card slot available in shop,+1 card slot available in shop,,,未开发,,
+Vouchers-Balatro,19,Liquidation,Liquidation,,,All cards and packs in shop are 50% off,All cards and packs in shop are 50% off,,,未开发,,
+Vouchers-Balatro,20,Glow Up,Glow Up,,,"Foil, Holographic, and Polychrome cards appear 4X more often","Foil, Holographic, and Polychrome cards appear 4X more often",,,未开发,,
+Vouchers-Balatro,21,重掷 Glut,Reroll Glut,,,重掷s cost 2$ less,Rerolls cost $2 less,,,未开发,,
+Vouchers-Balatro,22,Omen Globe,Omen Globe,,,Spectral cards may appear in any Arcana Pack,Spectral cards may appear in any Arcana Pack,,,未开发,,
+Vouchers-Balatro,23,Observatory,Observatory,,,Planet cards in your consumable area give X1.5 倍率 for their specified Poker Hand,Planet cards in your consumable area give X1.5 Mult for their specified Poker Hand,,,未开发,,
+Vouchers-Balatro,24,Nacho Tong,Nacho Tong,,,永久 gain +1 hand per 回合,Permanently gain +1 hand per round,,,未开发,,
+Vouchers-Balatro,25,Recyclomancy,Recyclomancy,,,永久 gain +1 弃牌 per 回合,Permanently gain +1 discard per round,,,未开发,,
+Vouchers-Balatro,26,Money Tree,Money Tree,,,Raise the cap on interest earned per 回合 to 20$,Raise the cap on interest earned per round to $20,,,未开发,,
+Vouchers-Balatro,27,Antimatter,Antimatter,,,+1 Joker slot,+1 Joker slot,,,未开发,,
+Vouchers-Balatro,28,塔罗 大亨,Tarot Tycoon,,,Tarot cards appear 4X more frequently in the shop,Tarot cards appear 4X more frequently in the shop,,,未开发,,
+Vouchers-Balatro,29,行星 大亨,Planet Tycoon,,,Planet cards appear 4X more frequently in the shop,Planet cards appear 4X more frequently in the shop,,,未开发,,
+Vouchers-Balatro,30,Illusion,Illusion,,,"Playing cards in the 商店 may have an Enhancement, Edition, and/or a Seal","Playing cards in the Shop may have an Enhancement, Edition, and/or a Seal",,,未开发,,
+Vouchers-Balatro,31,Petroglyph,Petroglyph,,,"-1 Ante, -1 弃牌 per 回合","-1 Ante, -1 discard per round",,,未开发,,
+Vouchers-Balatro,32,Retcon,Retcon,,,"重掷 Boss 盲注 unlimited times, 10$ per roll","Reroll Boss Blind unlimited times, $10 per roll",,,未开发,,
+Vouchers-Balatro,33,Palette,Palette,,,+1 hand size,+1 hand size,,,未开发,,
+Legacy-Basic-Reference,,小丑,Joker,,,+4 倍率 (Mult),,,,,Joker (小丑牌),+4 倍率 (Mult)
+Legacy-Basic-Reference,,贪婪小丑,Greedy Joker,,,打出包含方块的牌时，每张提供 +3 倍率,,,,,Joker (小丑牌),打出包含方块的牌时，每张提供 +3 倍率
+Legacy-Basic-Reference,,贪欲小丑,Lusty Joker,,,打出包含红桃的牌时，每张提供 +3 倍率,,,,,Joker (小丑牌),打出包含红桃的牌时，每张提供 +3 倍率
+Legacy-Basic-Reference,,愤怒小丑,Wrathful Joker,,,打出包含黑桃的牌时，每张提供 +3 倍率,,,,,Joker (小丑牌),打出包含黑桃的牌时，每张提供 +3 倍率
+Legacy-Basic-Reference,,暴食小丑,Gluttonous Joker,,,打出包含梅花的牌时，每张提供 +3 倍率,,,,,Joker (小丑牌),打出包含梅花的牌时，每张提供 +3 倍率
+Legacy-Basic-Reference,,欢乐小丑,Jolly Joker,,,如果打出的牌型包含对子，提供 +8 倍率,,,,,Joker (小丑牌),如果打出的牌型包含对子，提供 +8 倍率
+Legacy-Basic-Reference,,滑稽小丑,Zany Joker,,,如果打出的牌型包含三条，提供 +12 倍率,,,,,Joker (小丑牌),如果打出的牌型包含三条，提供 +12 倍率
+Legacy-Basic-Reference,,疯狂小丑(Mad),Mad Joker,,,如果打出的牌型包含两对，提供 +10 倍率,,,,,Joker (小丑牌),如果打出的牌型包含两对，提供 +10 倍率
+Legacy-Basic-Reference,,疯狂小丑(Crazy),Crazy Joker,,,如果打出的牌型包含顺子，提供 +12 倍率,,,,,Joker (小丑牌),如果打出的牌型包含顺子，提供 +12 倍率
+Legacy-Basic-Reference,,逗趣小丑,Droll Joker,,,如果打出的牌型包含同花，提供 +10 倍率,,,,,Joker (小丑牌),如果打出的牌型包含同花，提供 +10 倍率
+Legacy-Basic-Reference,,蓝图,Blueprint,,,复制右侧小丑牌的能力,,,,,Joker (小丑牌),复制右侧小丑牌的能力
+Legacy-Basic-Reference,,头脑风暴,Brainstorm,,,复制最左侧小丑牌的能力,,,,,Joker (小丑牌),复制最左侧小丑牌的能力
+Legacy-Basic-Reference,,卡文迪许,Cavendish,,,X3 倍率，每回合有 1/1000 几率被销毁,,,,,Joker (小丑牌),X3 倍率，每回合有 1/1000 几率被销毁
+Legacy-Basic-Reference,,大麦克,Gros Michel,,,+15 倍率，每回合有 1/6 几率被销毁,,,,,Joker (小丑牌),+15 倍率，每回合有 1/6 几率被销毁
+Legacy-Basic-Reference,,DNA,DNA,,,如果本回合第一次出牌只打出一张牌，复制它并将其永久加入手牌,,,,,Joker (小丑牌),如果本回合第一次出牌只打出一张牌，复制它并将其永久加入手牌
+Legacy-Basic-Reference,,吸血鬼,Vampire,,,计分时移除卡牌上的所有增强效果，每移除一个，提供 X0.1 倍率,,,,,Joker (小丑牌),计分时移除卡牌上的所有增强效果，每移除一个，提供 X0.1 倍率
+Legacy-Basic-Reference,,全息投影,Hologram,,,每次将扑克牌加入牌组时，增加 X0.25 倍率,,,,,Joker (小丑牌),每次将扑克牌加入牌组时，增加 X0.25 倍率
+Legacy-Basic-Reference,,流浪者,Vagabond,,,如果出牌时金币少于或等于3块，提供1张随机塔罗牌,,,,,Joker (小丑牌),如果出牌时金币少于或等于3块，提供1张随机塔罗牌
+Legacy-Basic-Reference,,男爵,Baron,,,手牌中每保留一张K，提供 X1.5 倍率,,,,,Joker (小丑牌),手牌中每保留一张K，提供 X1.5 倍率
+Legacy-Basic-Reference,,射月,Shoot the Moon,,,手牌中每保留一张Q，提供 +13 倍率,,,,,Joker (小丑牌),手牌中每保留一张Q，提供 +13 倍率
+Legacy-Basic-Reference,,愚者,The Fool,,,生成上一张在此局游戏中使用的塔罗牌或星球牌,,,,,Tarot (塔罗牌),生成上一张在此局游戏中使用的塔罗牌或星球牌
+Legacy-Basic-Reference,,魔术师,The Magician,,,将最多2张选中的牌变为幸运牌 (Lucky cards),,,,,Tarot (塔罗牌),将最多2张选中的牌变为幸运牌 (Lucky cards)
+Legacy-Basic-Reference,,女祭司,The High Priestess,,,生成最多2张随机星球牌,,,,,Tarot (塔罗牌),生成最多2张随机星球牌
+Legacy-Basic-Reference,,皇后,The Empress,,,将最多2张选中的牌变为倍率牌 (Mult cards),,,,,Tarot (塔罗牌),将最多2张选中的牌变为倍率牌 (Mult cards)
+Legacy-Basic-Reference,,皇帝,The Emperor,,,生成最多2张随机塔罗牌,,,,,Tarot (塔罗牌),生成最多2张随机塔罗牌
+Legacy-Basic-Reference,,教皇,The Hierophant,,,将最多2张选中的牌变为奖励牌 (Bonus cards),,,,,Tarot (塔罗牌),将最多2张选中的牌变为奖励牌 (Bonus cards)
+Legacy-Basic-Reference,,恋人,The Lovers,,,将1张选中的牌变为万能牌 (Wild card),,,,,Tarot (塔罗牌),将1张选中的牌变为万能牌 (Wild card)
+Legacy-Basic-Reference,,战车,The Chariot,,,将1张选中的牌变为钢铁牌 (Steel card),,,,,Tarot (塔罗牌),将1张选中的牌变为钢铁牌 (Steel card)
+Legacy-Basic-Reference,,正义,Justice,,,将1张选中的牌变为玻璃牌 (Glass card),,,,,Tarot (塔罗牌),将1张选中的牌变为玻璃牌 (Glass card)
+Legacy-Basic-Reference,,隐者,The Hermit,,,金币翻倍（最多增加20块）,,,,,Tarot (塔罗牌),金币翻倍（最多增加20块）
+Legacy-Basic-Reference,,命运之轮,The Wheel of Fortune,,,1/4的几率给随机小丑牌增加闪箔、镭射或多彩版本效果,,,,,Tarot (塔罗牌),1/4的几率给随机小丑牌增加闪箔、镭射或多彩版本效果
+Legacy-Basic-Reference,,力量,Strength,,,将最多2张选中的牌点数增加1点,,,,,Tarot (塔罗牌),将最多2张选中的牌点数增加1点
+Legacy-Basic-Reference,,倒吊人,The Hanged Man,,,摧毁最多2张选中的牌,,,,,Tarot (塔罗牌),摧毁最多2张选中的牌
+Legacy-Basic-Reference,,死神,Death,,,将左侧选中的牌变为右侧选中牌的复制品,,,,,Tarot (塔罗牌),将左侧选中的牌变为右侧选中牌的复制品
+Legacy-Basic-Reference,,节制,Temperance,,,获得等于当前所有小丑牌出售价格总和的金币,,,,,Tarot (塔罗牌),获得等于当前所有小丑牌出售价格总和的金币
+Legacy-Basic-Reference,,恶魔,The Devil,,,将1张选中的牌变为金币牌 (Gold card),,,,,Tarot (塔罗牌),将1张选中的牌变为金币牌 (Gold card)
+Legacy-Basic-Reference,,高塔,The Tower,,,将1张选中的牌变为石头牌 (Stone card),,,,,Tarot (塔罗牌),将1张选中的牌变为石头牌 (Stone card)
+Legacy-Basic-Reference,,星星,The Star,,,将最多3张选中的牌花色变为方块,,,,,Tarot (塔罗牌),将最多3张选中的牌花色变为方块
+Legacy-Basic-Reference,,月亮,The Moon,,,将最多3张选中的牌花色变为梅花,,,,,Tarot (塔罗牌),将最多3张选中的牌花色变为梅花
+Legacy-Basic-Reference,,太阳,The Sun,,,将最多3张选中的牌花色变为红桃,,,,,Tarot (塔罗牌),将最多3张选中的牌花色变为红桃
+Legacy-Basic-Reference,,审判,Judgement,,,生成一张随机的小丑牌,,,,,Tarot (塔罗牌),生成一张随机的小丑牌
+Legacy-Basic-Reference,,世界,The World,,,将最多3张选中的牌花色变为黑桃,,,,,Tarot (塔罗牌),将最多3张选中的牌花色变为黑桃
+Legacy-Basic-Reference,,进货,Overstock,,,商店增加1个卡槽,,,,,Voucher (兑奖券),商店增加1个卡槽
+Legacy-Basic-Reference,,进货加强,Overstock Plus,,,商店再增加1个卡槽,,,,,Voucher (兑奖券),商店再增加1个卡槽
+Legacy-Basic-Reference,,清仓大甩卖,Clearance Sale,,,商店所有物品打75折,,,,,Voucher (兑奖券),商店所有物品打75折
+Legacy-Basic-Reference,,破产清算,Liquidation,,,商店所有物品打5折,,,,,Voucher (兑奖券),商店所有物品打5折
+Legacy-Basic-Reference,,抛光,Hone,,,闪箔、镭射和多彩牌出现率增加一倍,,,,,Voucher (兑奖券),闪箔、镭射和多彩牌出现率增加一倍
+Legacy-Basic-Reference,,发光,Glow Up,,,闪箔、镭射和多彩牌出现率增加两倍,,,,,Voucher (兑奖券),闪箔、镭射和多彩牌出现率增加两倍
+Legacy-Basic-Reference,,空白,Blank,,,没有任何效果（购买10次后解锁反物质）,,,,,Voucher (兑奖券),没有任何效果（购买10次后解锁反物质）
+Legacy-Basic-Reference,,反物质,Antimatter,,,增加1个小丑牌槽位,,,,,Voucher (兑奖券),增加1个小丑牌槽位
+Legacy-Basic-Reference,,魔术把戏,Magic Trick,,,商店里可以买到扑克牌,,,,,Voucher (兑奖券),商店里可以买到扑克牌
+Legacy-Basic-Reference,,幻觉,Illusion,,,商店里买到的扑克牌可能有增强、版本或封印效果,,,,,Voucher (兑奖券),商店里买到的扑克牌可能有增强、版本或封印效果
+Legacy-Basic-Reference,,导演剪辑,Director's Cut,,,允许刷新Boss盲注（每局1次）,,,,,Voucher (兑奖券),允许刷新Boss盲注（每局1次）
+Legacy-Basic-Reference,,重新设定,Retcon,,,允许无限次刷新Boss盲注,,,,,Voucher (兑奖券),允许无限次刷新Boss盲注
+Legacy-Basic-Reference,,望远镜,Telescope,,,商店里必定可以买到你最常打出牌型的星球牌,,,,,Voucher (兑奖券),商店里必定可以买到你最常打出牌型的星球牌
+Legacy-Basic-Reference,,天文台,Observatory,,,消耗品槽中的星球牌给予对应牌型 X1.5 倍率,,,,,Voucher (兑奖券),消耗品槽中的星球牌给予对应牌型 X1.5 倍率
+Legacy-Basic-Reference,,塔罗商人,Tarot Merchant,,,商店里可以买到塔罗牌,,,,,Voucher (兑奖券),商店里可以买到塔罗牌
+Legacy-Basic-Reference,,塔罗大亨,Tarot Tycoon,,,商店里塔罗牌出现率增加一倍,,,,,Voucher (兑奖券),商店里塔罗牌出现率增加一倍
+Legacy-Basic-Reference,,星球商人,Planet Merchant,,,商店里可以买到星球牌,,,,,Voucher (兑奖券),商店里可以买到星球牌
+Legacy-Basic-Reference,,星球大亨,Planet Tycoon,,,商店里星球牌出现率增加一倍,,,,,Voucher (兑奖券),商店里星球牌出现率增加一倍
+Legacy-Basic-Reference,,种子资金,Seed Money,,,每次利息上限提高到 10块,,,,,Voucher (兑奖券),每次利息上限提高到 10块
+Legacy-Basic-Reference,,摇钱树,Money Tree,,,每次利息上限提高到 20块,,,,,Voucher (兑奖券),每次利息上限提高到 20块
+Legacy-Basic-Reference,,抓取器,Grabber,,,每次盲注额外增加1次出牌机会,,,,,Voucher (兑奖券),每次盲注额外增加1次出牌机会
+Legacy-Basic-Reference,,玉米片夹,Nacho Tong,,,每次盲注再额外增加1次出牌机会,,,,,Voucher (兑奖券),每次盲注再额外增加1次出牌机会
+Legacy-Basic-Reference,,浪费,Wasteful,,,每次盲注额外增加1次弃牌机会,,,,,Voucher (兑奖券),每次盲注额外增加1次弃牌机会
+Legacy-Basic-Reference,,回收术,Recyclomancy,,,每次盲注再额外增加1次弃牌机会,,,,,Voucher (兑奖券),每次盲注再额外增加1次弃牌机会

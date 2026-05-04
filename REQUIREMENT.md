@@ -15,27 +15,27 @@
 
 当前 CSV 真源条目：
 - `levels_definition.csv`：关卡配置（`level,goal,reward`），共 27 行（9 大关 x 3 小关）
-- `deck_definition.csv`：卡组定义（一个表合并原 `deck_catalog.csv` + `deck_cards.csv`）
+- `deck_definition.csv`：卡组定义（一个表承载 deck 元信息 + 卡表）
   - 横轴表头为 `deck_id`
   - 纵轴包含 `name/enabled/unlock_* / starting_*` 等元信息行，以及若干 `card_code` 行（单元格为该卡在该 deck 的数量）
-- `card_definition.csv`：卡牌定义（一个表合并原 `card_catalog.csv` + `cardasset.csv`），并补充商店相关字段
+- `card_definition.csv`：卡牌定义（含商店相关字段与可选整图资源字段）
   - `card_code,group,asset_mode,asset_path,enabled,shop_enabled,shop_ratio`
 - `sleeve_definition.csv`：卡套定义（仅 `validation/r = 1` 的行进入游戏；`ratio` 控制商店基础出现权重；`tag` 控制同组权重加成）
 - `giftcard_definition.csv`：礼品卡定义（新增 `enabled` 列）
 - `playmat_definition.csv`：Playmat 定义（新增 `enabled` 列）
-- `block_definition.csv`：块资源映射（`symbol,asset_path`，路径以 `/Sketch/...` 为基准，运行时从 `ts/public/` 提供）
+- `block_definition.csv`：块资源映射（`symbol,asset_path`，资源路径以 `/game-design/art/...` 为基准）
 
 说明：
 - TS 运行时目录只同步 `*_definition.csv`（由 `ts/tools/sync-definitions.cjs` 从真源复制）；历史 CSV 可能仍保留在真源目录用于过渡/参考，但运行时不再读取。
 
 ### 2.1 Card Code 规则
-`deck_cards.csv` / `card_catalog.csv` 中的 `code` 由 3 位字符组成（对应 1x3 卡牌的 3 个元素），映射如下：
+`deck_definition.csv` / `card_definition.csv` 中的 `code` 由 3 位字符组成（对应 1x3 卡牌的 3 个元素），映射如下：
 - `0` -> BLANK
 - `1` -> PAPER
 - `3` -> SCISSORS
 - `4` -> ROCK
 - `7` -> TRICOLOR（三色）
-- `O` -> TRICOLOR（运行时目录表写法，仅用于 `card_catalog.csv` / 商店卡池）
+- `O` -> TRICOLOR（运行时目录表写法，仅用于卡牌定义与商店卡池）
 
 示例：
 - `300` 表示 [剪,空,空]
@@ -169,7 +169,7 @@
 
 ### 7.4 额外卡牌（Card）
 - 商店可出售与手牌/牌库同性质的 1x3 卡牌
-- 当前卡池来源：`ts/public/definition/card_catalog.csv`
+- 当前卡池来源：`ts/public/definition/card_definition.csv`（筛选 `shop_enabled = 1`）
 - 当前目录内容：
   - 所有由 `0/1/3/4` 任意混搭组成的 3 位 code
   - 所有包含 `O`（运行时映射为 TRICOLOR）的 3 位 code

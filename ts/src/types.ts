@@ -43,6 +43,15 @@ export interface ClashResult {
   sleeveBaseScoreDelta?: number;
   sleeveScoreDelta?: number;
   sleeveBaseMultiplier?: number;
+  sleeveChipsDelta?: number;
+  sleeveTriggers?: Array<{
+    sleeveDefinitionId: string;
+    kind: 'score' | 'multiplier' | 'chips';
+    value: number;
+    r: number;
+    c: number;
+    laneIndex: number;
+  }>;
   penalty: number;
   laneScores: number[];
   replacedCells: { r: number; c: number }[];

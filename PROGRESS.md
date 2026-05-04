@@ -14,7 +14,7 @@
 - 2026-04-16T00:10:00+08:00 优化滚轮翻转交互：持续同向滚动不重复翻转，需换向或停 0.5s 再触发
 - 2026-04-17T00:55:00+08:00 `ts/` 接入卡套/礼品卡主链：商店可购买 Special/Sleeve/Gift Card，卡套被动生效，礼品卡进入库存并可在对局中使用；同步补充覆盖清单与 requirement
 - 2026-04-17T01:25:00+08:00 `ts/` 商店重构：移除 Special 出售，改为 sleeve/gift card/card 三类；支持 direct 与 pack（2/3 选 1），新增 shopdefinition 与永久牌库模板
-- 2026-04-19T12:00:00+08:00 `ts/` 资产结构整理：新增 `content_status.csv`、`deck_catalog.csv`、`deck_cards.csv`、`deck_effects.json`、`card_catalog.csv`；卡组初始资源改为按 `deck_id` 维护，三类定义改从统一状态总表过滤；移除旧的 `initial.csv` / `deckdefinition.json` / `effecttoggle.csv`
+- 2026-04-19T12:00:00+08:00 `ts/` 资产结构整理：新增 `content_status.csv`、`deck_definition.csv`、`deck_effects.json`、`card_definition.csv`；卡组初始资源改为按 `deck_id` 维护，三类定义改从统一状态总表过滤；移除旧的 `initial.csv` / `deckdefinition.json` / `effecttoggle.csv`
 - 2026-04-20T10:00:00+08:00 `ts/` 新增多语言自动识别功能：读取系统/浏览器语言（`navigator.language`），自动匹配中文（简/繁）、日文或回退至英文，并将用户手动切换偏好存入 `localStorage`。
 - 2026-04-20T10:15:00+08:00 `ts/` 新增初始卡套选择流程：在卡组选择后，随机抽取 3 个卡套供玩家 3 选 1，然后再进入第一关。
 - 2026-04-25T23:36:06+08:00 `ts/` 固定 Vite dev server 端口为 `5739`，并启用 `strictPort` 以避免与其他项目自动抢占/漂移端口。
@@ -36,6 +36,7 @@
 - 2026-05-02T12:48:22+08:00 `ts/` 调整卡套表现结算点：出手 PK 结束后先显示原始基础分/击穿倍率，再闪烁卡套并修正基础分，最后执行乘法合并；同步神秘峰顶为“无剩余替换手牌时基础分 +15”。
 - 2026-05-02T13:12:00+08:00 `ts/` 逐页精修关卡选择页左侧栏目：改为接近 Main/参考图的纸质像素面板、虚线内框、蓝红积分条、金币/积分圆章、紫蓝操作按钮和底部关卡信息块；修复当前构建中的 `??` 优先级错误。
 - 2026-05-04T10:30:00+08:00 `ts/` definition 结构重构：新增 `deck_definition.csv`（合并 deck_catalog/deck_cards）、`card_definition.csv`（合并 card_catalog/cardasset 并补充 shop 权重）、`block_definition.csv`、`levels_definition.csv`；移除运行时对 `content_status.csv` 的依赖，并调整同步脚本仅同步 `*_definition.csv` 到运行时目录。
+- 2026-05-04T13:45:00+08:00 `ts/` 修正关卡选择规则：每个 Stage 固定显示 3 个关卡，完成/跳过只推进当前 active，不再跨组滚动；新增跳关奖励但不触发通关筹码和商店。逐 PK 卡套效果（磐石/利刃/流水/白卷/快活及同类逐胜利/逐捕获效果）改为随每次 PK 触发并高亮卡套，结算使用同一份触发结果避免随机重算。
 
 ## 阻塞项
 - 暂无

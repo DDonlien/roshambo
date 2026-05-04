@@ -1,7 +1,6 @@
 import { Card, ClashResult, RPS } from '../types';
 import { parseCsvWithHeader } from './csv';
 import {
-  countCapturesByAttacker,
   isFlush,
   isFourOfAKind,
   isPair,
@@ -162,6 +161,14 @@ export interface SleeveClashBonus {
   chipsDelta: number;
   bonusDealsPerLevel: number;
   bonusInterestPer5Chips: number;
+  triggers: Array<{
+    sleeveDefinitionId: string;
+    kind: 'score' | 'multiplier' | 'chips';
+    value: number;
+    r: number;
+    c: number;
+    laneIndex: number;
+  }>;
 }
 
 export async function loadSleeveDefinitionFile(): Promise<SleeveDefinitionFile> {
@@ -193,7 +200,8 @@ export function applySleeveEffects(definition: SleeveDefinition, context: Sleeve
     multiplier: 1,
     chipsDelta: 0,
     bonusDealsPerLevel: 0,
-    bonusInterestPer5Chips: 0
+    bonusInterestPer5Chips: 0,
+    triggers: []
   };
 
   definition.effects.forEach((effect) => {
@@ -208,26 +216,61 @@ export function applySleeveEffects(definition: SleeveDefinition, context: Sleeve
         bonus.flatScore += Math.floor(context.random() * (effect.max - effect.min + 1)) + effect.min;
         break;
       case 'score_flat_per_attacker_symbol_win':
-        bonus.flatScore += countCapturesByAttacker(context.result, effect.symbol) * effect.value;
+        (context.result.captureEvents ?? []).forEach((event) => {
+          if (event.attacker !== effect.symbol || event.defender === RPS.BLANK) return;
+          bonus.flatScore += effect.value;
+          bonus.triggers.push({
+            sleeveDefinitionId: definition.id,
+            kind: 'score',
+            value: effect.value,
+            r: event.r,
+            c: event.c,
+            laneIndex: event.laneIndex
+          });
+        });
         break;
       case 'score_flat_per_blank_tie_or_win': {
-        const blankWins = (context.result.captureEvents ?? []).filter((event) => event.defender === RPS.BLANK).length;
-        const blankTies = (context.result.tieEvents ?? []).filter((event) => {
-          return event.attacker === RPS.BLANK || event.defender === RPS.BLANK;
-        }).length;
-        bonus.flatScore += (blankWins + blankTies) * effect.value;
+        (context.result.captureEvents ?? []).forEach((event) => {
+          if (event.defender !== RPS.BLANK) return;
+          bonus.flatScore += effect.value;
+          bonus.triggers.push({
+            sleeveDefinitionId: definition.id,
+            kind: 'score',
+            value: effect.value,
+            r: event.r,
+            c: event.c,
+            laneIndex: event.laneIndex
+          });
+        });
+        (context.result.tieEvents ?? []).forEach((event) => {
+          if (event.attacker !== RPS.BLANK && event.defender !== RPS.BLANK) return;
+          bonus.flatScore += effect.value;
+          bonus.triggers.push({
+            sleeveDefinitionId: definition.id,
+            kind: 'score',
+            value: effect.value,
+            r: event.r,
+            c: event.c,
+            laneIndex: event.laneIndex
+          });
+        });
         break;
       }
       case 'score_flat_per_chained_win': {
         const winsByLane = new Map<number, number>();
         (context.result.captureEvents ?? []).forEach((event) => {
           winsByLane.set(event.laneIndex, (winsByLane.get(event.laneIndex) ?? 0) + 1);
+          if ((winsByLane.get(event.laneIndex) ?? 0) <= 1) return;
+          bonus.flatScore += effect.value;
+          bonus.triggers.push({
+            sleeveDefinitionId: definition.id,
+            kind: 'score',
+            value: effect.value,
+            r: event.r,
+            c: event.c,
+            laneIndex: event.laneIndex
+          });
         });
-        let chainedWins = 0;
-        winsByLane.forEach((count) => {
-          chainedWins += Math.max(0, count - 1);
-        });
-        bonus.flatScore += chainedWins * effect.value;
         break;
       }
       case 'score_flat_if_pattern':
@@ -289,6 +332,14 @@ export function applySleeveEffects(definition: SleeveDefinition, context: Sleeve
           if (event.attacker !== effect.symbol || event.defender === RPS.BLANK) return;
           if (effect.chance && context.random() >= effect.chance) return;
           bonus.chipsDelta += effect.value;
+          bonus.triggers.push({
+            sleeveDefinitionId: definition.id,
+            kind: 'chips',
+            value: effect.value,
+            r: event.r,
+            c: event.c,
+            laneIndex: event.laneIndex
+          });
         });
         break;
       case 'score_mult_per_attacker_symbol_win':
@@ -296,6 +347,14 @@ export function applySleeveEffects(definition: SleeveDefinition, context: Sleeve
           if (event.attacker !== effect.symbol || event.defender === RPS.BLANK) return;
           if (effect.chance && context.random() >= effect.chance) return;
           bonus.multiplier *= effect.value;
+          bonus.triggers.push({
+            sleeveDefinitionId: definition.id,
+            kind: 'multiplier',
+            value: effect.value,
+            r: event.r,
+            c: event.c,
+            laneIndex: event.laneIndex
+          });
         });
         break;
     }
